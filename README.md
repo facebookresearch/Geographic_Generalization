@@ -70,8 +70,9 @@ runs = analyze_runs.Runs()
 # Development
 
 TODO
-[] add dummy data module for testing
-[] update tests in `tests/` make sure they pass
-[] add DDP local support
-[] confirm pre-emption works
-[] consider adding sweeps natively to hydra
+
+- [ ] add dummy data module for testing
+- [ ] update tests in `tests/` make sure they pass
+- [ ] add DDP local support
+- [ ] confirm pre-emption works
+- [ ] consider adding sweeps natively to hydra
