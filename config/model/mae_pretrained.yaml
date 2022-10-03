@@ -1,0 +1,9 @@
+# @package _global_
+model_name: mae_pretrained
+
+module: 
+  _target_: models.mae.mae.MAEPretrained
+
+best_learning_rate:
+  finetuning: 0.000006
+  linear_eval: 0.001580

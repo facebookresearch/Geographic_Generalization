@@ -1,0 +1,9 @@
+# @package _global_
+model_name: vit_pretrained_21k
+
+module: 
+  _target_: models.vit.vit.ViTPretrained21k
+
+best_learning_rate:
+  finetuning: 0.000006
+  linear_eval: 0.000040

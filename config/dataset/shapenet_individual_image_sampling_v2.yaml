@@ -1,0 +1,10 @@
+# @package _global_
+dataset_name: shapenet_individual_image_sampling_v2
+
+datamodule:
+  _target_: datasets.shapenet.shapenet_v2.ShapeNetv2SingleFactorDataModule
+  data_dir: /checkpoint/garridoq/datasets_fov/individual_v2
+  batch_size: 32
+  num_workers: 4
+  train_prop_to_vary: 0.5
+  factor_to_vary: Rotation

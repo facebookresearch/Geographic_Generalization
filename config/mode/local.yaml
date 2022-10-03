@@ -1,0 +1,9 @@
+# @package _global_
+
+project: robustness-limits
+
+trainer:
+  num_nodes: 1
+  gpus: 1
+  max_epochs: 10
+  strategy: null

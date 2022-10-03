@@ -1,0 +1,9 @@
+# @package _global_
+model_name: simclr_pretrained
+
+module: 
+  _target_: models.simclr.simclr.SimCLRPretrained
+
+best_learning_rate:
+  finetuning: 0.000040
+  linear_eval: 0.001580

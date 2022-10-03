@@ -1,0 +1,1 @@
+python zero_shot.py -m zero_shot_model='glob(*)' module.prompt='object photo','photo','object','item or vehicle'

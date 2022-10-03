@@ -1,0 +1,9 @@
+# @package _global_
+dataset_name: shapenet_individual
+
+datamodule:
+  _target_: datasets.shapenet.shapenet_extended.ShapeNetIndividualFactorDataModule
+  batch_size: 32
+  num_workers: 4
+  train_prop_to_vary: 0.5
+  factor_to_vary: Rotation

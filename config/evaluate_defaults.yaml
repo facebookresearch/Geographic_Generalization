@@ -1,0 +1,7 @@
+# @package _global_
+defaults:
+  - base: base
+  - mode: cluster_one_gpu
+  - dataset: shapenet_individual_image_sampling
+  - evaluation: linear
+  - model: mae_pretrained

@@ -1,0 +1,9 @@
+# @package _global_
+model_name: ibot_pretrained_1k
+
+module: 
+  _target_: models.ibot.ibot.iBotPretrained1k
+
+best_learning_rate:
+  finetuning: 0.000001
+  linear_eval: 0.000251 

@@ -1,0 +1,9 @@
+# @package _global_
+model_name: mlp_mixer_pretrained_21k
+
+module: 
+  _target_: models.mlp_mixer.mlp_mixer.MLPMixerPretrained21k
+
+best_learning_rate:
+  finetuning: 0.000006
+  linear_eval: 0.000251
