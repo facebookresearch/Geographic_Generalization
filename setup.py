@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 setup(
-    name="robustness-limits",
+    name="mise-en-place",
     packages=find_packages(exclude=["tests"]),
     long_description=readme,
     install_requires=requirements,

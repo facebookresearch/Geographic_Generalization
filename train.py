@@ -21,19 +21,18 @@ git_hash = get_git_hash()
 
 
 @hydra.main(
-    version_base="1.2",
-    config_path="config",
-    config_name="store_predictions_defaults.yaml",
+    version_base="1.2", config_path="config", config_name="train_defaults.yaml"
 )
 def main(config: DictConfig) -> None:
     print_config(config)
     pl.seed_everything(config.seed)
     wandb_logger = setup_wandb(config, log, git_hash)
+    job_logs_dir = os.getcwd()
 
     datamodule = instantiate(config.datamodule)
 
     model = instantiate(config.module)
-    evaluator = instantiate(config.evaluation_module, model, datamodule)
+    evaluator = instantiate(config.evaluation_module, model, datamodule=datamodule)
 
     trainer = pl.Trainer(
         **config.trainer,
@@ -41,7 +40,10 @@ def main(config: DictConfig) -> None:
         logger=wandb_logger,
     )
 
-    trainer.validate(evaluator, datamodule=datamodule)
+    resume_ckpt = find_existing_checkpoint(job_logs_dir)
+    trainer.fit(evaluator, datamodule=datamodule, ckpt_path=resume_ckpt)
+    trainer.validate(datamodule=datamodule)
+    trainer.test(datamodule=datamodule)
 
     # allows for logging separate experiments with multi-run (-m) flag
     wandb_logger.experiment.finish()

@@ -1,6 +1,0 @@
-# @package _global_
-model_name: clip_zero_shot
-
-module: 
-  _target_: models.clip.clip.CLIPZeroShotPretrained
-  prompt: photo

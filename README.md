@@ -1,4 +1,4 @@
-# Robustness Limits
+# Getting Started Template for Research
 
 <a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.9+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
@@ -13,9 +13,6 @@ To run tests (excluding slow tests): `python -m pytest tests/`
 
 To run all tests (including slow tests): `python -m pytest --runslow tests/`
 
-## Results
-
-
 
 ## Launch Experiments
 
@@ -25,7 +22,6 @@ To run all tests (including slow tests): `python -m pytest --runslow tests/`
 You can optionally add notes about a run `notes='exploring new learning rate'`
 
 For other tasks, similarly run `python train_[task name].py -m +experiment=[name]`
-For zero shot evaluation, run `python zero_shot.py -m zero_shot_model='glob(*)'`.
 
 See `config/experiment` for a list of experiments.
 
@@ -59,18 +55,23 @@ To launch experiments under your own user (instead of the team), set `wandb.enti
 To debug what configs are used: `python train_[task_name].py --cfg job`
 
 ## Analysis
-To generate plots  `python analysis/plots.py` (plots are saved in `analysis/plots`)
 
-For detailed analysis of runs:
+To analyze experimental results, `analysis/analyze_runs.py` can fetch experimental results from weights and biases.
+
 
 ```python
 
 from analysis import analyze_runs
 
 runs = analyze_runs.Runs()
-# show table of results for a setting
-runs.canonical_linear_eval
-
-# to produce a table
-canonical = CanonicalTable(runs, evaluation_type="finetuning")
 ```
+
+
+# Development
+
+TODO
+[] add dummy data module for testing
+[] update tests in `tests/` make sure they pass
+[] add DDP local support
+[] confirm pre-emption works
+[] consider adding sweeps natively to hydra

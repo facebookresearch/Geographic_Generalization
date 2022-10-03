@@ -1,6 +1,0 @@
-# @package _global_
-defaults:
-  - base: base
-  - mode: cluster_one_gpu
-  - dataset: shapenet_individual_image_sampling
-  - zero_shot_model: clip

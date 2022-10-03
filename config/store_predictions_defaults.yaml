@@ -1,7 +1,0 @@
-# @package _global_
-defaults:
-  - base: base
-  - mode: cluster_one_gpu
-  - dataset: shapenet_random_class_split
-  - evaluation: store_predictions
-  - model: vit_pretrained_1k
