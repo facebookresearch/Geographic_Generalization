@@ -4,6 +4,8 @@
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 
 ## Installation
+In a new conda environment (`conda create -n [name] python=3.9`), run
+
 `pip install -f https://download.pytorch.org/whl/torch_stable.html -e .`
 
 To record the current environment: `pip freeze --exclude-editable > requirements.txt`
