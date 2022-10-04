@@ -61,21 +61,21 @@ from analysis import analyze_runs
 runs = analyze_runs.Runs()
 ```
 
-
-# Benefits
-
-* support for multi-GPU/node training
-* handles requeuing and checkpoint using Submit/PyTorch Lightning
-* configs managed using Hydra
-* logging using Weights and Biases
-* includes unit testing using PyTest
-
 # Details
 
 To launch experiments under your own user (instead of the team), set `wandb.entity=null` 
 
 ## Debugging Configs
 To debug what configs are used: `python train_[task_name].py --cfg job`
+
+
+# Benefits
+
+- [x] support for multi-GPU/node training
+- [x] handles requeuing and checkpoint using Submit/PyTorch Lightning
+- [x] configs managed using Hydra
+- [x] logging using Weights and Biases
+- [x] includes unit testing using PyTest
 
 
 
@@ -87,5 +87,4 @@ TODO
 - [ ] update tests in `tests/` make sure they pass
 - [ ] add DDP local support
 - [ ] add logging of image validation examples with model predictions ([example to follow](https://github.com/fairinternal/NeuralCompressionInternal/blob/7ccab7632b9ba0593b3f3adcdb84f70ba7faf4c4/projects/noisy_autoencoder/experimental/quantized_autoencoder/train.py#L24-L91))
-- [ ] confirm pre-emption works
 - [ ] consider adding sweeps natively to hydra
