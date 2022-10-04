@@ -12,7 +12,6 @@ models/__init__.py
 models/base_model.py
 models/evaluation.py
 models/loggers.py
-models/test_domains.py
 models/mae/__init__.py
 models/mae/mae.py
 models/mae/pos_embed.py

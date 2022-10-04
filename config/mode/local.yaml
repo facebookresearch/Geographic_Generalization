@@ -1,6 +1,6 @@
 # @package _global_
 
-project: robustness-limits
+project: mise-en-place
 
 trainer:
   num_nodes: 1
