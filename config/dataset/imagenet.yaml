@@ -1,0 +1,8 @@
+# @package _global_
+dataset_name: imagenet
+
+datamodule:
+  _target_: datasets.imagenet.ImageNetDataModule
+  batch_size: 32
+  num_workers: 4
+  train_prop_to_vary: 0.5
