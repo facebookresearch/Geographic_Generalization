@@ -32,7 +32,6 @@ def main(config: DictConfig) -> None:
     datamodule = instantiate(config.datamodule)
 
     model = instantiate(config.module)
-    evaluator = instantiate(config.evaluation_module, model, datamodule=datamodule)
 
     trainer = pl.Trainer(
         **config.trainer,
@@ -41,7 +40,7 @@ def main(config: DictConfig) -> None:
     )
 
     resume_ckpt = find_existing_checkpoint(job_logs_dir)
-    trainer.fit(evaluator, datamodule=datamodule, ckpt_path=resume_ckpt)
+    trainer.fit(model, datamodule=datamodule, ckpt_path=resume_ckpt)
     trainer.validate(datamodule=datamodule)
     trainer.test(datamodule=datamodule)
 

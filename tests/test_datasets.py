@@ -1,9 +1,10 @@
-from torch.utils.data import DataLoader, Dataset
-import pytest
-import pytorch_lightning as pl
-from pytorch_lightning.trainer import supporters
-import torch
+from datasets.imagenet import ImageNetDataModule
 
-from datasets.shapenet import shapenet_extended, shapenet_v2
-import os
 
+class TestImageNet:
+    def test_imagenet(self):
+        dm = ImageNetDataModule(batch_size=8)
+        val_batch = dm.val_dataloader()[0]
+        x, y = val_batch
+        assert x.shape == (8, 3, 224, 224)
+        assert y.shape == (8, 1)

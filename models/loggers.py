@@ -21,118 +21,6 @@ import git
 from pathlib import Path
 
 
-class VideoClassificationLogger(Callback):
-    def __init__(self, data_module: pl.LightningDataModule, num_batches: int = 10):
-        super().__init__()
-        self.num_batches = num_batches
-
-        # To access the x_dataloader we need to call prepare_data and setup.
-        data_module.prepare_data()
-        data_module.setup()
-        self.data_module = data_module
-        self.val_samples = [x for x in self.get_val_samples()]
-
-    def get_val_samples(self):
-        iter_val_dataloader = iter(self.data_module.val_dataloader())
-        for i, batch in enumerate(iter_val_dataloader):
-            if i == self.num_batches:
-                break
-            yield batch
-
-    def on_validation_epoch_end(self, trainer, pl_module):
-        trainer.logger.experiment.log(
-            {
-                f"epoch {trainer.current_epoch} examples": self.log_epoch(pl_module),
-                "global_step": trainer.global_step,
-            }
-        )
-
-    def log_epoch(self, pl_module) -> List[wandb.Image]:
-        """Logs the results of the first video in each batch"""
-        images = []
-        for val_batch in self.val_samples:
-            # Bring the tensors to CPU
-            video = val_batch["video"][0].to(device=pl_module.device)
-            label = val_batch["label"][0].to(device=pl_module.device)
-            video_name = val_batch["video_name"][0]
-
-            # Get model prediction
-            logits = pl_module(video.unsqueeze(0))
-            pred = torch.argmax(logits, -1).item()
-
-            images.append(
-                wandb.Image(
-                    self.extract_frame(video),
-                    caption=f"Pred:{pred}, Label:{label}, Video Name: {video_name}",
-                )
-            )
-        return images
-
-    def extract_frame(self, val_video: torch.Tensor) -> List[torch.Tensor]:
-        """Extracts the first frame from each video"""
-        frame = val_video.permute([1, 0, 2, 3])
-        return frame
-
-
-class ImageClassificationLogger(VideoClassificationLogger):
-    """Logs image, prediction, and true labels
-    for a random frame from every_n_batches.
-    """
-
-    def __init__(
-        self,
-        data_module: pl.LightningDataModule,
-        num_batches: int = 10,
-        log_every_n_batches: int = 3,
-    ):
-        self.log_every_n_batches = log_every_n_batches
-        self.num_batches = num_batches
-
-        # To access the x_dataloader we need to call prepare_data and setup.
-        data_module.prepare_data()
-        data_module.setup()
-        self.data_module = data_module
-        self.val_samples = [x for x in self.get_val_samples()]
-
-    def get_val_samples(self):
-        iter_val_dataloader = iter(self.data_module.val_dataloader())
-        total = 0
-        for i, batch in enumerate(iter_val_dataloader):
-            if total == self.num_batches:
-                break
-            if i % self.log_every_n_batches == 0:
-                total += 1
-                yield self._yield_batch(batch)
-
-    def _yield_batch(self, batch: Tuple) -> Tuple:
-        """Yields image or anchor view for SimCLR"""
-        x, y = batch
-        # SimCLR has a tuple of multiple views
-        if type(x) is list:
-            return x[2], y
-        return batch
-
-    def log_epoch(self, pl_module) -> List[wandb.Image]:
-        """Logs the prediction of a random frame from each batch"""
-        images = []
-
-        for x, y in self.val_samples:
-            i = random.randint(0, x.shape[0] - 1)
-            frame = x[i].to(device=pl_module.device)
-            label = y[i].to(device=pl_module.device).item()
-
-            logits = pl_module(frame.unsqueeze(0))
-            pred = torch.argmax(logits, -1).item()
-
-            images.append(
-                wandb.Image(
-                    frame,
-                    caption=f"Pred:{pred}, Label:{label}",
-                )
-            )
-        return images
-
-
 def setup_best_val_checkpoint(
     model_name: str = "",
     monitor: str = "val_loss",
@@ -200,7 +88,9 @@ def setup_last_checkpoint(
     )
 
 
-def setup_wandb(config: DictConfig, log: logging.Logger, git_hash: str = "") -> WandbLogger:
+def setup_wandb(
+    config: DictConfig, log: logging.Logger, git_hash: str = ""
+) -> WandbLogger:
     log_job_info(log)
     config_dict = yaml.safe_load(OmegaConf.to_yaml(config, resolve=True))
     job_logs_dir = os.getcwd()

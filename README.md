@@ -16,7 +16,6 @@ To run all tests (including slow tests): `python -m pytest --runslow tests/`
 
 ## Launch Experiments
 
-
 `python train.py -m mode=cluster_one_gpu model=[]`
 
 You can optionally add notes about a run `notes='exploring new learning rate'`
