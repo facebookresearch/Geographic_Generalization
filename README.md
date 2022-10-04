@@ -17,7 +17,7 @@ To run all tests (including slow tests): `python -m pytest --runslow tests/`
 ## Launch Experiments
 
 
-`python evaluate.py -m mode=cluster_one_gpu model=[]`
+`python train.py -m mode=cluster_one_gpu model=[]`
 
 You can optionally add notes about a run `notes='exploring new learning rate'`
 
@@ -74,5 +74,6 @@ TODO
 - [ ] add dummy data module for testing
 - [ ] update tests in `tests/` make sure they pass
 - [ ] add DDP local support
+- [ ] add logging of image validation examples with model predictions
 - [ ] confirm pre-emption works
 - [ ] consider adding sweeps natively to hydra
