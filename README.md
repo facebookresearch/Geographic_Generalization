@@ -49,12 +49,6 @@ Running hyperparamter sweeps by selecting the corresponding script from `sweeps/
 
 For exampe, `sh sweeps/sweep_resnet3d_mmnist_video_classifier.sh`
 
-### Details
-To launch experiments under your own user (instead of the team), set `wandb.entity=null` 
-
-### Debugging Configs
-To debug what configs are used: `python train_[task_name].py --cfg job`
-
 ## Analysis
 
 To analyze experimental results, `analysis/analyze_runs.py` can fetch experimental results from weights and biases.
@@ -66,6 +60,23 @@ from analysis import analyze_runs
 
 runs = analyze_runs.Runs()
 ```
+
+
+# Benefits
+
+* support for multi-GPU/node training
+* handles requeuing and checkpoint using Submit/PyTorch Lightning
+* configs managed using Hydra
+* logging using Weights and Biases
+* includes unit testing using PyTest
+
+# Details
+
+To launch experiments under your own user (instead of the team), set `wandb.entity=null` 
+
+## Debugging Configs
+To debug what configs are used: `python train_[task_name].py --cfg job`
+
 
 
 # Development
