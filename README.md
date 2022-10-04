@@ -13,6 +13,8 @@ To run tests (excluding slow tests): `python -m pytest tests/`
 
 To run all tests (including slow tests): `python -m pytest --runslow tests/`
 
+To launch a run on a few batches locally: `python train.py -m mode=local_test`
+
 
 ## Launch Experiments
 
