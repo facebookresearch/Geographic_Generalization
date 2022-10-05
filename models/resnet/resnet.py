@@ -51,10 +51,10 @@ class ResNet50Pretrained21k(ResNet50Pretrained1k):
 class ResNet50ClassifierModule(pl.LightningModule):
     """Confirmed this yields 79.3% Top-1 Val Accuracy"""
 
-    def __init__(self):
+    def __init__(self, learning_rate: float = 1e-4, optimizer: str = "adam"):
         super().__init__()
-        self.learning_rate = 1e-4
-        self.optimizer = "adam"
+        self.learning_rate = learning_rate
+        self.optimizer = optimizer
 
         self.model = self.load_backbone()
         self.val_accuracy = torchmetrics.Accuracy()
