@@ -40,7 +40,7 @@ def main(config: DictConfig) -> None:
     resume_ckpt = find_existing_checkpoint(job_logs_dir)
     trainer.fit(model, datamodule=datamodule, ckpt_path=resume_ckpt)
     trainer.validate(datamodule=datamodule)
-    trainer.test(datamodule=datamodule)
+    # trainer.test(datamodule=datamodule)
 
     # allows for logging separate experiments with multi-run (-m) flag
     wandb_logger.experiment.finish()

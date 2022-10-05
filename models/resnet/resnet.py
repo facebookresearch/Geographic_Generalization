@@ -57,7 +57,10 @@ class ResNet50ClassifierModule(pl.LightningModule):
         self.optimizer = optimizer
 
         self.model = self.load_backbone()
+
+        self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
+        self.test_accuracy = torchmetrics.Accuracy()
 
     def load_backbone(self):
         """Loads ResNet-50 weights from ResNet Strikes back paper.
