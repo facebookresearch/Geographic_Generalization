@@ -3,4 +3,4 @@ defaults:
   - base: base
   - mode: cluster_one_gpu
   - dataset: imagenet
-  - model: resnet50_classifer
+  - model: resnet50_classifier
