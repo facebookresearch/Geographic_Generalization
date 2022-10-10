@@ -2,5 +2,5 @@
 defaults:
   - base: base
   - mode: cluster_one_gpu
-  - dataset: imagenet
+  - dataset: dummy
   - model: resnet50_classifier

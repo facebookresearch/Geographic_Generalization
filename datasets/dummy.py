@@ -4,15 +4,14 @@ import torch
 from pytorch_lightning.trainer import supporters
 
 
-class ShapeNetImageDataset(Dataset):
-    """Generates a dummy dataset for SimCLR.
-    Returns: dataset with x1, x2, x and y
+class ImageDataset(Dataset):
+    """Generates a dummy dataset 
     """
 
     def __init__(
         self,
-        num_samples: int = 252,
-        num_classes: int = 15,
+        num_samples: int = 5000,
+        num_classes: int = 1000,
     ):
         """
         Args:
@@ -30,18 +29,18 @@ class ShapeNetImageDataset(Dataset):
         }
 
     def __getitem__(self, index):
-        return self.x[index], self.labels[index], self.fov
+        return self.x[index], self.labels[index]
 
     def __len__(self):
         return self.len
 
 
-class ShapeNetDataModule(pl.LightningDataModule):
+class DummyDataModule(pl.LightningDataModule):
     def __init__(self, batch_size: int = 8, num_classes: int = 55):
         super().__init__()
         self.batch_size = batch_size
         self.num_classes = num_classes
-        self.ds = ShapeNetImageDataset(num_classes=self.num_classes)
+        self.ds = ImageDataset(num_classes=self.num_classes)
 
         self.train_loader_names = ["train"]
         self.val_loader_names = ["val_canonical", "val_diverse_2d", "val_diverse_3d"]
@@ -70,5 +69,5 @@ class ShapeNetDataModule(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    dm = ShapeNetDataModule()
+    dm = DummyDataModule()
     dm.train_dataloader()

@@ -1,0 +1,7 @@
+# @package _global_
+dataset_name: dummy
+
+datamodule:
+  _target_: datasets.dummy.DummyDataModule
+  batch_size: 8
+  num_classes: 1000

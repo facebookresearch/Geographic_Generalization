@@ -1,7 +1,0 @@
-# @package _global_
-dataset_name: dummy_shapenet
-
-datamodule:
-  _target_: datasets.dummy.ShapeNetDataModule
-  batch_size: 8
-  num_classes: 55
