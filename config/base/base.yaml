@@ -9,7 +9,6 @@ logs_dir: /checkpoint/${oc.env:USER}/logs/${project}/${name}/${now:%Y-%m-%d_%H-%
 
 
 wandb:
-  entity: robustness-limits
   project: ${project}
   name: ${name}
   notes: null
