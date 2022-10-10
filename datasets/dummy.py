@@ -5,8 +5,7 @@ from pytorch_lightning.trainer import supporters
 
 
 class ImageDataset(Dataset):
-    """Generates a dummy dataset 
-    """
+    """Generates a dummy dataset"""
 
     def __init__(
         self,
@@ -43,29 +42,19 @@ class DummyDataModule(pl.LightningDataModule):
         self.ds = ImageDataset(num_classes=self.num_classes)
 
         self.train_loader_names = ["train"]
-        self.val_loader_names = ["val_canonical", "val_diverse_2d", "val_diverse_3d"]
-        self.test_loader_names = ["test_1", "test_2"]
+        self.val_loader_names = ["val"]
+        self.test_loader_names = ["test_1"]
 
         self.train_prop_to_vary = 0.5
 
     def train_dataloader(self):
-        loaders = {
-            "train": DataLoader(self.ds, batch_size=self.batch_size, num_workers=1)
-        }
-        return supporters.CombinedLoader(loaders)
+        return DataLoader(self.ds, batch_size=self.batch_size, num_workers=1)
 
     def val_dataloader(self):
-        return [
-            DataLoader(self.ds, batch_size=self.batch_size, num_workers=1),
-            DataLoader(self.ds, batch_size=self.batch_size, num_workers=1),
-            DataLoader(self.ds, batch_size=self.batch_size, num_workers=1),
-        ]
+        return DataLoader(self.ds, batch_size=self.batch_size, num_workers=1)
 
     def test_dataloader(self):
-        return [
-            DataLoader(self.ds, batch_size=self.batch_size, num_workers=1),
-            DataLoader(self.ds, batch_size=self.batch_size, num_workers=1),
-        ]
+        return DataLoader(self.ds, batch_size=self.batch_size, num_workers=1)
 
 
 if __name__ == "__main__":
