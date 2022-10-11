@@ -88,5 +88,5 @@ TODO
 - [ ] add dummy data module for testing
 - [ ] update tests in `tests/` make sure they pass
 - [ ] add DDP local support
-- [ ] add logging of image validation examples with model predictions ([example to follow](https://github.com/fairinternal/NeuralCompressionInternal/blob/7ccab7632b9ba0593b3f3adcdb84f70ba7faf4c4/projects/noisy_autoencoder/experimental/quantized_autoencoder/train.py#L24-L91))
+- [ ] add logging of image validation examples with model predictions thanks to Matt M. ([example to follow](https://github.com/fairinternal/NeuralCompressionInternal/blob/7ccab7632b9ba0593b3f3adcdb84f70ba7faf4c4/projects/noisy_autoencoder/experimental/quantized_autoencoder/train.py#L24-L91))
 - [ ] consider adding sweeps natively to hydra
