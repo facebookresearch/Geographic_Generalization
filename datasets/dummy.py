@@ -9,7 +9,7 @@ class ImageDataset(Dataset):
 
     def __init__(
         self,
-        num_samples: int = 5000,
+        num_samples: int = 10,
         num_classes: int = 1000,
     ):
         """
@@ -34,8 +34,8 @@ class ImageDataset(Dataset):
         return self.len
 
 
-class DummyDataModule(pl.LightningDataModule):
-    def __init__(self, batch_size: int = 8, num_classes: int = 55):
+class DummyDataSingleFactorDataModule(pl.LightningDataModule):
+    def __init__(self, batch_size: int = 8, num_classes: int = 55, num_workers = 80):
         super().__init__()
         self.batch_size = batch_size
         self.num_classes = num_classes
@@ -43,20 +43,63 @@ class DummyDataModule(pl.LightningDataModule):
 
         self.train_loader_names = ["train"]
         self.val_loader_names = ["val"]
-        self.test_loader_names = ["test_1"]
 
-        self.train_prop_to_vary = 0.5
+        self.num_workers = num_workers
 
-    def train_dataloader(self):
-        return DataLoader(self.ds, batch_size=self.batch_size, num_workers=1)
+    def train_dataloader(self) -> DataLoader:
+        augmentations = self.train_transform()
+        data_loader = self._create_dataloader("train", augmentations)
+        return data_loader
 
-    def val_dataloader(self):
-        return DataLoader(self.ds, batch_size=self.batch_size, num_workers=1)
+    def val_dataloader(self) -> DataLoader:
+        augmentations = self.val_transform()
+        data_loader = self._create_dataloader("val", augmentations)
+        return data_loader
 
-    def test_dataloader(self):
-        return DataLoader(self.ds, batch_size=self.batch_size, num_workers=1)
 
+    def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
+        # path = os.path.join(self.data_dir, stage)
+        # shuffle = True if stage == "train" else False
+        # dataset = ImageFolder(path, augmentations)
+        # data_loader = DataLoader(
+        #     dataset,
+        #     batch_size=self.batch_size,
+        #     pin_memory=True,
+        #     num_workers=self.num_workers,
+        #     shuffle=shuffle,
+        # )
+        return DataLoader(self.ds, batch_size=self.batch_size, num_workers=self.num_workers)
+    
+    def train_transform(self) -> Callable:
+        """
+        The standard imagenet transforms
+        """
+        preprocessing = transform_lib.Compose(
+            [
+                transform_lib.RandomResizedCrop(self.image_size),
+                transform_lib.RandomHorizontalFlip(),
+                transform_lib.ToTensor(),
+                imagenet_normalization(),
+            ]
+        )
+
+        return preprocessing
+
+    def val_transform(self) -> Callable:
+        """
+        The standard imagenet transforms for validation
+        """
+
+        preprocessing = transform_lib.Compose(
+            [
+                transform_lib.Resize(self.image_size + 32),
+                transform_lib.CenterCrop(self.image_size),
+                transform_lib.ToTensor(),
+                imagenet_normalization(),
+            ]
+        )
+        return preprocessing
 
 if __name__ == "__main__":
-    dm = DummyDataModule()
+    dm = DummyDataSingleFactorDataModule()
     dm.train_dataloader()
