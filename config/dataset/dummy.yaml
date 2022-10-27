@@ -3,5 +3,5 @@ dataset_name: dummy
 
 datamodule:
   _target_: datasets.dummy.DummyDataModule
-  batch_size: 8
+  batch_size: 80
   num_classes: 1000

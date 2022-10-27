@@ -33,8 +33,7 @@ class ImageDataset(Dataset):
     def __len__(self):
         return self.len
 
-
-class DummyDataSingleFactorDataModule(pl.LightningDataModule):
+class DummyDataColorJitterDataModule(pl.LightningDataModule):
     def __init__(self, batch_size: int = 8, num_classes: int = 55, num_workers = 80):
         super().__init__()
         self.batch_size = batch_size
@@ -101,5 +100,5 @@ class DummyDataSingleFactorDataModule(pl.LightningDataModule):
         return preprocessing
 
 if __name__ == "__main__":
-    dm = DummyDataSingleFactorDataModule()
+    dm = DummyDataColorJitterDataModule()
     dm.train_dataloader()
