@@ -78,6 +78,7 @@ To debug what configs are used: `python train_[task_name].py --cfg job`
 - [x] configs managed using Hydra
 - [x] logging using Weights and Biases
 - [x] includes unit testing using PyTest
+- [x] snapshot of code (so you can develop while jobs runs) based on [Matt Le's Sync Code](https://fb.workplace.com/groups/airesearchinfrausers/posts/1774890499334188/?comment_id=1774892729333965&reply_comment_id=1775084782648093)
 
 
 
