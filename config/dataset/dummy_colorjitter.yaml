@@ -2,6 +2,10 @@
 dataset_name: dummy_colorjitter
 
 datamodule:
-  _target_: datasets.dummy.DummyDataColorJitterDataModule
+  _target_: datasets.dummy.DummyAugmentedDataModule
   batch_size: 32
+  num_classes: 80
   num_workers: 4
+  image_size: 224
+  sets_to_augment: [val]
+  augmentation_name: color_jitter

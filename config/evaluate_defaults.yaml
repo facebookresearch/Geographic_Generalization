@@ -4,3 +4,4 @@ defaults:
   - mode: cluster_one_gpu_evaluate
   - dataset: dummy
   - model: resnet50_classifier
+  - evaluation: finetuning

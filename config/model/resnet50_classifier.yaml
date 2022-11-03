@@ -5,3 +5,7 @@ module:
   _target_: models.resnet.resnet.ResNet50ClassifierModule
   learning_rate: 1e-4
   optimizer: adam
+
+best_learning_rate:
+  finetuning: 0.000251
+  linear_eval: 0.000251
