@@ -1,0 +1,9 @@
+# @package _global_
+task_name: V2_generalization
+
+module: 
+  _target_: tasks.generalization
+  dataset: V2
+  metrics: AUC
+
+

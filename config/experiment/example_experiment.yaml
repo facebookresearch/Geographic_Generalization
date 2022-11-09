@@ -1,0 +1,7 @@
+# defines models to test, properties to measure, and evaluation tasks to run
+defaults:
+  - base: base
+  - mode: local_test
+  - properties: disentanglement,equivariance
+  - models: [resnet50]
+  - tasks: V2_generalization, dollarstreet_fairness
