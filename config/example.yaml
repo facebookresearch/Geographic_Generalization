@@ -4,3 +4,4 @@ defaults:
   - mode: cluster_one_gpu
   - dataset: dummy
   - model: resnet50_classifier
+  - task_group: base

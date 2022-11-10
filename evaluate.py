@@ -13,14 +13,16 @@ import pytorch_lightning as pl
 import tempfile
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 import logging
-
+from models.base_model import BaseModel
+from models.loggers import WandbLogger
 log = logging.getLogger(__name__)
 git_hash = get_git_hash()
 
 
 @hydra.main(
-    version_base="1.2", config_path="config", config_name="experiment/example_experiment.yaml"
+    version_base="1.2", config_path="config", config_name="example.yaml"
 )
+
 def main(config: DictConfig) -> None:
     # Set up 
     print_config(config)
@@ -33,14 +35,11 @@ def main(config: DictConfig) -> None:
         plugins=SLURMEnvironment(auto_requeue=False),
         logger=wandb_logger,
     )
+    
+    model = instantiate(config.module)
 
-    for model in config.models: 
-        # add loading a checkpoint 
-        model = instantiate(model)
-
-        for epoch in config.max_epochs: 
-            measure_properties(property_configs = config.properties, model = model, wandb_logger = wandb_logger)
-            evaluate_tasks(task_configs = config.tasks, model = model, wandb_logger = wandb_logger)
+    #measure_properties(property_configs = config.properties, model = model, wandb_logger = wandb_logger)
+    evaluate_tasks(task_group = config.task_group_module, model = model, wandb_logger = wandb_logger)
 
     # allows for logging separate experiments with multi-run (-m) flag
     wandb_logger.experiment.finish()
@@ -49,18 +48,26 @@ def main(config: DictConfig) -> None:
 def measure_properties(property_configs: list, model: BaseModel, wandb_logger: WandbLogger):
     for property_config in property_configs: 
         prop = instantiate(property_config)
-        measure = prop.measure(model, wandb_logger)
+        prop.measure(model, wandb_logger)
 
 # Creates task objects defined in configs and measures them for the given model / logger
-def evaluate_tasks(task_configs: list, model: BaseModel, wandb_logger: WandbLogger):
-    for task_config in task_configs: 
-        task = instantiate(task_config)
-        results = task.evaluate(model, wandb_logger)
+def evaluate_tasks(task_group: DictConfig, model: BaseModel, wandb_logger: WandbLogger):
+    #print(task_group)
+    for task_category in task_group:
+        #print(task_category + '.' + task_group[task_category]) 
+        print("input")
+        a = {'task_group.' + task_category + '.' + task_group[task_category]}
+        print(a)
+        t = instantiate(a)
+        task = instantiate(t)
+        print(type(task))
+        print(task)
+        task.evaluate(model, wandb_logger)
 
 if __name__ == "__main__":
     user = os.getlogin()
     print("git hash: ", git_hash)
     snapshot_dir = tempfile.mkdtemp(prefix=f"/checkpoint/{user}/tmp/")
     print("Snapshot dir is: ", snapshot_dir)
-    with RsyncSnapshot(snapshot_dir=snapshot_dir):
-        main()
+    #with RsyncSnapshot(snapshot_dir=snapshot_dir):
+    main()
