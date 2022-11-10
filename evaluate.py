@@ -39,7 +39,7 @@ def main(config: DictConfig) -> None:
     model = instantiate(config.module)
 
     #measure_properties(property_configs = config.properties, model = model, wandb_logger = wandb_logger)
-    evaluate_tasks(task_group = config.task_group_module, model = model, wandb_logger = wandb_logger)
+    evaluate_tasks(config = config, tasks = config.tasks, model = model, wandb_logger = wandb_logger)
 
     # allows for logging separate experiments with multi-run (-m) flag
     wandb_logger.experiment.finish()
@@ -51,18 +51,14 @@ def measure_properties(property_configs: list, model: BaseModel, wandb_logger: W
         prop.measure(model, wandb_logger)
 
 # Creates task objects defined in configs and measures them for the given model / logger
-def evaluate_tasks(task_group: DictConfig, model: BaseModel, wandb_logger: WandbLogger):
-    #print(task_group)
-    for task_category in task_group:
-        #print(task_category + '.' + task_group[task_category]) 
-        print("input")
-        a = {'task_group.' + task_category + '.' + task_group[task_category]}
-        print(a)
-        t = instantiate(a)
-        task = instantiate(t)
-        print(type(task))
-        print(task)
+def evaluate_tasks(config: DictConfig, tasks: list, model: BaseModel, wandb_logger: WandbLogger):
+    for task_name in tasks:
+        task_config = getattr(config, task_name)
+        print("Builiding task config")
+        print(task_config)
+        task = instantiate(task_config)
         task.evaluate(model, wandb_logger)
+        
 
 if __name__ == "__main__":
     user = os.getlogin()

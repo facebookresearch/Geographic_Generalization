@@ -1,19 +1,14 @@
-class Task(): 
-    __init__(config: DictConfig):
-    self.config = config
+from generalization import Task, Base
 
-    def evaluate(model, config, logger):
-        return
-
-
-class Fairness(Task):
-    def __init__(self, config):
+# SubsetFairness
+class AugRobust(Base):
+    def __init__(self, dataset, metrics):
         super().__init__()
-        self.config = config
+        self.dataset = dataset
+        self.metrics = metrics
     
-    def evaluate(model,config,logger):
-        # predict on dataset, calculate and log subset differences. 
-
-
+    def evaluate(model,dataset,metrics):
+        #TODO generate predictions and 
+        return
 
     
