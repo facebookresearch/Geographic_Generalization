@@ -1,0 +1,13 @@
+# @package _global_
+property_libary_name: all
+
+###### Equivariance Measures ######
+equivariance_aug: 
+  _target_: properties.equivariance.Aug_Approximation
+ 
+###### Disentanglement Measures ######
+disentanglement_dci: 
+  _target_: properties.disentanglement.Base
+
+ 
+

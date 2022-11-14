@@ -1,8 +1,12 @@
 # @package _global_
 defaults:
   - base: base
-  - mode: cluster_one_gpu
+  - mode: local
   - dataset: dummy
   - model: resnet50_classifier
-  - task_library: all
+  - task_library: all 
   - task_group: base
+ # - property_library: all
+  #- property_group: base
+
+  

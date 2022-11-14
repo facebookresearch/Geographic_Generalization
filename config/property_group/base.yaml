@@ -1,7 +1,7 @@
 # @package _global_
 task_group_name: base
 
-tasks: [generalization_v2]
+properties: [disentanglement_dci]
 
 
 # Bug: lists don't appear to work with $ variable passing. Example: [${generalization_v2}] 

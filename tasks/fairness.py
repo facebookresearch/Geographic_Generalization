@@ -1,14 +1,13 @@
-from generalization import Task, Base
+from task_utils import Task
 
-# SubsetFairness
-class AugRobust(Base):
+class SubsetPerformance(Task):
     def __init__(self, dataset, metrics):
         super().__init__()
         self.dataset = dataset
         self.metrics = metrics
     
-    def evaluate(model,dataset,metrics):
-        #TODO generate predictions and 
+    def evaluate(model):
+        #TODO generate predictions and evaluate subset fairness 
         return
 
     
