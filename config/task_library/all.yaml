@@ -3,9 +3,9 @@ task_libary_name: all
 
 ###### Generalization Tasks ######
 generalization_v2: 
-  _target_: tasks.generalization.Base
+  _target_: tasks.task_utils.StandardEval
   dataset: V2
-  metrics: AUC
+  metrics: [AUC]
 
 
 ###### Fairness Tasks ######

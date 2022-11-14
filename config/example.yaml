@@ -6,7 +6,7 @@ defaults:
   - model: resnet50_classifier
   - task_library: all 
   - task_group: base
- # - property_library: all
-  #- property_group: base
+  - property_library: all
+  - property_group: base
 
   

@@ -20,18 +20,12 @@ log = logging.getLogger(__name__)
 git_hash = get_git_hash()
 
 
-@hydra.main(version_base="1.2", config_path="config", config_name="train_defaults.yaml")
+@hydra.main(version_base="1.2", config_path="config", config_name="example.yaml")
 def main(config: DictConfig) -> None:
     ## Set up
     print_config(config)
     pl.seed_everything(config.seed)
     wandb_logger = setup_wandb(config, log, git_hash)
-    # job_logs_dir = os.getcwd()
-    # trainer = pl.Trainer(
-    #     **config.trainer,
-    #     plugins=SLURMEnvironment(auto_requeue=False),
-    #     logger=wandb_logger,
-    # )
     model = instantiate(config.module)
 
     # Run experiment functions
@@ -45,11 +39,14 @@ def main(config: DictConfig) -> None:
 # Creates property objects defined in configs and measures them for the given model / logger
 def measure_properties(config: DictConfig, model: BaseModel, wandb_logger: WandbLogger):
     properties = config.properties
+    datamodule = instantiate(config.datamodule)
+
     for property_name in properties:
         property_config = getattr(config, property_name)
         print(f"Builiding property config: {property_name}")
         property = instantiate(property_config)
-        property.evaluate(model, wandb_logger)
+
+        property.measure(model, datamodule, wandb_logger)
 
 
 # Creates task objects defined in configs and measures them for the given model / logger

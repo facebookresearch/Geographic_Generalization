@@ -8,6 +8,7 @@ equivariance_aug:
 ###### Disentanglement Measures ######
 disentanglement_dci: 
   _target_: properties.disentanglement.Base
+  name: DCI
 
  
 
