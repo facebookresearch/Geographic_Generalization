@@ -20,7 +20,9 @@ log = logging.getLogger(__name__)
 git_hash = get_git_hash()
 
 
-@hydra.main(version_base="1.2", config_path="config", config_name="example.yaml")
+@hydra.main(
+    version_base="1.2", config_path="config", config_name="evaluate_defaults.yaml"
+)
 def main(config: DictConfig) -> None:
     ## Set up
     print_config(config)

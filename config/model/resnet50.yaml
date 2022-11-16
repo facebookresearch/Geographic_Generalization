@@ -1,5 +1,5 @@
 # @package _global_
-model_name: resnet50_classifier
+model_name: resnet50
 
 module: 
   _target_: models.resnet.resnet.ResNet50ClassifierModule

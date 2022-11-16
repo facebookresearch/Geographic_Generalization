@@ -3,7 +3,7 @@ defaults:
   - base: base
   - mode: local
   - dataset: dummy
-  - model: resnet50_classifier
+  - model: resnet18
   - task_library: all 
   - task_group: base
   - property_library: all
