@@ -1,0 +1,4 @@
+taskmodule: 
+  _target_: tasks.task_utils.StandardEval
+  dataset: dummy
+  metrics: [AUC]
