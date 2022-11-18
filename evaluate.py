@@ -25,7 +25,7 @@ git_hash = get_git_hash()
     version_base="1.2", config_path="config", config_name="evaluate_defaults.yaml"
 )
 def main(config: DictConfig) -> None:
-    ## Set up
+    ### Set up
     print_config(config)
     pl.seed_everything(config.seed)
     wandb_logger = setup_wandb(config, log, git_hash)
@@ -37,7 +37,7 @@ def main(config: DictConfig) -> None:
     )
 
     # Run experiment functions
-    # measure_properties(config=config, model=model, trainer=trainer)
+    measure_properties(config=config, model=model, trainer=trainer)
     evaluate_tasks(config=config, model=model, trainer=trainer)
 
     # allows for logging separate experiments with multi-run (-m) flag
@@ -51,9 +51,7 @@ def measure_properties(config: DictConfig, model: BaseModel, trainer: pl.Trainer
 
     for property_name in properties:
         print(f"Builiding property config: {property_name}")
-        property_config = find_config_object(
-            folder="property", name=property_name, key="propertymodule"
-        )
+        property_config = getattr(config, property_name)
         property = instantiate(property_config)
         property.measure(model, datamodule, trainer)
 
@@ -63,13 +61,9 @@ def evaluate_tasks(config: DictConfig, model: BaseModel, trainer: pl.Trainer):
     tasks = config.tasks
     for task_name in tasks:
         print(f"Builiding task config: {task_name}")
-        task_config = find_config_object(
-            folder="task", name=task_name, key="taskmodule"
-        )
-        print("Task config")
-        print(DictConfig(task_config))
+        task_config = getattr(config, task_name)
         task = instantiate(DictConfig(task_config))
-        task.evaluate(model, trainer)
+        task.evaluate(config, model, trainer)
 
 
 if __name__ == "__main__":

@@ -9,10 +9,9 @@ def find_config_object(
     prefix="../../../../../../../../../../../private/home/meganrichards/projects/mise-en-place/config/",
 ):
     path = prefix + folder + "/" + name + ".yaml"
-    print("\nLooking for: " + path)
-    print("\nCWD: " + os.getcwd() + "\n")
-    # print(os.path.abspath())
-    # print(os.path.relpath())
+    # print("\nLooking for: " + path)
+    # print("\nCWD: " + os.getcwd() + "\n")
+
     with open(path, "r") as stream:
         try:
             config_contents = yaml.safe_load(stream)

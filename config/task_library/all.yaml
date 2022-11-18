@@ -1,0 +1,11 @@
+# @package _global_
+task_libary_name: all
+
+###### Generalization Tasks ######
+generalization_v2: 
+  _target_: tasks.task_utils.StandardEval
+  dataset: v2
+  metrics: AUC
+
+
+###### Fairness Tasks ######

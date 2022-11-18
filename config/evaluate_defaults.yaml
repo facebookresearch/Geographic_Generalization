@@ -2,10 +2,12 @@
 defaults:
   - base: base
   - mode: local
+  - dataset_library: all
   - dataset: dummy
   - model: resnet18
+  - task_library: all
   - task_group: base
+  - property_library: all
   - property_group: base
-
 
   

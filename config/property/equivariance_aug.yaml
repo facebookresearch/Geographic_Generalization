@@ -1,4 +1,0 @@
-###### Equivariance Measures ######
-propertymodule: 
-  _target_: properties.equivariance.Aug_Approximation
- 

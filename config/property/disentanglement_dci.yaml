@@ -1,5 +1,0 @@
-
-###### Disentanglement Measures ######
-propertymodule: 
-  _target_: properties.disentanglement.Base
-  name: DCI

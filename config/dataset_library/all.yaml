@@ -1,0 +1,23 @@
+# @package _global_
+dataset_libary_name: all
+
+###### Testing ######
+dummy:
+  _target_: datasets.dummy.DummyDataModule
+  batch_size: 8
+  num_classes: 1000
+ 
+###### Imagenet & Variants ######
+imagenet:
+  _target_: datasets.imagenet.ImageNetDataModule
+  batch_size: 32
+  num_workers: 4
+
+v2:
+  _target_: datasets.imagenet.ImageNetDataModule
+  data_dir: /checkpoint/meganrichards/datasets/imagenetv2-matched-frequency-format/
+  batch_size: 8
+
+###### Other ######
+
+
