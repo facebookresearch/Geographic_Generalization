@@ -37,7 +37,7 @@ def main(config: DictConfig) -> None:
     )
 
     # Run experiment functions
-    measure_properties(config=config, model=model, trainer=trainer)
+    # measure_properties(config=config, model=model, trainer=trainer)
     evaluate_tasks(config=config, model=model, trainer=trainer)
 
     # allows for logging separate experiments with multi-run (-m) flag
@@ -60,7 +60,7 @@ def measure_properties(config: DictConfig, model: BaseModel, trainer: pl.Trainer
 def evaluate_tasks(config: DictConfig, model: BaseModel, trainer: pl.Trainer):
     tasks = config.tasks
     for task_name in tasks:
-        print(f"Builiding task config: {task_name}")
+        print(f"\n\n *** Starting Task : {task_name} *** \n\n")
         task_config = getattr(config, task_name)
         task = instantiate(DictConfig(task_config))
         task.evaluate(config, model, trainer)

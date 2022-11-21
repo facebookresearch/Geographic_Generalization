@@ -4,7 +4,7 @@ defaults:
   - mode: local
   - dataset_library: all
   - dataset: dummy
-  - model: resnet18
+  - model: resnet50d
   - task_library: all
   - task_group: base
   - property_library: all

@@ -31,9 +31,10 @@ class ClassifierModule(pl.LightningModule):
         self.test_accuracy = torchmetrics.Accuracy()
 
     def load_backbone(self):
-        model = timm.create_model(self.timm_name)
+        model = timm.create_model(self.timm_name, pretrained=True)
         state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
         model.load_state_dict(state_dict)
+        # print(f"Model created with weights from {self.checkpoint_url}")
         return model
 
     def forward(self, x):
@@ -75,11 +76,25 @@ class ClassifierModule(pl.LightningModule):
             return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
 
-class ResNet50ClassifierModule(ClassifierModule):
+class ResNet50dClassifierModule(ClassifierModule):
     def __init__(
         self,
         timm_name: str = "resnet50d",
         checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet50d_a1_0-e20cff14.pth",
+        **kwargs,
+    ):
+        super(ResNet50ClassifierModule, self).__init__(
+            timm_name=timm_name,
+            checkpoint_url=checkpoint_url,
+            **kwargs,
+        )
+
+
+class ResNet50ClassifierModule(ClassifierModule):
+    def __init__(
+        self,
+        timm_name: str = "resnet50",
+        checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet50_a1_0-14fe96d1.pth",
         **kwargs,
     ):
         super(ResNet50ClassifierModule, self).__init__(
