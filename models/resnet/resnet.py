@@ -83,21 +83,21 @@ class ResNet50dClassifierModule(ClassifierModule):
         checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet50d_a1_0-e20cff14.pth",
         **kwargs,
     ):
-        super(ResNet50ClassifierModule, self).__init__(
+        super(ResNet50dClassifierModule, self).__init__(
             timm_name=timm_name,
             checkpoint_url=checkpoint_url,
             **kwargs,
         )
 
 
-class ResNet50ClassifierModule(ClassifierModule):
+class ResNet101dClassifierModule(ClassifierModule):
     def __init__(
         self,
-        timm_name: str = "resnet50",
-        checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet50_a1_0-14fe96d1.pth",
+        timm_name: str = "resnet101d",
+        checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet101d_ra2-2803ffab.pth",
         **kwargs,
     ):
-        super(ResNet50ClassifierModule, self).__init__(
+        super(ResNet101dClassifierModule, self).__init__(
             timm_name=timm_name,
             checkpoint_url=checkpoint_url,
             **kwargs,
