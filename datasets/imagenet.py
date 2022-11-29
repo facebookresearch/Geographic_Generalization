@@ -15,6 +15,14 @@ class ImageNetDataModule(pl.LightningDataModule):
         num_workers=8,
         image_size=224,
     ):
+        """Pytorch lightning based datamodule for ImageNet dataset.
+
+        Args:
+            data_dir (str, optional): Path to imagenet dataset directory. Defaults to "/datasets01/imagenet_full_size/061417".
+            batch_size (int, optional): Batch size to use in datamodule. Defaults to 32.
+            num_workers (int, optional): Number of workers to use in the dataloaders. Defaults to 8.
+            image_size (int, optional): Side length for image crop. Defaults to 224.
+        """
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -63,7 +71,6 @@ class ImageNetDataModule(pl.LightningDataModule):
         """
         The standard imagenet transforms for validation
         """
-
         preprocessing = transform_lib.Compose(
             [
                 transform_lib.Resize(self.image_size + 32),

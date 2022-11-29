@@ -18,9 +18,7 @@ log = logging.getLogger(__name__)
 git_hash = get_git_hash()
 
 
-@hydra.main(
-    version_base="1.2", config_path="config", config_name="train_defaults.yaml"
-)
+@hydra.main(version_base="1.2", config_path="config", config_name="train_defaults.yaml")
 def main(config: DictConfig) -> None:
     print_config(config)
     pl.seed_everything(config.seed)

@@ -3,18 +3,18 @@ task_libary_name: all
 
 ###### Performance Tasks ######
 validation_imagenet: 
-  _target_: tasks.task_utils.StandardEval
+  _target_: tasks.generalization.StandardEval
   dataset: imagenet
   metrics: AUC
 
 ###### Generalization Tasks ######
 generalization_v2_freq: 
-  _target_: tasks.task_utils.StandardEval
+  _target_: tasks.generalization.StandardEval
   dataset: v2_freq
   metrics: AUC
 
 generalization_v2_top: 
-  _target_: tasks.task_utils.StandardEval
+  _target_: tasks.generalization.StandardEval
   dataset: v2_top
   metrics: AUC
 

@@ -1,7 +1,9 @@
 class Property:
-    def __init__(self, name):
-        self.name = name
+    """Property base class defining the structure of a property object."""
+
+    def __init__(self):
+        self.name = "property"
         return
 
-    def measure(self, model, datamodule, wandb_logger):
+    def measure(self, model, datamodule, trainer):
         return

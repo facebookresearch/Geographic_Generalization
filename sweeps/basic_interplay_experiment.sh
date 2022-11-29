@@ -1,2 +1,1 @@
-
-python evaluate.py -m model=resnet50,resnet18\
+python evaluate.py -m model=resnet101,resnet18\

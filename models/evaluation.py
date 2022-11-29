@@ -7,11 +7,11 @@ import torch
 from torch import Tensor
 import torch.nn.functional as F
 from models.loggers import find_existing_checkpoint
+import os
 from analysis.results import (
     CLASS_PARTITIONED_LINEAR_EVALUATOR_TO_CKPT_DIR,
     CLASS_PARTITIONED_FINETUNED_EVALUATOR_TO_CKPT_DIR,
 )
-import os
 
 
 class Finetuning(BaseModel):
@@ -26,6 +26,18 @@ class Finetuning(BaseModel):
         datamodule=Optional[pl.LightningDataModule],
         track_per_class_accuracy: bool = False,
     ):
+        """Pytorch Lightning Module defining behavior for model finetuning.
+
+        Args:
+            backbone (pl.LightningModule): model backbone to use
+            learning_rate (float, optional): learning rate to use in training. Defaults to 1e-1.
+            optimizer (str, optional): optimizer to use. Defaults to "adam".
+            momentum (float, optional): momentum to use. Defaults to 0.9.
+            weight_decay (float, optional): decay added to weights. Defaults to 1e-4.
+            top_k (Tuple[int, ...], optional): which integers (k) to log as 'top_k' accuracy. Defaults to (1,).
+            datamodule (_type_, optional): datamodule to use. Defaults to Optional[pl.LightningDataModule].
+            track_per_class_accuracy (bool, optional): control for tracking per-class accuracy in addition to aggregate. Defaults to False.
+        """
         super().__init__()
 
         self.learning_rate = learning_rate
@@ -36,7 +48,6 @@ class Finetuning(BaseModel):
 
         self.datamodule = datamodule
         self.top_k = top_k
-        # infer from datamodule
         self.num_classes = None
 
         # infers num_classes from dataloader
@@ -129,6 +140,8 @@ class Finetuning(BaseModel):
 
 
 class LinearEval(Finetuning):
+    """Pytorch lightning module defining behavior for linearEval mode."""
+
     def on_train_epoch_start(self) -> None:
         self.backbone.eval()
 
@@ -140,8 +153,6 @@ class LinearEval(Finetuning):
 
 
 class StorePredictions(BaseModel):
-    """Stores prediction, true class, and loader type"""
-
     def __init__(
         self,
         backbone: pl.LightningModule,
@@ -150,6 +161,15 @@ class StorePredictions(BaseModel):
         eval_type: str = "linear_eval",
         save_dir: str = "/checkpoint/marksibrahim/results/robustness-limits/predictions",
     ):
+        """Pytorch Lightning module defining behavior for storing predictions (stores prediction, true class, and loader type)
+
+        Args:
+            backbone (pl.LightningModule): model backbone to use
+            datamodule (pl.LightningDataModule): datamodule to evaluate on
+            ckpt_dir (Optional[str], optional): path to checkpoint directory for model weights. Defaults to None.
+            eval_type (str, optional): evaluation mode to use. Defaults to "linear_eval".
+            save_dir (str, optional): path to directory for saving. Defaults to "/checkpoint/marksibrahim/results/robustness-limits/predictions".
+        """
         super().__init__()
 
         self.backbone = backbone

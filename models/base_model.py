@@ -1,16 +1,16 @@
 import os
-from numpy import identity
 import pytorch_lightning as pl
 import torch
 from torch import Tensor
 from typing import Dict, Any
 import torchmetrics
 import torch.nn.functional as F
-import math
 
 
 class BaseModel(pl.LightningModule):
-    def __init__(self, *args, **kwargs):
+    """PyTorch Lightning wrapper used to define basic metrics logging and checkpointing."""
+
+    def __init__(self):
         super().__init__()
         self.save_hyperparameters(ignore=["datamodule", "backbone"])
         # note metrics are automatically tracked in self.trainer.logged_metrics
@@ -102,7 +102,9 @@ class BaseModel(pl.LightningModule):
                     self,
                     f"{data_type}_top_{k}_per_class_accuracy",
                     torchmetrics.wrappers.ClasswiseWrapper(
-                        torchmetrics.Accuracy(num_classes=self.num_classes, average=None),
+                        torchmetrics.Accuracy(
+                            num_classes=self.num_classes, average=None
+                        ),
                         labels=labels,
                     ),
                 )

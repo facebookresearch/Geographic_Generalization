@@ -20,14 +20,24 @@ import socket
 import git
 from pathlib import Path
 
-
+# "Saves model based on min val loss."""
 def setup_best_val_checkpoint(
     model_name: str = "",
     monitor: str = "val_loss",
     mode: str = "min",
     dirpath: Optional[str] = None,
 ):
-    """Saves model based on min val loss."""
+    """Saves model based on minimum validation loss
+
+    Args:
+        model_name (str, optional): model's name, used for logging. Defaults to "".
+        monitor (str, optional): metric used as core differentiator. Defaults to "val_loss".
+        mode (str, optional): mode specifying whether to minimize or maximize monitor. Defaults to "min".
+        dirpath (Optional[str], optional): path to directory to save model. Defaults to None.
+
+    Returns:
+        Model Checkpoint (Pytorch Lightning callback)
+    """
     filename = f"best_{monitor}"
     filename += f"_{model_name}"
 
