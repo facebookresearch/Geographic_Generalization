@@ -1,0 +1,9 @@
+# @package _global_
+model_name: clip_pretrained
+
+module: 
+  _target_: models.clip.clip.CLIPPretrained
+
+best_learning_rate:
+  finetuning: 0.000001
+  linear_eval: 0.000251

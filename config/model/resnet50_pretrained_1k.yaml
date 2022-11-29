@@ -1,0 +1,9 @@
+# @package _global_
+model_name: resnet50_pretrained_1k
+
+module: 
+  _target_: models.resnet.resnet.ResNet50Pretrained1k
+
+best_learning_rate:
+  finetuning: 0.000251
+  linear_eval: 0.000251

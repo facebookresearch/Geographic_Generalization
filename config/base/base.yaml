@@ -1,0 +1,30 @@
+# @package _global_
+seed: 0
+
+hydra/job_logging: colorlog
+hydra/hydra_logging: colorlog
+
+name: ${model_name}_${dataset_name}
+logs_dir: /checkpoint/${oc.env:USER}/logs/${project}/${name}/${now:%Y-%m-%d_%H-%M-%S}
+
+
+wandb:
+  project: ${project}
+  name: ${name}
+  notes: null
+  tags: null
+  log_model: True
+  save_code: True
+  reinit: True
+  # group multi-node runs
+  group: ${trainer.strategy}
+
+hydra:
+  job:
+    name: ${name}
+    # when exceuting a job change to the logs_dir
+    chdir: True
+  run:
+    dir: ${logs_dir}
+  sweep:
+    dir: ${logs_dir}
