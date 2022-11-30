@@ -10,7 +10,7 @@ validation_imagenet:
 ###### Generalization Tasks ######
 generalization_v2: 
   _target_: tasks.generalization.StandardEval
-  dataset: v2_freq
+  dataset: v2
   metrics: [AUC]
 
 ###### Fairness Tasks ######

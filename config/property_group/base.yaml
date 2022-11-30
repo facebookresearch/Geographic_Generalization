@@ -1,5 +1,5 @@
 # @package _global_
-task_group_name: base
+property_group_name: base
 
 properties: [equivariance_aug]
 

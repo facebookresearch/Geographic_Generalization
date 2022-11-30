@@ -4,7 +4,7 @@ seed: 0
 hydra/job_logging: colorlog
 hydra/hydra_logging: colorlog
 
-name: ${model_name}_${dataset_name}
+name: ${model_name}_${property_group_name}_properties_${task_group_name}_tasks
 logs_dir: /checkpoint/${oc.env:USER}/logs/${project}/${name}/${now:%Y-%m-%d_%H-%M-%S}
 
 

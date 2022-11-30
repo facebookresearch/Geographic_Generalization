@@ -7,3 +7,4 @@ module:
 best_learning_rate:
   finetuning: 0.000001
   linear_eval: 0.000251
+
