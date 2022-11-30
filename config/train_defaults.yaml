@@ -1,6 +1,0 @@
-# @package _global_
-defaults:
-  - base: base
-  - mode: local_test
-  - dataset: dummy
-  - model: resnet50_classifier
