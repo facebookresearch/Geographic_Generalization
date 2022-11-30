@@ -2,7 +2,7 @@
 defaults:
   - override /hydra/launcher: submitit_slurm
 
-project: mise-en-place
+project: interplay_project
 
 trainer:
   gpus: 1
@@ -25,7 +25,7 @@ hydra:
     timeout_min: 1000
     max_num_timeout: 5
     partition: ${partitions[${oc.env:USER}]}
-    comment: mise-en-place
+    comment: interplay_project
     # only 32gb GPUs with good networking
     # based on https://github.com/fairinternal/fairscale_benchmarks/commit/2b4ed0f8c49bdd182cdc02baa955487a65dd079c
     constraint: volta32gb,ib4

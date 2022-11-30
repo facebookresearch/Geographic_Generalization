@@ -13,15 +13,9 @@ imagenet:
   batch_size: 32
   num_workers: 4
 
-v2_freq:
+v2:
   _target_: datasets.imagenet.ImageNetDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenetv2-matched-frequency-format/
-  batch_size: 32
-  num_workers: 4
-
-v2_top:
-  _target_: datasets.imagenet.ImageNetDataModule
-  data_dir: /checkpoint/meganrichards/datasets/imagenetv2-top/
   batch_size: 32
   num_workers: 4
 

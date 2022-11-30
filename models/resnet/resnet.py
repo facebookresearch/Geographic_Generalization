@@ -23,6 +23,7 @@ class ClassifierModule(pl.LightningModule):
         self.learning_rate = learning_rate
         self.optimizer = optimizer
         self.checkpoint_url = checkpoint_url
+        self.feature_dim = 1000
 
         self.model = self.load_backbone()
 
@@ -104,14 +105,14 @@ class ResNet101dClassifierModule(ClassifierModule):
         )
 
 
-class ResNet18ClassifierModule(ClassifierModule):
+class ResNet18dClassifierModule(ClassifierModule):
     def __init__(
         self,
         timm_name: str = "resnet18d",
         checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet18d_ra2-48a79e06.pth",
         **kwargs,
     ):
-        super(ResNet18ClassifierModule, self).__init__(
+        super(ResNet18dClassifierModule, self).__init__(
             timm_name=timm_name,
             checkpoint_url=checkpoint_url,
             **kwargs,

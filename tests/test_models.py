@@ -1,14 +1,19 @@
 import torch
 import pytest
 
-from models.resnet.resnet import ResNet50Pretrained1k, ResNet50Pretrained21k
+from models.resnet.resnet import (
+    ResNet18dClassifierModule,
+    ResNet50dClassifierModule,
+    ResNet101dClassifierModule,
+)
 
 
 class TestPreTrainedModels:
     batch_size = 8
     models = [
-        ResNet50Pretrained1k(),
-        ResNet50Pretrained21k(),
+        ResNet18dClassifierModule(),
+        ResNet50dClassifierModule(),
+        ResNet101dClassifierModule(),
     ]
 
     @pytest.mark.parametrize("model", models)

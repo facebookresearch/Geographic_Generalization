@@ -1,10 +1,12 @@
 from datasets.dummy import DummyDataModule
 from datasets.imagenet import ImageNetDataModule
+from pathlib import Path
 
 
 class TestImageNet:
     def test_imagenet(self):
         dm = ImageNetDataModule(batch_size=8)
+        assert Path(dm.data_dir, "val").exists()
         val_batch = dm.val_dataloader()
         x, y = next(iter(val_batch))
         assert x.shape == (8, 3, 224, 224)
