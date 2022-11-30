@@ -33,8 +33,8 @@ def main(config: DictConfig) -> None:
     )
 
     # Run experiment functions
-    # measure_properties(config=config, model=model, trainer=trainer)
-    # evaluate_tasks(config=config, model=model, trainer=trainer)
+    measure_properties(config=config, model=model, trainer=trainer)
+    evaluate_tasks(config=config, model=model, trainer=trainer)
 
     wandb_logger.experiment.finish()
 
@@ -62,10 +62,10 @@ def measure_properties(config: DictConfig, model: BaseModel, trainer: pl.Trainer
     datamodule = instantiate(dataset_config)
 
     for property_name in properties:
-        print(f"Building property config: {property_name}")
+        print(f"\n\n *** Measuring Property : {property_name} *** \n\n")
         property_config = getattr(config, property_name)
         property = instantiate(property_config)
-        property.measure(model, datamodule, trainer)
+        property.measure(config, model, datamodule, trainer)
 
 
 # Creates task objects defined in configs and measures them for the given model / logger

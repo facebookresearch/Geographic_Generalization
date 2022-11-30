@@ -1,8 +1,4 @@
 # @package _global_
 property_group_name: base
 
-properties: [equivariance_aug]
-
-
-# Bug: lists don't appear to work with $ variable passing. Example: [${generalization_v2}] 
-# will throw the error: "expected ',' or ']', but got '{' " 
+properties: [equivariance_aug, disentanglement_dci]

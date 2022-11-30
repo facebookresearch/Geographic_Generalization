@@ -6,11 +6,13 @@ validation_imagenet:
   _target_: tasks.generalization.StandardEval
   dataset: imagenet
   metrics: [AUC]
+  logging_prefix: 'imagenet'
 
 ###### Generalization Tasks ######
 generalization_v2: 
   _target_: tasks.generalization.StandardEval
   dataset: v2
   metrics: [AUC]
+  logging_prefix: 'v2'
 
 ###### Fairness Tasks ######

@@ -4,8 +4,9 @@ property_libary_name: all
 ###### Equivariance Measures ######
 equivariance_aug: 
   _target_: properties.equivariance.Aug_Approximation
+  logging_prefix: 'equivariance_aug'
  
 ###### Disentanglement Measures ######
 disentanglement_dci: 
-  _target_: properties.disentanglement.Base
-  name: dci
+  _target_: properties.disentanglement.DCI
+  logging_prefix: 'disentanglement_dci'

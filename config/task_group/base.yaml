@@ -1,7 +1,5 @@
 # @package _global_
 task_group_name: base
 
-tasks: [generalization_v2] 
+tasks: [validation_imagenet,generalization_v2]
 
-# Bug: lists don't appear to work with $ variable passing. Example: [${generalization_v2}] 
-# will throw the error: "expected ',' or ']', but got '{' " 
