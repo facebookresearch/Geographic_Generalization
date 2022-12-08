@@ -23,18 +23,66 @@ To run an evaluation on a model: `python evaluate.py`
 
 To run an evaluation over several models, use a sweep: `sh sweeps/basic_interplay_experiment.sh`
 
+By default, the evaluation evaluates a pretrained Resnet50 on the base set of properties (DCI) and the base set of tasks (fairness on dollarstreet, generalization on V2). These choices are encoded in configs, refer to the advanced section to learn about customization. The configs have the following structure: 
+
+    config
+    ├── base             # Hydra specifications, including experiment naming
+    ├── dataset_library  # Library of all datasets compatible with this evaluation           
+    ├── mode             # Hydra / Lightning specification for running locally / on clusters / testing
+    ├── models           # Model specifications
+    ├── property_library # Library of all properties compatible with this evaluation
+    ├── property_group   # Groups / lists of properties to use in a given evaluation
+    ├── task_library     # Library of all tasks compatible with this evaluation
+    ├── task_group       # Groups of tasks to use in a given evaluation    
+    ├── evaluate_defaults.yaml 
+    └── ...
+
+
 ## Customization
 <details>
   <summary> Changing Properties / Tasks Used </summary>
 
 #### To change which properties are measured: 
-- Alter the list of properties in `config/property_group/base`
-- OR create a new property group (make a new config file, ex: `config/property_group/base2`, and specify it in `evaluate_defaults.yaml`
+- Option 1: Alter the list of properties in `config/property_group/base`
+     ``` 
+    config/property_group/base.yaml
+
+      properties: [DCI, <property_name_here>]
+    ```
+  
+- Option 2: create a new property group (make a new config file, ex: `config/property_group/new_property_group`, and specify it in `evaluate_defaults.yaml`
+     ``` 
+    config/property_group/new_property_group.yaml
+
+      properties: [<property_name_here>]
+    ```
+
+    ``` 
+    config/evaluate_defaults.yaml
+
+      property_group: <new_property_group>
+    ```
 
 #### To change which tasks are evaluated: 
-- Alter the list of tasks in `config/task_group/base`
-- OR create a new task group (make a new config file, ex: `config/task_group/base2`, and specify it in `evaluate_defaults.yaml`
+- Option 1: Alter the list of tasks in `config/task_group/base`
+    ``` 
+    config/task_group/base.yaml
 
+      properties: [generalization_v2, <task_name_here>]
+    ```
+- Option 2: create a new task group (make a new config file, ex: `config/task_group/new_task_group`, and specify it in `evaluate_defaults.yaml`
+    ``` 
+    config/task_group/new_task_group.yaml
+
+      tasks: [<task_name_here>]
+    ```
+
+    ``` 
+    config/evaluate_defaults.yaml
+
+      task_group: <new_task_group>
+    ```
+  
   </details>
   
   <details>
@@ -42,7 +90,18 @@ To run an evaluation over several models, use a sweep: `sh sweeps/basic_interpla
   
 #### To change which model(s) are used: 
 - For non-sweep experiments, change the model in `evaluate_defaults.yaml`. You can find supported models in `config/models/`
+    ``` 
+    config/evaluate_defaults.yaml
+
+      model: chosen_model
+    ```
 - For sweeps: change the models list in your sweep file directly, e.g. in `sh sweeps/basic_interplay_experiment.sh`
+    ``` 
+    sweeps/basic_interplay_experiment.yaml
+
+      python evaluate.py -m model=resnet101,resnet18,chosen_model\
+    ```   
+    
 </details>
 
 ## Extension
