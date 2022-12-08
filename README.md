@@ -99,7 +99,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
     ``` 
     sweeps/basic_interplay_experiment.yaml
 
-      python evaluate.py -m model=resnet101,resnet18,chosen_model\
+      python evaluate.py -m model=resnet101,resnet18,chosen_model \
     ```   
     
 </details>
@@ -110,24 +110,126 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
   
 #### To add a new property: 
 1) Add a config object to the property library found in `config/property_library/all.yaml` under the appropriate subsection
+    ``` 
+    config/property_library/all.yaml
+      
+      new_property_name: 
+          _target_: properties.<property_type>.<class>
+          logging_name: '<new_property_name>'
+    ```
 2) Add the property name to the desired property_group (e.g. change 'properties' in `config/property_group/base.yaml` to include the new property)
+    ``` 
+    config/property_group/base.yaml
+
+      properties: [dci, <new_property_name>]
+    ```
 3) Add a python class for a new property in `properties/<category>.py` (e.g. `properties/equivariance.py`), inheriting the `Property` class.
+    ``` 
+    properties/<property_type>.py
+        
+      class NewPropertyName(Property):
+        """Example Property Description"""
+
+        def __init__(self, logging_name: str):
+            super().__init__(logging_name)
+
+        def measure(
+            self,
+            config: DictConfig,
+            model: BaseModel,
+            datamodule: pl.LightningDataModule,
+            trainer: pl.Trainer,
+        ):
+            #### Insert Calculation Here #### 
+            # Log like this: trainer.logger.experiment.log({self.logging_name: 13})
+            return 
+    ```
 
 #### To add a new task: 
 1) Add a config object to the task library found in `config/task_library/all.yaml` under the appropriate subsection
+     ``` 
+    config/task_library/all.yaml
+      
+      new_task_name: 
+          _target_: tasks.<task_type>.<class>
+          logging_prefix: '<new_task_name>'
+    ```
 2) Add the task name to the desired task_group (e.g. change 'properties' in `config/task_group/base.yaml` to include the new task)
+     ``` 
+    config/task_group/base.yaml
+
+      tasks: [generalization_v2, <new_task_name>]
+    ```
 3) Add a python class for a new task in `tasks/<category>.py` (e.g. `tasks/fairness.py`), inheriting the `Task` class.
 
+    ``` 
+    tasks/<task_type>.py
+        
+      class NewTaskName(Task):
+        def __init__(self, dataset: BaseModel, metrics: list, logging_prefix: str):
+            super().__init__(dataset, metrics, logging_prefix)
+
+        def evaluate(self, config: DictConfig, model: BaseModel, trainer: pl.Trainer):
+            # Log like this:
+            # trainer.logger.experiment.log(
+                {self.logging_prefix + "_" + metric_name]}
+            #)
+            return
+
+    ```
+    
   </details>
 
 <details>
+    
   <summary> Adding New Models </summary>
 
   #### To add a new model: 
 1) Add a config yaml file in `config/models/<new_model>.yaml` with a 'model_name' and a 'module' key that maps to the model target.
-2) Add the model name to either `evaluate_defaults.yaml` or the sweep to include it in your run. 
-3) Add a python class for a new model in `models/<architecture_folder>/<new_model>.py` (e.g. `models/resnet/resnet.py`). You can either keep all the models for a given architecture in one script, or separate them out into distinct files if there's more detailed implementation. Just make sure your the config target matches the path you use!
+     ``` 
+    config/models/<new_model>.yaml
 
+        # @package _global_
+        model_name: new_model_name
+
+        module: 
+          _target_: models.<model_architecture>.<file_name>.<class>
+          learning_rate: 1e-4
+          optimizer: adam
+
+    ```
+2) Add the model name to either `evaluate_defaults.yaml` or the sweep to include it in your run. 
+    ``` 
+    config/evaluate_defaults.yaml
+
+      model: new_model_name
+    ```
+3) Add a python class for a new model in `models/<architecture_folder>/<new_model>.py` (e.g. `models/resnet/resnet.py`) that inherits the Classifier module. You can either keep all the models for a given architecture in one script, or separate them out into distinct files if there's more detailed implementation. Just make sure your the config target matches the path you use!
+    
+    ``` 
+    models/<architecture_folder>/<new_model>.py
+        
+        from base_model import ClassifierModule
+        
+        class NewModelName(ClassifierModule):
+            def __init__(
+                self,
+                timm_name: str = "",
+                checkpoint_url: str = "",
+            ):
+                super().__init__(
+                    timm_name=timm_name,
+                    checkpoint_url=checkpoint_url
+                )
+            
+            # Optional 
+            def load_backbone(self):
+                model = <something>
+  
+                return model
+
+    ```
+    
   </details>
 
   
