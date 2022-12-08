@@ -24,6 +24,9 @@ To run an evaluation on a model: `python evaluate.py`
 To run an evaluation over several models, use a sweep: `sh sweeps/basic_interplay_experiment.sh`
 
 ## Customization
+<details>
+  <summary> Changing Properties / Tasks Used </summary>
+
 #### To change which properties are measured: 
 - Alter the list of properties in `config/property_group/base`
 - OR create a new property group (make a new config file, ex: `config/property_group/base2`, and specify it in `evaluate_defaults.yaml`
@@ -32,11 +35,20 @@ To run an evaluation over several models, use a sweep: `sh sweeps/basic_interpla
 - Alter the list of tasks in `config/task_group/base`
 - OR create a new task group (make a new config file, ex: `config/task_group/base2`, and specify it in `evaluate_defaults.yaml`
 
+  </details>
+  
+  <details>
+  <summary> Changing Models Used </summary>
+  
 #### To change which model(s) are used: 
 - For non-sweep experiments, change the model in `evaluate_defaults.yaml`. You can find supported models in `config/models/`
 - For sweeps: change the models list in your sweep file directly, e.g. in `sh sweeps/basic_interplay_experiment.sh`
+</details>
 
 ## Extension
+<details>
+  <summary> Adding New Properties / Tasks </summary>
+  
 #### To add a new property: 
 1) Add a config object to the property library found in `config/property_library/all.yaml` under the appropriate subsection
 2) Add the property name to the desired property_group (e.g. change 'properties' in `config/property_group/base.yaml` to include the new property)
@@ -47,11 +59,19 @@ To run an evaluation over several models, use a sweep: `sh sweeps/basic_interpla
 2) Add the task name to the desired task_group (e.g. change 'properties' in `config/task_group/base.yaml` to include the new task)
 3) Add a python class for a new task in `tasks/<category>.py` (e.g. `tasks/fairness.py`), inheriting the `Task` class.
 
-#### To add a new model: 
+  </details>
+
+<details>
+  <summary> Adding New Models </summary>
+
+  #### To add a new model: 
 1) Add a config yaml file in `config/models/<new_model>.yaml` with a 'model_name' and a 'module' key that maps to the model target.
 2) Add the model name to either `evaluate_defaults.yaml` or the sweep to include it in your run. 
 3) Add a python class for a new model in `models/<architecture_folder>/<new_model>.py` (e.g. `models/resnet/resnet.py`). You can either keep all the models for a given architecture in one script, or separate them out into distinct files if there's more detailed implementation. Just make sure your the config target matches the path you use!
 
+  </details>
+
+  
 ## Testing
 To run tests (excluding slow tests): `python -m pytest tests/`
 
