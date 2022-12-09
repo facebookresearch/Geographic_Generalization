@@ -12,7 +12,7 @@ class DollarstreetSubsetPerformance(Task):
         Args:
             dataset (str): name of the dataset to instantiate, must be a key in experiment config.
             metrics (list[str]): metrics used for the given task.
-            logging_prefix (str): prefix to add to logging
+            logging_prefix (str): prefix to add to logging (e.g. a prefix of 'v2' would become 'v2_val_accuracy')
         """
         super().__init__(dataset, metrics, logging_prefix)
 

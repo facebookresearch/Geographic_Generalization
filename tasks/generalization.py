@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 
 
 class StandardEval(Task):
-    def __init__(self, dataset: BaseModel, metrics: list, logging_prefix: str):
+    def __init__(self, dataset: BaseModel, metrics: list[str], logging_prefix: str):
         """Standard evaluation task, simply calling trainer.validate on the given dataset.
 
         Args:
@@ -15,7 +15,7 @@ class StandardEval(Task):
             logging_prefix (str): prefix to add to logging for each metric (e.g. 'v2' would log 'v2_val_accuracy')
         """
         super().__init__(dataset, metrics, logging_prefix)
-
+    
     def evaluate(self, config: DictConfig, model: BaseModel, trainer: pl.Trainer):
         datamodule_config = getattr(config, self.dataset)
         datamodule = instantiate(datamodule_config)
@@ -28,7 +28,7 @@ class StandardEval(Task):
         return
 
 
-class AugRobust(Task):
+class AugmentationRobustness(Task):
     def __init__(self, dataset: BaseModel, metrics: list, logging_prefix: str):
         super().__init__(dataset, metrics, logging_prefix)
 

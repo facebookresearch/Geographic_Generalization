@@ -1,19 +1,20 @@
 from models.base_model import BaseModel
 from omegaconf import DictConfig
 import pytorch_lightning as pl
+from abc import ABC, abstractmethod
 
-
-class Property:
+class Property(ABC):
     """Property base class defining the structure of a property object.
 
     Args:
-        logging_prefix (str): string to add to logging metric
+        logging_name (str): name used in wandb logging 
     """
 
-    def __init__(self, logging_prefix: str):
-        self.logging_prefix = logging_prefix
+    def __init__(self, logging_name: str):
+        self.logging_name = logging_name
         return
 
+    @abstractmethod
     def measure(
         self,
         config: DictConfig,

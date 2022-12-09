@@ -3,7 +3,8 @@ from datasets.imagenet_classes import IMAGENET_CLASSES
 
 
 def convert_imagenet_ids_to_class_folders(
-    dataset_path="meganrichards/datasets/imagenetv2-matched-frequency/val/",
+    dataset_path="../../../../../checkpoint/meganrichards/datasets/imagenetv2-matched-frequency/val/",
+
     imagenet_labels_path="../../labels.txt",
 ):
     """Used to change folder names from class indexes (1,2,3) to imagenet class ids (N1283).
@@ -13,7 +14,7 @@ def convert_imagenet_ids_to_class_folders(
         imagenet_labels_path: path to .txt file with imagenet labels following the structure of datasets01/imagenet_full_size/061417/labels.txt
     """
     # Change cwd to dataset location
-    os.chdir(path=f"../../../../../checkpoint/{dataset_path}")
+    os.chdir(path=dataset_path)
 
     # Process imagenet labels into a list of strings with class folder names (['n123'])
     folder_to_str_dict = {}

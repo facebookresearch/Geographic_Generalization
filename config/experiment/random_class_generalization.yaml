@@ -1,6 +1,0 @@
-# @package _global_
-defaults:
-  - override /dataset: shapenet_random_class_split
-
-evaluation_module:
-  track_per_class_accuracy: True

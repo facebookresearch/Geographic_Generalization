@@ -4,11 +4,11 @@ from omegaconf import DictConfig
 import pytorch_lightning as pl
 
 
-class Aug_Approximation(Property):
+class AugmentationEquivariance(Property):
     """Example measure of an equivariance property to be completed"""
 
-    def __init__(self, logging_prefix: str):
-        super().__init__(logging_prefix)
+    def __init__(self, logging_name: str):
+        super().__init__(logging_name)
 
     def measure(
         self,
@@ -17,5 +17,5 @@ class Aug_Approximation(Property):
         datamodule: pl.LightningDataModule,
         trainer: pl.Trainer,
     ):
-        trainer.logger.experiment.log({self.logging_prefix: 13})
+        trainer.logger.experiment.log({self.logging_name: 13})
         return 1

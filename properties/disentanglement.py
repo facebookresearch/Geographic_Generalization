@@ -7,8 +7,8 @@ import pytorch_lightning as pl
 class DCI(Property):
     """Example measure of a disentanglement to be completed"""
 
-    def __init__(self, logging_prefix: str):
-        super().__init__(logging_prefix)
+    def __init__(self, logging_name: str):
+        super().__init__(logging_name)
 
     def measure(
         self,
@@ -17,5 +17,5 @@ class DCI(Property):
         datamodule: pl.LightningDataModule,
         trainer: pl.Trainer,
     ):
-        trainer.logger.experiment.log({self.logging_prefix: 5})
+        trainer.logger.experiment.log({self.logging_name: 5})
         return 5
