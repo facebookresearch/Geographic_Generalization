@@ -1,7 +1,0 @@
-# @package _global_
-model_name: resnet50_classifier
-
-module: 
-  _target_: models.resnet.resnet.ResNet50ClassifierModule
-  learning_rate: 1e-4
-  optimizer: adam

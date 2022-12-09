@@ -1,6 +1,6 @@
 # @package _global_
 
-project: mise-en-place
+project: interplay_project
 
 trainer:
   num_nodes: 1

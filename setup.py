@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 setup(
-    name="mise-en-place",
+    name="interplay_project",
     packages=find_packages(exclude=["tests"]),
     long_description=readme,
     install_requires=requirements,

@@ -1,6 +1,0 @@
-# @package _global_
-defaults:
-  - base: base
-  - mode: cluster_one_gpu
-  - dataset: dummy
-  - model: resnet50_classifier

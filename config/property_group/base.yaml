@@ -1,0 +1,4 @@
+# @package _global_
+property_group_name: base
+
+properties: [equivariance_aug, disentanglement_dci]
