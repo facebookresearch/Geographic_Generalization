@@ -8,5 +8,3 @@ defaults:
   - task_group: base
   - property_library: all
   - property_group: base
-
-base_dataset: imagenet

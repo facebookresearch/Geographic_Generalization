@@ -7,11 +7,12 @@ class Property(ABC):
     """Property base class defining the structure of a property object.
 
     Args:
-        logging_name (str): name used in wandb logging 
+        logging_name (str): name used in wandb logging (without prefix or suffix) 
     """
 
-    def __init__(self, logging_name: str):
+    def __init__(self, logging_name: str, dataset_names: list[str]):
         self.logging_name = logging_name
+        self.dataset_names = dataset_names
         return
 
     @abstractmethod
@@ -19,7 +20,6 @@ class Property(ABC):
         self,
         config: DictConfig,
         model: BaseModel,
-        datamodule: pl.LightningDataModule,
         trainer: pl.Trainer,
     ):
         return

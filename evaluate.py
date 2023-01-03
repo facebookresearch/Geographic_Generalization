@@ -58,14 +58,12 @@ def measure_properties(config: DictConfig, model: BaseModel, trainer: pl.Trainer
         trainer (pl.Trainer): Pytorch Lightning Trainer
     """
     properties = config.properties
-    dataset_config = getattr(config, config.base_dataset)
-    datamodule = instantiate(dataset_config)
 
     for property_name in properties:
         print(f"\n\n *** Measuring Property : {property_name} *** \n\n")
         property_config = getattr(config, property_name)
         property = instantiate(property_config)
-        property.measure(config, model, datamodule, trainer)
+        property.measure(config, model, trainer)
 
 
 # Creates task objects defined in configs and measures them for the given model / logger

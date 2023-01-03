@@ -152,7 +152,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
       
       new_task_name: 
           _target_: tasks.<task_type>.<class>
-          logging_prefix: '<new_task_name>'
+          logging_name: '<new_task_name>'
     ```
 2) Add the task name to the desired task_group (e.g. change 'properties' in `config/task_group/base.yaml` to include the new task)
      ``` 
@@ -166,13 +166,13 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
     tasks/<task_type>.py
         
       class NewTaskName(Task):
-        def __init__(self, dataset: BaseModel, metrics: list, logging_prefix: str):
-            super().__init__(dataset, metrics, logging_prefix)
+        def __init__(self, dataset_names: list[str], metrics: list, logging_name: str):
+            super().__init__(dataset_names, metrics, logging_name)
 
         def evaluate(self, config: DictConfig, model: BaseModel, trainer: pl.Trainer):
             # Log like this:
             # trainer.logger.experiment.log(
-                {self.logging_prefix + "_" + metric_name]}
+                {self.logging_name + "_" + metric_name]}
             #)
             return
 

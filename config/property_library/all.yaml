@@ -4,9 +4,12 @@ property_libary_name: all
 ###### Equivariance Measures ######
 equivariance_aug: 
   _target_: properties.equivariance.AugmentationEquivariance
+  dataset_names: [imagenet]
   logging_name: 'equivariance_aug'
+
  
 ###### Disentanglement Measures ######
 disentanglement_dci: 
   _target_: properties.disentanglement.DCI
+  dataset_names: [imagenet]
   logging_name: 'disentanglement_dci'
