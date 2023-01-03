@@ -19,17 +19,26 @@ class StandardEval(Task):
     def evaluate(
         self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer
     ):
+        # Set up a dict to store measurements
         results = {}
+
+        # Make a datamodule
         datamodule_config = getattr(config, self.dataset_names[0])
         datamodule = instantiate(datamodule_config)
+
+        # Perform the Measurement. You can do this a few main ways:
+        #      1) manually iterate over datamodule
+        #      2) call trainer.validate for basic accuracy measure
         res = trainer.validate(model=model, datamodule=datamodule)[0]
+        # first result selected for simplicity
+
         for metric in res.keys():
             trainer.logger.experiment.log(
                 {self.logging_name + "_" + metric: res[metric]}
             )
             results.update({self.logging_name + "_" + metric: res[metric]})
 
-        return results
+        return results  # to be added to CSV
 
 
 class AugmentationRobustness(Task):

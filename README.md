@@ -146,6 +146,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
     ```
 
 #### To add a new task: 
+For commented example, see the StandardEval task found in tasks/generalization.py 
 1) Add a config object to the task library found in `config/task_library/all.yaml` under the appropriate subsection
      ``` 
     config/task_library/all.yaml
