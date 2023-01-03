@@ -259,8 +259,7 @@ To debug what configs are used: `python evaluate.py --cfg job`
 
 
 
-# Development
-
-TODO
+# To Do
+- [ ] Pick a way to evaluate task-specific metrics outside of the standard definition in lightning model. Current baseline: manual iteration and custom metric objects based in torchvision. 
 - [ ] add DDP local support
 - [ ] consider adding sweeps natively to hydra configs
