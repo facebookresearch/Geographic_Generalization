@@ -116,6 +116,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
       new_property_name: 
           _target_: properties.<property_type>.<class>
           logging_name: '<new_property_name>'
+          dataset_names: [<dataset_name>]
     ```
 2) Add the property name to the desired property_group (e.g. change 'properties' in `config/property_group/base.yaml` to include the new property)
     ``` 
@@ -123,26 +124,25 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
 
       properties: [dci, <new_property_name>]
     ```
-3) Add a python class for a new property in `properties/<category>.py` (e.g. `properties/equivariance.py`), inheriting the `Property` class.
+3) Add a python class for a new property in `properties/<category>.py` (e.g. `properties/equivariance.py`), inheriting the `Property` class. The property object must return a dict[str: float] of measurements to be saved manually in a CSV.
     ``` 
     properties/<property_type>.py
         
       class NewPropertyName(Property):
         """Example Property Description"""
 
-        def __init__(self, logging_name: str):
-            super().__init__(logging_name)
+        def __init__(self, logging_name: str, dataset_names: list[str]):
+            super().__init__(logging_name, dataset_names)
 
         def measure(
             self,
             config: DictConfig,
             model: ClassifierModule,
-            datamodule: pl.LightningDataModule,
             trainer: pl.Trainer,
         ):
             #### Insert Calculation Here #### 
             # Log like this: trainer.logger.experiment.log({self.logging_name: 13})
-            return 
+            return {self.logging_name: 13}
     ```
 
 #### To add a new task: 
@@ -153,6 +153,8 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
       new_task_name: 
           _target_: tasks.<task_type>.<class>
           logging_name: '<new_task_name>'
+          dataset_names: ['<dataset_name>']
+          metrics: ['AUC']
     ```
 2) Add the task name to the desired task_group (e.g. change 'properties' in `config/task_group/base.yaml` to include the new task)
      ``` 
@@ -160,7 +162,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
 
       tasks: [generalization_v2, <new_task_name>]
     ```
-3) Add a python class for a new task in `tasks/<category>.py` (e.g. `tasks/fairness.py`), inheriting the `Task` class.
+3) Add a python class for a new task in `tasks/<category>.py` (e.g. `tasks/fairness.py`), inheriting the `Task` class.The task object must return a dict[str: float] of measurements to be saved manually in a CSV.
 
     ``` 
     tasks/<task_type>.py
