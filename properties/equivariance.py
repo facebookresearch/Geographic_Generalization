@@ -17,4 +17,4 @@ class AugmentationEquivariance(Property):
         trainer: pl.Trainer,
     ):
         trainer.logger.experiment.log({self.logging_name: 13})
-        return 1
+        return {self.logging_name: 13}

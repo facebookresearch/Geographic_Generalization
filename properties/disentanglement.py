@@ -17,4 +17,4 @@ class DCI(Property):
         trainer: pl.Trainer,
     ):
         trainer.logger.experiment.log({self.logging_name: 5})
-        return 5
+        return {self.logging_name: 5}

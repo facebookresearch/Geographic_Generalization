@@ -19,6 +19,7 @@ class StandardEval(Task):
     def evaluate(
         self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer
     ):
+        results = {}
         datamodule_config = getattr(config, self.dataset_names[0])
         datamodule = instantiate(datamodule_config)
         res = trainer.validate(model=model, datamodule=datamodule)[0]
@@ -26,8 +27,9 @@ class StandardEval(Task):
             trainer.logger.experiment.log(
                 {self.logging_name + "_" + metric: res[metric]}
             )
+            results.update({self.logging_name + "_" + metric: res[metric]})
 
-        return
+        return results
 
 
 class AugmentationRobustness(Task):
@@ -38,4 +40,4 @@ class AugmentationRobustness(Task):
         self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer
     ):
         # TODO apply augmentation, evaluate, calculate metrics
-        return
+        return {self.logging_name: 5}

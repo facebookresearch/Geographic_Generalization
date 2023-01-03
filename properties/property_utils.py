@@ -9,6 +9,8 @@ class Property(ABC):
 
     Args:
         logging_name (str): name used in wandb logging (without prefix or suffix)
+    Return:
+        dict in the form {str: float}, where each key represents the name of the property, and each float is the corresponding value.
     """
 
     def __init__(self, logging_name: str, dataset_names: list[str]):
@@ -23,4 +25,4 @@ class Property(ABC):
         model: ClassifierModule,
         trainer: pl.Trainer,
     ):
-        return
+        return {self.logging_name: 0}

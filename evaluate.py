@@ -13,6 +13,7 @@ import tempfile
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 import logging
 from models.classifier_model import ClassifierModule
+import pandas as pd
 
 log = logging.getLogger(__name__)
 git_hash = get_git_hash()
@@ -31,10 +32,23 @@ def main(config: DictConfig) -> None:
         plugins=SLURMEnvironment(auto_requeue=False),
         logger=wandb_logger,
     )
+    measurements = {}
 
     # Run experiment functions
-    measure_properties(config=config, model=model, trainer=trainer)
-    evaluate_tasks(config=config, model=model, trainer=trainer)
+    property_measurements = measure_properties(
+        config=config, model=model, trainer=trainer
+    )
+    task_measurements = evaluate_tasks(config=config, model=model, trainer=trainer)
+
+    # Combine measurement logs into larger dict
+    measurements.update(property_measurements)
+    measurements.update(task_measurements)
+
+    # Make a dataframe, and save it
+    measurements_dataframe = pd.DataFrame(measurements, index=[0])
+    print(measurements_dataframe)
+    print(f"{getattr(config, 'logs_dir')}/measurements.csv")
+    measurements_dataframe.to_csv(f"{getattr(config, 'logs_dir')}/measurements.csv")
 
     wandb_logger.experiment.finish()
 
@@ -60,12 +74,16 @@ def measure_properties(
         trainer (pl.Trainer): Pytorch Lightning Trainer
     """
     properties = config.properties
+    property_measurements = {}
 
     for property_name in properties:
         print(f"\n\n *** Measuring Property : {property_name} *** \n\n")
         property_config = getattr(config, property_name)
         property = instantiate(property_config)
-        property.measure(config, model, trainer)
+        measures = property.measure(config, model, trainer)
+        property_measurements.update(measures)
+
+    return property_measurements
 
 
 # Creates task objects defined in configs and measures them for the given model / logger
@@ -88,11 +106,15 @@ def evaluate_tasks(config: DictConfig, model: ClassifierModule, trainer: pl.Trai
         trainer (pl.Trainer): Pytorch Lightning Trainer
     """
     tasks = config.tasks
+    task_measurements = {}
     for task_name in tasks:
         print(f"\n\n *** Starting Task : {task_name} *** \n\n")
         task_config = getattr(config, task_name)
         task = instantiate(DictConfig(task_config))
-        task.evaluate(config, model, trainer)
+        eval_results = task.evaluate(config, model, trainer)
+        task_measurements.update(eval_results)
+
+    return task_measurements
 
 
 if __name__ == "__main__":

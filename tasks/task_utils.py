@@ -22,4 +22,4 @@ class Task(ABC):
     def evaluate(
         self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer
     ):
-        return 1
+        return {self.logging_name: 1}
