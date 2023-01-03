@@ -1,5 +1,5 @@
 from properties.property_utils import Property
-from models.base_model import BaseModel
+from models.classifier_model import ClassifierModule
 from omegaconf import DictConfig
 import pytorch_lightning as pl
 
@@ -13,7 +13,7 @@ class DCI(Property):
     def measure(
         self,
         config: DictConfig,
-        model: BaseModel,
+        model: ClassifierModule,
         trainer: pl.Trainer,
     ):
         trainer.logger.experiment.log({self.logging_name: 5})

@@ -11,7 +11,7 @@ from omegaconf import OmegaConf, DictConfig
 import yaml
 import os
 import random
-from models.base_model import BaseModel
+from models.classifier_model import ClassifierModule
 import submitit
 import hydra
 import http.client as httplib

@@ -1,4 +1,4 @@
-from models.base_model import BaseModel
+from models.classifier_model import ClassifierModule
 from omegaconf import DictConfig
 import pytorch_lightning as pl
 from abc import ABC, abstractmethod
@@ -17,7 +17,9 @@ class Task(ABC):
         self.metrics = metrics
         self.logging_name = logging_name
         return
-    
+
     @abstractmethod
-    def evaluate(self, config: DictConfig, model: BaseModel, trainer: pl.Trainer):
+    def evaluate(
+        self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer
+    ):
         return 1

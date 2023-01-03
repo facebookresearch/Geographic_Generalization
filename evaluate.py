@@ -12,7 +12,7 @@ import pytorch_lightning as pl
 import tempfile
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 import logging
-from models.base_model import BaseModel
+from models.classifier_model import ClassifierModule
 
 log = logging.getLogger(__name__)
 git_hash = get_git_hash()
@@ -39,7 +39,9 @@ def main(config: DictConfig) -> None:
     wandb_logger.experiment.finish()
 
 
-def measure_properties(config: DictConfig, model: BaseModel, trainer: pl.Trainer):
+def measure_properties(
+    config: DictConfig, model: ClassifierModule, trainer: pl.Trainer
+):
     """Pulls property configs from config.properties list, builds property objects, and calls measure on each.
 
     Args:
@@ -54,7 +56,7 @@ def measure_properties(config: DictConfig, model: BaseModel, trainer: pl.Trainer
 
                 }
 
-        model (BaseModel): Pytorch Lightning Module
+        model (ClassifierModule): Pytorch Lightning Module
         trainer (pl.Trainer): Pytorch Lightning Trainer
     """
     properties = config.properties
@@ -67,7 +69,7 @@ def measure_properties(config: DictConfig, model: BaseModel, trainer: pl.Trainer
 
 
 # Creates task objects defined in configs and measures them for the given model / logger
-def evaluate_tasks(config: DictConfig, model: BaseModel, trainer: pl.Trainer):
+def evaluate_tasks(config: DictConfig, model: ClassifierModule, trainer: pl.Trainer):
     """Pulls task configs from config.tasks list, builds task objects, and calls evaluate on each.
 
     Args:
@@ -82,7 +84,7 @@ def evaluate_tasks(config: DictConfig, model: BaseModel, trainer: pl.Trainer):
                     }
 
                 }
-        model (BaseModel): Pytorch Lightning Module
+        model (ClassifierModule): Pytorch Lightning Module
         trainer (pl.Trainer): Pytorch Lightning Trainer
     """
     tasks = config.tasks

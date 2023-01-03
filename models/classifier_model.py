@@ -7,6 +7,7 @@ import torchmetrics
 import torch.nn.functional as F
 import timm
 
+
 class ClassifierModule(pl.LightningModule):
     """
     Base classifier built with Timm.
@@ -77,3 +78,6 @@ class ClassifierModule(pl.LightningModule):
         if self.optimizer == "adam":
             return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
+
+if __name__ == "__main__":
+    model = ClassifierModule()

@@ -1,4 +1,4 @@
-from models.base_model import ShapeNetBaseModel
+from models.classifier_model import ShapeNetBaseModel
 from typing import Tuple, Optional
 import pytorch_lightning as pl
 import torch

@@ -1,13 +1,14 @@
-from models.base_model import BaseModel
+from models.classifier_model import ClassifierModule
 from omegaconf import DictConfig
 import pytorch_lightning as pl
 from abc import ABC, abstractmethod
+
 
 class Property(ABC):
     """Property base class defining the structure of a property object.
 
     Args:
-        logging_name (str): name used in wandb logging (without prefix or suffix) 
+        logging_name (str): name used in wandb logging (without prefix or suffix)
     """
 
     def __init__(self, logging_name: str, dataset_names: list[str]):
@@ -19,7 +20,7 @@ class Property(ABC):
     def measure(
         self,
         config: DictConfig,
-        model: BaseModel,
+        model: ClassifierModule,
         trainer: pl.Trainer,
     ):
         return

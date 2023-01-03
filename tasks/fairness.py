@@ -2,7 +2,7 @@ from task_utils import Task
 from hydra.utils import instantiate
 from omegaconf import DictConfig
 import pytorch_lightning as pl
-from models.base_model import BaseModel
+from models.classifier_model import ClassifierModule
 
 
 class DollarstreetSubsetPerformance(Task):
@@ -16,7 +16,9 @@ class DollarstreetSubsetPerformance(Task):
         """
         super().__init__(dataset_names, metrics, logging_name)
 
-    def evaluate(self, config: DictConfig, model: BaseModel, trainer: pl.Trainer):
+    def evaluate(
+        self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer
+    ):
         # TODO generate predictions and evaluate subset fairness:
 
         return

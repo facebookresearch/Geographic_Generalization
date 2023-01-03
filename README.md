@@ -136,7 +136,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
         def measure(
             self,
             config: DictConfig,
-            model: BaseModel,
+            model: ClassifierModule,
             datamodule: pl.LightningDataModule,
             trainer: pl.Trainer,
         ):
@@ -169,7 +169,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
         def __init__(self, dataset_names: list[str], metrics: list, logging_name: str):
             super().__init__(dataset_names, metrics, logging_name)
 
-        def evaluate(self, config: DictConfig, model: BaseModel, trainer: pl.Trainer):
+        def evaluate(self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer):
             # Log like this:
             # trainer.logger.experiment.log(
                 {self.logging_name + "_" + metric_name]}
