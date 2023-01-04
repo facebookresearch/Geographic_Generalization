@@ -12,7 +12,7 @@ These evaluation experiments are structured into sub components we call measurem
 
 Here, we use **property** to define a quantifiable measure of the model itself that is not *directly* benefitial. For example, a model's disentanglement or equivariance are properties because they are measures of the model itself, and are only meaningful through their impact on downstream tasks. 
 
-Conversely, we use **tasks** to describe a model's downstream behavior - a benefit we're looking for the model to have. Examples here are fairness, OOD / adversarial robustness, generalization, etc. 
+Conversely, we use **benefits** to describe a model's downstream behavior - a benefit we're looking for the model to have. Examples here are fairness, OOD / adversarial robustness, generalization, etc. 
 
 Broadly, the goal is to build an empirical understanding betweeen what we can measure about a vision model in isolation (properties), and the behaviors we're hoping to see when the model interacts with the world. 
 
