@@ -102,10 +102,6 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of me
     ```
 3) Add a python class for a new measurement in `measurements.<measurement_type>.<file_name>.<class>`, inheriting the `Measurement` class. **For a commented and explained example, see the StandardEvaluations task found in measurements/benefits/generalization.py.** Also, note that the measurement object must return a dict[str: float] of measurements to be saved manually in a CSV.
 
-Common Pitfalls (Megan found in adding her own measurements):
-- If you use a torchmetrics metric and define it outside of the Model's constructor (in our case, likely the test_step function), lightning will not handle moving it to GPU, and so you will have to when you define the metric.  
-
-
     ``` 
     measurements.<measurement_type>.<file_name>.py
         
@@ -124,6 +120,10 @@ Common Pitfalls (Megan found in adding her own measurements):
             
             return {self.logging_name +'_val': 13}
     ```    
+    
+    ***Common Pitfalls (Megan found in adding her own measurements):***
+    - If you use a torchmetrics metric and define it outside of the Model's constructor (in our case, likely the test_step function), lightning will not handle moving it to GPU, and so you will have to when you define the metric.  
+
   </details>
 
 <details>
