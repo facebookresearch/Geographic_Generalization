@@ -1,5 +1,0 @@
-# @package _global_
-task_group_name: base
-
-tasks: [generalization_v2] #[validation_imagenet,generalization_v2]
-

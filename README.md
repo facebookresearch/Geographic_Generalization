@@ -195,7 +195,7 @@ For commented example, see the StandardEval task found in tasks/generalization.p
         # @package _global_
         model_name: new_model_name
 
-        module: 
+        model: 
           _target_: models.<model_architecture>.<file_name>.<class>
           learning_rate: 1e-4
           optimizer: adam

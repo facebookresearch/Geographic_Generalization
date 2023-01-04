@@ -1,0 +1,4 @@
+# @package _global_
+measurement_group_name: base
+
+measurements: [generalization_v2]

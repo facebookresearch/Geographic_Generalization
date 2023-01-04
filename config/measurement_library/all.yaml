@@ -1,0 +1,30 @@
+# @package _global_
+measurement_libary_name: all
+
+#########################################
+############ | Properties | #############
+#########################################
+
+## -- Equivariance Measures -- ##
+
+ 
+## -- Disentanglement Measures -- ##
+
+
+##################################################
+############ | Downstream Benefits | #############
+##################################################
+
+## -- Performance Measures -- ##
+validation_imagenet: 
+  _target_: measurements.benefits.generalization.BasicEvaluation
+  dataset_names: [imagenet]
+  logging_name: 'imagenet'
+
+## -- Generalization Measures -- ##
+generalization_v2: 
+  _target_: measurements.benefits.generalization.BasicEvaluation
+  dataset_names: [v2]
+  logging_name: 'v2'
+
+## -- Fairness Measures -- ##
