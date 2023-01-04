@@ -8,79 +8,55 @@ In a new conda environment (`conda create -n [name] python=3.9`), run
 To record the current environment: `pip freeze --exclude-editable > requirements.txt`
 
 ## Structure & Goals
-These evaluation experiments are structured into two main components / stages:
-1) Measuring model **properties**
-2) Evaluating the model on **tasks**
+These evaluation experiments are structured into sub components we call measurements. All measurements are structured the same way in the code, but there are two categories we differentiate in interpretating results: **properties** and **benefits**.
 
 Here, we use **property** to define a quantifiable measure of the model itself that is not *directly* benefitial. For example, a model's disentanglement or equivariance are properties because they are measures of the model itself, and are only meaningful through their impact on downstream tasks. 
 
 Conversely, we use **tasks** to describe a model's downstream behavior - a benefit we're looking for the model to have. Examples here are fairness, OOD / adversarial robustness, generalization, etc. 
 
-Broadly, the goal is to build an empirical understanding betweeen what we can measure about a vision model in isolation, and the behaviors we're hoping to see when the model interacts with the world. 
+Broadly, the goal is to build an empirical understanding betweeen what we can measure about a vision model in isolation (properties), and the behaviors we're hoping to see when the model interacts with the world. 
 
 ## Running an Evaluation
 To run an evaluation on a model: `python evaluate.py`
 
 To run an evaluation over several models, use a sweep: `sh sweeps/basic_interplay_experiment.sh`
 
-By default, the evaluation evaluates a pretrained Resnet50 on the base set of properties (DCI) and the base set of tasks (fairness on dollarstreet, generalization on V2). These choices are encoded in configs, refer to the advanced section to learn about customization. The configs have the following structure: 
+By default, the evaluation evaluates a pretrained Resnet50 on the base set of measurements (Imagenet V2 performance). These choices are encoded in configs, refer to the advanced section to learn about customization. The configs have the following structure: 
 
     config
-    ├── base             # Hydra specifications, including experiment naming
-    ├── dataset_library  # Library of all datasets compatible with this evaluation           
-    ├── mode             # Hydra / Lightning specification for running locally / on clusters / testing
-    ├── models           # Model specifications
-    ├── property_library # Library of all properties compatible with this evaluation
-    ├── property_group   # Groups / lists of properties to use in a given evaluation
-    ├── task_library     # Library of all tasks compatible with this evaluation
-    ├── task_group       # Groups of tasks to use in a given evaluation    
+    ├── base                # Hydra specifications, including experiment naming
+    ├── dataset_library     # Library of all datasets compatible with this evaluation           
+    ├── mode                # Hydra / Lightning specification for running locally / on clusters / testing
+    ├── models              # Model specifications
+    ├── measurement_library # Library of all measurements compatible with this evaluation
+    ├── measurement_group   # Groups / lists of properties to use in a given evaluation   
     ├── evaluate_defaults.yaml 
     └── ...
 
 
 ## Customization
 <details>
-  <summary> Changing Properties / Tasks Used </summary>
+  <summary> Changing Which Measurements Are Used </summary>
 
-#### To change which properties are measured: 
-- Option 1: Alter the list of properties in `config/property_group/base`
+#### To change which measurements are measured: 
+- Option 1: Alter the list of measurements in `config/measurement_group/base`
      ``` 
-    config/property_group/base.yaml
+    config/measurement_group/base.yaml
 
-      properties: [DCI, <property_name_here>]
+      measurements: [<add_measurement_name>]
     ```
   
-- Option 2: create a new property group (make a new config file, ex: `config/property_group/new_property_group`, and specify it in `evaluate_defaults.yaml`
+- Option 2: create a new measurement group (make a new config file, ex: `config/measurement_group/new_measurement_group.yaml`, and specify it in `evaluate_defaults.yaml`
      ``` 
-    config/property_group/new_property_group.yaml
+    config/measurement_group/new_measurement_group.yaml
 
-      properties: [<property_name_here>]
+      measurements: [<measurement_name>]
     ```
 
     ``` 
     config/evaluate_defaults.yaml
 
-      property_group: <new_property_group>
-    ```
-
-#### To change which tasks are evaluated: 
-- Option 1: Alter the list of tasks in `config/task_group/base`
-    ``` 
-    config/task_group/base.yaml
-
-      properties: [generalization_v2, <task_name_here>]
-    ```
-- Option 2: create a new task group (make a new config file, ex: `config/task_group/new_task_group`, and specify it in `evaluate_defaults.yaml`
-    ``` 
-    config/task_group/new_task_group.yaml
-
-      tasks: [<task_name_here>]
-    ```
-
-    ``` 
-    config/evaluate_defaults.yaml
-
-      task_group: <new_task_group>
+      property_group: <new_measurement_group>
     ```
   
   </details>
@@ -106,30 +82,35 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
 
 ## Extension
 <details>
-  <summary> Adding New Properties / Tasks </summary>
+  <summary> Adding New Measurements </summary>
   
-#### To add a new property: 
-1) Add a config object to the property library found in `config/property_library/all.yaml` under the appropriate subsection
+#### To add a new measurement: 
+1) Add a config object to the measurement library found in `config/measurement_library/all.yaml` under the appropriate subsection. Measurement type is either 'properties' or 'benefits', as shown in the folder names. 
     ``` 
-    config/property_library/all.yaml
+    config/measurement_library/all.yaml
       
-      new_property_name: 
-          _target_: properties.<property_type>.<class>
-          logging_name: '<new_property_name>'
+      new_measurement_name: 
+          _target_: measurements.<measurement_type>.<file_name>.<class>
+          logging_name: '<new_measurement_name>'
           dataset_names: [<dataset_name>]
     ```
-2) Add the property name to the desired property_group (e.g. change 'properties' in `config/property_group/base.yaml` to include the new property)
+2) Add the measurement name to the desired measurement_group (e.g. change 'measurements' in `config/measurement_group/base.yaml` to include the new measurement)
     ``` 
-    config/property_group/base.yaml
+    config/measurement_group/base.yaml
 
-      properties: [dci, <new_property_name>]
+      measurements: [<new_measurement_name>]
     ```
-3) Add a python class for a new property in `properties/<category>.py` (e.g. `properties/equivariance.py`), inheriting the `Property` class. The property object must return a dict[str: float] of measurements to be saved manually in a CSV.
+3) Add a python class for a new measurement in `measurements.<measurement_type>.<file_name>.<class>`, inheriting the `Measurement` class. **For a commented and explained example, see the StandardEvaluations task found in measurements/benefits/generalization.py.** Also, note that the measurement object must return a dict[str: float] of measurements to be saved manually in a CSV.
+
+Common Pitfalls (Megan found in adding her own measurements):
+- If you use a torchmetrics metric and define it outside of the Model's constructor (in our case, likely the test_step function), lightning will not handle moving it to GPU, and so you will have to when you define the metric.  
+
+
     ``` 
-    properties/<property_type>.py
+    measurements.<measurement_type>.<file_name>.py
         
-      class NewPropertyName(Property):
-        """Example Property Description"""
+      class NewMeasurementName(Measurement):
+        """Example Measurement Description"""
 
         def __init__(self, logging_name: str, dataset_names: list[str]):
             super().__init__(logging_name, dataset_names)
@@ -137,50 +118,12 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of pr
         def measure(
             self,
             config: DictConfig,
-            model: ClassifierModule,
-            trainer: pl.Trainer,
+            model_config: dict,
         ):
             #### Insert Calculation Here #### 
-            # Log like this: trainer.logger.experiment.log({self.logging_name: 13})
-            return {self.logging_name: 13}
-    ```
-
-#### To add a new task: 
-For commented example, see the StandardEval task found in tasks/generalization.py 
-1) Add a config object to the task library found in `config/task_library/all.yaml` under the appropriate subsection
-     ``` 
-    config/task_library/all.yaml
-      
-      new_task_name: 
-          _target_: tasks.<task_type>.<class>
-          logging_name: '<new_task_name>'
-          dataset_names: ['<dataset_name>']
-          metrics: ['AUC']
-    ```
-2) Add the task name to the desired task_group (e.g. change 'properties' in `config/task_group/base.yaml` to include the new task)
-     ``` 
-    config/task_group/base.yaml
-
-      tasks: [generalization_v2, <new_task_name>]
-    ```
-3) Add a python class for a new task in `tasks/<category>.py` (e.g. `tasks/fairness.py`), inheriting the `Task` class.The task object must return a dict[str: float] of measurements to be saved manually in a CSV.
-
-    ``` 
-    tasks/<task_type>.py
-        
-      class NewTaskName(Task):
-        def __init__(self, dataset_names: list[str], metrics: list, logging_name: str):
-            super().__init__(dataset_names, metrics, logging_name)
-
-        def evaluate(self, config: DictConfig, model: ClassifierModule, trainer: pl.Trainer):
-            # Log like this:
-            # trainer.logger.experiment.log(
-                {self.logging_name + "_" + metric_name]}
-            #)
-            return
-
-    ```
-    
+            
+            return {self.logging_name +'_val': 13}
+    ```    
   </details>
 
 <details>
@@ -188,7 +131,7 @@ For commented example, see the StandardEval task found in tasks/generalization.p
   <summary> Adding New Models </summary>
 
   #### To add a new model: 
-1) Add a config yaml file in `config/models/<new_model>.yaml` with a 'model_name' and a 'module' key that maps to the model target.
+1) Add a config yaml file in `config/models/<new_model>.yaml` with a 'model_name' and a 'model' key that maps to the model target.
      ``` 
     config/models/<new_model>.yaml
 
@@ -207,7 +150,7 @@ For commented example, see the StandardEval task found in tasks/generalization.p
 
       model: new_model_name
     ```
-3) Add a python class for a new model in `models/<architecture_folder>/<new_model>.py` (e.g. `models/resnet/resnet.py`) that inherits the Classifier module. You can either keep all the models for a given architecture in one script, or separate them out into distinct files if there's more detailed implementation. Just make sure your the config target matches the path you use!
+3) Add a python class for a new model in `models/<architecture_folder>/<new_model>.py` (e.g. `models/resnet/resnet.py`) that inherits the ClassifierModule class. You can either keep all the models for a given architecture in one script, or separate them out into distinct files if there's more detailed implementation. Just make sure your the config target matches the path you use!
     
     ``` 
     models/<architecture_folder>/<new_model>.py
@@ -259,7 +202,8 @@ To debug what configs are used: `python evaluate.py --cfg job`
 
 
 
-# To Do
-- [ ] Pick a way to evaluate task-specific metrics outside of the standard definition in lightning model. Current baseline: manual iteration and custom metric objects based in torchvision. 
+# Development
+
+TODO
 - [ ] add DDP local support
 - [ ] consider adding sweeps natively to hydra configs
