@@ -1,4 +1,4 @@
-from models.base_model import BaseModel, ShapeNetBaseModel
+from models.classifier_model import ClassifierModule, ShapeNetBaseModel
 from typing import Tuple, Optional, List
 from transformers import CLIPVisionModel, CLIPModel, CLIPProcessor
 import pytorch_lightning as pl
@@ -74,10 +74,7 @@ class CLIPZeroShotPretrained(BaseModel):
                 for c in self.class_names
             ]
         elif self.prompt == "sky":
-            return [
-                f"a photo of a {c} floating in the sky"
-                for c in self.class_names
-            ]
+            return [f"a photo of a {c} floating in the sky" for c in self.class_names]
         raise ValueError(f"{self.prompt} doesn't exist")
 
     def load_class_names(self) -> List[str]:
