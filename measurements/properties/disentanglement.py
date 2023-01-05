@@ -14,5 +14,5 @@ class DCI(Measurement):
         self,
         config: DictConfig,
         model_config: dict,
-    ):
+    ) -> dict[str:float]:
         return {self.logging_name: 0}

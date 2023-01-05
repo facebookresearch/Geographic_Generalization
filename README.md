@@ -100,7 +100,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of me
 
       measurements: [<new_measurement_name>]
     ```
-3) Add a python class for a new measurement in `measurements.<measurement_type>.<file_name>.<class>`, inheriting the `Measurement` class. **For a commented and explained example, see the StandardEvaluations task found in measurements/benefits/generalization.py.** Also, note that the measurement object must return a dict[str: float] of measurements to be saved manually in a CSV.
+3) Add a python class for a new measurement in `measurements.<measurement_type>.<file_name>.<class>`, inheriting the `Measurement` class. **For a commented and explained example, see the StandardEvaluations task found in measurements/benefits/generalization.py.** Each measurement object is passed two parameters (that you will define in the measurement config library) to define the measurement: a logging name, and a list of dataset names. The logging name should be used as a prefix to identify all logged values for a measurement. For example, if your measurement is imagenet v2 performance, a good logging_name would be 'imagenet_v2', so you could log every metric (accuracy, precision) with 'imagenet_v2' as a prefix (imagenet_v2_accuracy, imagenet_v2_precision) and clearly identify grouped values. The second parameter for a measurement is dataset_names (example: ['imagenet', 'dollarstreet']). You'll use this to define which datasets are used in the measurement, allowing you to load only the needed datasets, rather than the whole library. All dataset configs will exist in experiment config already, so each measurement only needs the dataset name to access it. To load one of these datasets with a given name, index the config object with the dataset name, and then call hydra's instantiate function (see below, and in StandardEvaluations example).  Also, note that the measurement object must return a dict[str: float] of measurements in order to be logged.
 
 Common Pitfalls (Megan found in adding her own measurements):
 - If you use a torchmetrics metric and define it outside of the Model's constructor (in our case, likely the test_step function), lightning will not handle moving it to GPU, and so you will have to when you define the metric.  
@@ -110,7 +110,13 @@ Common Pitfalls (Megan found in adding her own measurements):
     measurements.<measurement_type>.<file_name>.py
         
       class NewMeasurementName(Measurement):
-        """Example Measurement Description"""
+          """<Describe the measurement>
+            Args:
+                logging_name (str): common prefix to use for all logged metrics in the measurement. E.g. 'imagenet_v2'
+                dataset_names (list[str]): list of dataset names required for this measurement. E.g. ['imagenet', 'dollarstreet']
+            Return:
+                dict in the form {str: float}, where each key represents the name of the measurement, and each float is the corresponding value.
+            """
 
         def __init__(self, logging_name: str, dataset_names: list[str]):
             super().__init__(logging_name, dataset_names)
@@ -120,6 +126,11 @@ Common Pitfalls (Megan found in adding her own measurements):
             config: DictConfig,
             model_config: dict,
         ):
+            # Get dataset
+            first_dataset_name = self.dataset_names[0] # 'imagenet'
+            datamodule_config = getattr(config, first_dataset_name) 
+            datamodule = instantiate(datamodule_config)
+            
             #### Insert Calculation Here #### 
             
             return {self.logging_name +'_val': 13}

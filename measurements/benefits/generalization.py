@@ -9,7 +9,7 @@ import types
 from measurements.measurement_utils import Measurement
 
 
-class BasicEvaluation(Measurement):
+class ClassificationAccuracyEvaluation(Measurement):
     """Example measure of a measurement"""
 
     def __init__(self, logging_name: str, dataset_names: list[str]):
@@ -19,7 +19,7 @@ class BasicEvaluation(Measurement):
         self,
         config: DictConfig,
         model_config: dict,
-    ):
+    ) -> dict[str:float]:
         # Make a dict to store measurements
         results_dict = {}
 

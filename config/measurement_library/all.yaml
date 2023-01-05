@@ -17,14 +17,14 @@ measurement_libary_name: all
 
 ## -- Performance Measures -- ##
 validation_imagenet: 
-  _target_: measurements.benefits.generalization.BasicEvaluation
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
   dataset_names: [imagenet]
   logging_name: 'imagenet'
 
 ## -- Generalization Measures -- ##
-generalization_v2: 
-  _target_: measurements.benefits.generalization.BasicEvaluation
+generalization_imagenet_v2: 
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
   dataset_names: [v2]
-  logging_name: 'v2'
+  logging_name: 'imagenet_v2'
 
 ## -- Fairness Measures -- ##
