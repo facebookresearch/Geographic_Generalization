@@ -1,5 +1,6 @@
 from omegaconf import DictConfig
 from abc import ABC, abstractmethod
+from typing import Dict
 
 
 class Measurement(ABC):
@@ -26,5 +27,5 @@ class Measurement(ABC):
         self,
         config: DictConfig,
         model_config: dict,
-    ) -> dict[str:float]:
+    ) -> Dict[str, float]:
         return {self.logging_name: 0}
