@@ -10,5 +10,7 @@ class TestEquivariance:
 
     def test_embeddings_are_stored(self):
         equivariance = Equivariance("", dataset_names=["dummy"])
-        results = equivariance.measure(dict(), self.resnet18_config)
+        results = equivariance.measure(
+            dict(), self.resnet18_config, limit_test_batches=5
+        )
         assert "equivariance_rotate" in results

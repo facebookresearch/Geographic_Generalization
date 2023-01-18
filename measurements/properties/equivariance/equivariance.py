@@ -5,6 +5,7 @@ import torch
 from measurements.properties.equivariance import transformations
 from hydra.utils import instantiate
 from models.resnet.resnet import ResNet18dClassifierModule
+from datasets.dummy import DummyDataModule
 
 
 class Equivariance(Measurement):
@@ -15,12 +16,12 @@ class Equivariance(Measurement):
 
     def __init__(
         self,
-        # TODO: why do we need this logging_name as an argument?
         logging_name: str,
         dataset_names: list[str],
         transformation_name: str = "rotate",
     ):
         super().__init__(logging_name, dataset_names)
+        # TODO: why do we need this logging_name as an argument?
 
         self.transformation_name = transformation_name
         # samples x embedding_dim
@@ -47,24 +48,33 @@ class Equivariance(Measurement):
         return None
 
     def measure_equivariance(self) -> float:
-        pass
+        return 0.0
 
     def measure_invariance(self) -> float:
-        pass
+        return 0.0
 
     def measure(
         self,
         config: DictConfig,
         model_config: dict,
+        limit_test_batches: float = 1.0,
     ) -> dict[str:float]:
         # TODO: make hydra instantiation work
         # self.model = instantiate(model_config)
         self.model = ResNet18dClassifierModule()
 
         gpus = 1 if torch.cuda.is_available() else 0
-        trainer = pl.Trainer(gpus=gpus)
+        trainer = pl.Trainer(
+            gpus=gpus,
+            limit_test_batches=limit_test_batches,
+        )
 
-        trainer.test(self.model, self)
+        dm = DummyDataModule()
+
+        trainer.test(
+            self.model,
+            datamodule=dm,
+        )
         results = {
             f"equivariance_{self.transformation_name}": self.measure_equivariance(),
             f"invariance_{self.transformation_name}": self.measure_invariance(),

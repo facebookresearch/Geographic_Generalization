@@ -29,9 +29,9 @@ class ClassifierModule(pl.LightningModule):
 
         self.model = self.load_backbone()
 
-        self.train_accuracy = torchmetrics.Accuracy(task="multiclass")
-        self.val_accuracy = torchmetrics.Accuracy(task="multiclass")
-        self.test_accuracy = torchmetrics.Accuracy(task="multiclass")
+        self.train_accuracy = torchmetrics.Accuracy()
+        self.val_accuracy = torchmetrics.Accuracy()
+        self.test_accuracy = torchmetrics.Accuracy()
 
     def load_backbone(self):
         model = timm.create_model(self.timm_name, pretrained=True)
