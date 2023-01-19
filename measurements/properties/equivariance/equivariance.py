@@ -6,6 +6,7 @@ from measurements.properties.equivariance import transformations
 from hydra.utils import instantiate
 from models.resnet.resnet import ResNet18dClassifierModule
 from datasets.dummy import DummyDataModule
+from torch import Tensor
 
 
 class Equivariance(Measurement):
@@ -25,6 +26,8 @@ class Equivariance(Measurement):
 
         self.transformation_name = transformation_name
         self.model = ResNet18dClassifierModule()
+        self.model.test_step = self.test_step
+        self.model.on_test_end = self.on_test_end
 
         # samples x embedding_dim
         self.z = torch.empty(0)
@@ -40,9 +43,6 @@ class Equivariance(Measurement):
     def test_step(self, batch, batch_idx):
         x, labels = batch
         z = self.model.forward_features(x)
-        print(f"{x.shape=}")
-        print(f"{z.shape=}")
-
         z_t = None
 
         for magnitude_idx in range(10):
@@ -51,12 +51,10 @@ class Equivariance(Measurement):
             )
             x_i_t = transform(x)
             z_i_t = self.model.forward_features(x_i_t)
-            print(f"{z_i_t.shape=}")
             if z_t is None:
                 z_t = z_i_t.unsqueeze(-1)
             else:
                 z_t = torch.cat([z_t, z_i_t.unsqueeze(-1)], dim=-1)
-            print(f"{z_t.shape=}")
 
         self.z = torch.cat([self.z, z])
         self.z_t = torch.cat([self.z_t, z_t])
@@ -64,8 +62,8 @@ class Equivariance(Measurement):
 
     def on_test_end(self):
         """Shuffle z_t"""
-        z_t_shuffled = self.shuffle_z_t(self.z_t)
-        self.z_t_shuffled = z_t_shuffled
+        print("======= on test end shuffle called")
+        self.z_t_shuffled = self.shuffle_z_t(self.z_t)
 
     def shuffle_z_t(self, z_t: torch.Tensor) -> torch.Tensor:
         """Returns a shuffled version of z_t per column"""
@@ -75,11 +73,42 @@ class Equivariance(Measurement):
             z_t_shuffled[:, :, i] = z_t[:, perm, i]
         return z_t_shuffled
 
-    def measure_equivariance(self) -> float:
-        return 0.0
+    @staticmethod
+    def measure_equivariance(z: Tensor, z_t: Tensor, z_t_shuffled: Tensor) -> float:
+        """
+        Args:
+            z: (num samples, embedding dim)
+            z_t: (num samples, embedding dim, num transform parameters)
+            z_t_shuffled: (num samples, embedding dim, num transform parameters)
+        """
+        cos_sim = torch.nn.CosineSimilarity(dim=1)
+        # samples x embedding dim x 1
+        z = z.unsqueeze(-1)
+        # samples x 10 (transform parameters)
+        alignment = cos_sim(z, z_t)
+        # samples x 10 (transform parameters)
+        alignment_baseline = cos_sim(z, z_t_shuffled)
 
-    def measure_invariance(self) -> float:
-        return 0.0
+        equivariance = alignment - alignment_baseline
+        equivariance_mean = equivariance.mean().item()
+        return equivariance_mean
+
+    @staticmethod
+    def measure_invariance(z: Tensor, z_t: Tensor, z_t_shuffled: Tensor) -> float:
+        """
+        Args:
+            z: (num samples, embedding dim)
+            z_t: (num samples, embedding dim, num transform parameters)
+            z_t_shuffled: (num samples, embedding dim, num transform parameters)
+        """
+        cos_sim = torch.nn.CosineSimilarity(dim=1)
+        z = z.unsqueeze(-1)
+
+        distance = 1 - cos_sim(z, z_t)
+        distance_baseline = 1 - cos_sim(z, z_t_shuffled)
+        invariance = distance_baseline - distance
+        invariance_mean = invariance.mean().item()
+        return invariance_mean
 
     def measure(
         self,
@@ -89,7 +118,8 @@ class Equivariance(Measurement):
     ) -> dict[str:float]:
         # TODO: make hydra instantiation work
         # self.model = instantiate(model_config)
-        self.model.test_step = self.test_step
+
+        self.reset_stored_z()
 
         gpus = 1 if torch.cuda.is_available() else 0
         trainer = pl.Trainer(
@@ -103,8 +133,13 @@ class Equivariance(Measurement):
             self.model,
             datamodule=dm,
         )
+
         results = {
-            f"equivariance_{self.transformation_name}": self.measure_equivariance(),
-            f"invariance_{self.transformation_name}": self.measure_invariance(),
+            f"equivariance_{self.transformation_name}": self.measure_equivariance(
+                self.z, self.z_t, self.z_t_shuffled
+            ),
+            f"invariance_{self.transformation_name}": self.measure_invariance(
+                self.z, self.z_t, self.z_t_shuffled
+            ),
         }
         return results

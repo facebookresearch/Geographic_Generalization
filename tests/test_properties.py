@@ -39,12 +39,15 @@ class TestEquivariance:
         assert equivariance_measure.z_t.shape == (8 * 5, 512, 10)
 
     def test_results(self, equivariance_measure: Equivariance):
+        equivariance_measure.reset_stored_z()
         results = equivariance_measure.measure(
             dict(), self.resnet18_config, limit_test_batches=5
         )
 
         assert "equivariance_rotate" in results
+        assert results["equivariance_rotate"] > 0.0
         assert "invariance_rotate" in results
+        assert results["invariance_rotate"] > 0.0
 
     def test_shuffle_z_t(self, equivariance_measure: Equivariance):
         z_t = torch.rand(8, 512, 10)
