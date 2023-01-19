@@ -37,10 +37,10 @@ class Equivariance(Measurement):
 
         for magnitude_idx in range(10):
             transform = transformations.Transformation(
-                self.transform_name, magnitude_idx
+                self.transformation_name, magnitude_idx
             )
             x_i_t = transform(x)
-            z_i_t = self(x_i_t)
+            z_i_t = self.model.forward_features(x_i_t)
             z_t = torch.cat([z_t, z_i_t], dim=1)
 
         self.z = torch.cat([self.z, z])
@@ -62,6 +62,7 @@ class Equivariance(Measurement):
         # TODO: make hydra instantiation work
         # self.model = instantiate(model_config)
         self.model = ResNet18dClassifierModule()
+        self.model.test_step = self.test_step
 
         gpus = 1 if torch.cuda.is_available() else 0
         trainer = pl.Trainer(
