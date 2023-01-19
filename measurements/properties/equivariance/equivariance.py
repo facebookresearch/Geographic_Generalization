@@ -30,10 +30,12 @@ class Equivariance(Measurement):
         self.z = torch.empty(0)
         # samples x embedding_dim x number of transformation parameters
         self.z_t = torch.empty(0)
+        self.z_t_shuffled = torch.empty(0)
 
     def reset_stored_z(self):
         self.z = torch.empty(0)
         self.z_t = torch.empty(0)
+        self.z_t_shuffled = torch.empty(0)
 
     def test_step(self, batch, batch_idx):
         x, labels = batch
@@ -59,6 +61,19 @@ class Equivariance(Measurement):
         self.z = torch.cat([self.z, z])
         self.z_t = torch.cat([self.z_t, z_t])
         return None
+
+    def on_test_end(self):
+        """Shuffle z_t"""
+        z_t_shuffled = self.shuffle_z_t(self.z_t)
+        self.z_t_shuffled = z_t_shuffled
+
+    def shuffle_z_t(self, z_t: torch.Tensor) -> torch.Tensor:
+        """Returns a shuffled version of z_t per column"""
+        z_t_shuffled = torch.clone(z_t)
+        for i in range(10):
+            perm = torch.randperm(self.model.embedding_dim)
+            z_t_shuffled[:, :, i] = z_t[:, perm, i]
+        return z_t_shuffled
 
     def measure_equivariance(self) -> float:
         return 0.0

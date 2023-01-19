@@ -45,3 +45,9 @@ class TestEquivariance:
 
         assert "equivariance_rotate" in results
         assert "invariance_rotate" in results
+
+    def test_shuffle_z_t(self, equivariance_measure: Equivariance):
+        z_t = torch.rand(8, 512, 10)
+        z_t_shuffled = equivariance_measure.shuffle_z_t(z_t)
+        assert z_t.shape == z_t_shuffled.shape
+        assert not torch.allclose(z_t, z_t_shuffled)
