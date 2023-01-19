@@ -31,11 +31,12 @@ class TestEquivariance:
         assert equivariance_measure.z_t.shape == (batch_size, 512, 10)
 
     def test_embeddings_are_stored(self, equivariance_measure: Equivariance):
+        equivariance_measure.reset_stored_z()
         results = equivariance_measure.measure(
             dict(), self.resnet18_config, limit_test_batches=5
         )
-        assert equivariance_measure.z.shape[1] == 512
-        assert equivariance_measure.z_t.shape[1] == 512
+        assert equivariance_measure.z.shape == (8 * 5, 512)
+        assert equivariance_measure.z_t.shape == (8 * 5, 512, 10)
 
     def test_results(self, equivariance_measure: Equivariance):
         results = equivariance_measure.measure(
