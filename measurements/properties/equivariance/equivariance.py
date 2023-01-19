@@ -24,16 +24,24 @@ class Equivariance(Measurement):
         # TODO: why do we need this logging_name as an argument?
 
         self.transformation_name = transformation_name
+        self.model = ResNet18dClassifierModule()
+
         # samples x embedding_dim
         self.z = torch.empty(0)
         # samples x embedding_dim x number of transformation parameters
         self.z_t = torch.empty(0)
 
+    def reset_stored_z(self):
+        self.z = torch.empty(0)
+        self.z_t = torch.empty(0)
+
     def test_step(self, batch, batch_idx):
         x, labels = batch
         z = self.model.forward_features(x)
+        print(f"{x.shape=}")
+        print(f"{z.shape=}")
 
-        z_t = torch.empty(0)
+        z_t = None
 
         for magnitude_idx in range(10):
             transform = transformations.Transformation(
@@ -41,7 +49,12 @@ class Equivariance(Measurement):
             )
             x_i_t = transform(x)
             z_i_t = self.model.forward_features(x_i_t)
-            z_t = torch.cat([z_t, z_i_t], dim=1)
+            print(f"{z_i_t.shape=}")
+            if z_t is None:
+                z_t = z_i_t.unsqueeze(-1)
+            else:
+                z_t = torch.cat([z_t, z_i_t.unsqueeze(-1)], dim=-1)
+            print(f"{z_t.shape=}")
 
         self.z = torch.cat([self.z, z])
         self.z_t = torch.cat([self.z_t, z_t])
@@ -61,7 +74,6 @@ class Equivariance(Measurement):
     ) -> dict[str:float]:
         # TODO: make hydra instantiation work
         # self.model = instantiate(model_config)
-        self.model = ResNet18dClassifierModule()
         self.model.test_step = self.test_step
 
         gpus = 1 if torch.cuda.is_available() else 0

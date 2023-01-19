@@ -15,8 +15,20 @@ class TestEquivariance:
         equivariance = Equivariance("", dataset_names=["dummy"])
         return equivariance
 
-    def test_test_step(self):
-        pass
+    def test_test_step(self, equivariance_measure: Equivariance):
+        batch_size = 8
+        batch = (
+            torch.rand(batch_size, 3, 224, 224),
+            torch.randint(10, (batch_size, 1)),
+        )
+        equivariance_measure.reset_stored_z()
+        equivariance_measure.test_step(batch, 0)
+        assert equivariance_measure.z.shape == (
+            batch_size,
+            512,
+        )
+        # embedding dim x number of transformation parameters
+        assert equivariance_measure.z_t.shape == (batch_size, 512, 10)
 
     def test_embeddings_are_stored(self, equivariance_measure: Equivariance):
         results = equivariance_measure.measure(
