@@ -1,4 +1,4 @@
 # @package _global_
 measurement_group_name: base
 
-measurements: [generalization_imagenet_v2]
+measurements: [fairness_dollarstreet,generalization_imagenet_v2]
