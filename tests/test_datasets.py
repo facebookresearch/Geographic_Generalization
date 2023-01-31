@@ -15,7 +15,7 @@ class TestImageNet:
 
 class TestDummy:
     def test_dummy(self):
-        dm = DummyDataModule(batch_size=8)
+        dm = DummyDataModule(batch_size=8, num_samples=50)
         val_loader = dm.val_dataloader()
         train_loader = dm.train_dataloader()
         self.confirm_sizes(val_loader)

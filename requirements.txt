@@ -69,7 +69,7 @@ Markdown==3.3.4
 MarkupSafe==2.0.1
 matplotlib==3.4.3
 matplotlib-inline==0.1.2
-mccabe<0.7.0
+mccabe==0.6.1
 mistune==0.8.4
 multidict==5.1.0
 mypy==0.930
@@ -150,7 +150,7 @@ termcolor==1.1.0
 terminado==0.11.0
 testpath==0.5.0
 threadpoolctl==2.2.0
-timm==0.5.4
+timm==0.6.12
 tokenizers==0.11.6
 toml==0.10.2
 tomli==2.0.1
@@ -169,7 +169,6 @@ wcwidth==0.2.5
 webencodings==0.5.1
 websocket-client==1.2.0
 Werkzeug==2.0.1
-wheel==0.37.1
 widgetsnbextension==3.5.1
 yacs==0.1.8
 yarl==1.6.3

@@ -1,10 +1,8 @@
 import os
-from datasets.imagenet_classes import IMAGENET_CLASSES
 
 
 def convert_imagenet_ids_to_class_folders(
     dataset_path="../../../../../checkpoint/meganrichards/datasets/imagenetv2-matched-frequency/val/",
-
     imagenet_labels_path="../../labels.txt",
 ):
     """Used to change folder names from class indexes (1,2,3) to imagenet class ids (N1283).

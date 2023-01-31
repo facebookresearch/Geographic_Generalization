@@ -11,6 +11,8 @@ measurement_libary_name: all
 ## -- Disentanglement Measures -- ##
 
 
+
+
 ##################################################
 ############ | Downstream Benefits | #############
 ##################################################
@@ -19,12 +21,14 @@ measurement_libary_name: all
 validation_imagenet: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
   dataset_names: [imagenet]
-  logging_name: 'imagenet'
-
+  model: 
+  experiment_config:
+  
 ## -- Generalization Measures -- ##
 generalization_imagenet_v2: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
   dataset_names: [v2]
-  logging_name: 'imagenet_v2'
+  model: 
+  experiment_config:
 
 ## -- Fairness Measures -- ##
