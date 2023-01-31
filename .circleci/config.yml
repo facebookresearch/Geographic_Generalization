@@ -1,0 +1,16 @@
+version: 2.1
+orbs:
+  python: circleci/python@2.1.1
+jobs:
+  build-and-test:
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: Run tests
+          command: pytest
+workflows:
+  sample:
+    jobs:
+      - build-and-test
