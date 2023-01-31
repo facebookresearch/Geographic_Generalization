@@ -91,8 +91,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of me
       
       new_measurement_name: 
           _target_: measurements.<measurement_type>.<file_name>.<class>
-          logging_name: '<new_measurement_name>'
-          dataset_names: [<dataset_name>]
+          dataset_names: [<dataset_name>] # e.g. imagenet, v2
           model: 
           experiment_config: 
     ```
@@ -102,7 +101,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of me
 
       measurements: [<new_measurement_name>]
     ```
-3) Add a python class for a new measurement in `measurements.<measurement_type>.<file_name>.<class>`, inheriting the `Measurement` class. **For a commented and explained example, see the ClassificationAccuracyEvaluation class found in measurements/benefits/generalization.py.** Each measurement object is passed two unique parameters (that you will define in the measurement config) to define the measurement: a logging name, and a list of dataset names. The logging name should be used as a *prefix* to identify all logged values for a measurement. For example, if your measurement is imagenet v2 performance, a good logging_name would be 'imagenet_v2', so you could log every metric (accuracy, precision) with 'imagenet_v2' as a prefix (imagenet_v2_accuracy, imagenet_v2_precision) and clearly identify grouped values. The second parameter for a measurement is dataset_names (example: ['imagenet', 'dollarstreet']). You'll use this to define which datasets are used in the measurement, allowing you to load only the needed datasets, rather than the whole library. The abstract measurement class constructs the datasets for you and stores them in the self.datamodules property, which are indexed by the dataset names. To load one of these datasets with a given name, index the config object with the dataset name (see below, and in ClassificationAccuracyEvaluation example).  Also, note that the measurement object must return a dict[str: float] of measurements in order to be logged correctly.
+3) Add a python class for a new measurement in `measurements.<measurement_type>.<file_name>.<class>`, inheriting the `Measurement` class. **For a commented and explained example, see the ClassificationAccuracyEvaluation class found in measurements/benefits/generalization.py.** Each measurement object is passed in a list of dataset names (that you will define in the measurement config, as above). This list determines which datasets the measurement accesses. The abstract measurement class constructs the datasets for you and stores them in the self.datamodules, which is dictionary mapping in the form of {dataset_name: datamdule object}. To use the dataset in your measurement, just use this dictionary to access the desired datasets (see below, and in ClassificationAccuracyEvaluation example).  ** Logging: the measurement object must return a dict[str: float], with the key identifying the measurement, followng the convention of <dataset_name>_<property_name>.**
 
     ``` 
     measurements.<measurement_type>.<file_name>.py
@@ -110,7 +109,6 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of me
       class NewMeasurementName(Measurement):
           """<Describe the measurement>
             Args:
-                logging_name (str): common prefix to use for all logged metrics in the measurement. E.g. 'imagenet_v2'
                 dataset_names (list[str]): list of dataset names required for this measurement. E.g. ['imagenet', 'dollarstreet']
                 model (ClassifierModule): pytorch model to perform the measurement with
                 experiment_config (DictConfig): Hydra config used primarily to instantiate a trainer. Must have key: 'trainer' to be compatible with pytorch lightning.
@@ -118,19 +116,20 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of me
                 dict in the form {str: float}, where each key represents the name of the measurement, and each float is the corresponding value.
             """
 
-        def __init__(self, logging_name: str, dataset_names: list[str],  model: ClassifierModule, experiment_config: DictConfig,):
-            super().__init__(logging_name, dataset_names, model, experiment_config)
+        def __init__(self, dataset_names: list[str],  model: ClassifierModule, experiment_config: DictConfig,):
+            super().__init__(dataset_names, model, experiment_config)
 
         def measure(self):
 
             # Get datamodule of interest
-
-            first_dataset_name = self.dataset_names[0] # 'imagenet'
-            datamodule = self.datamodules[first_dataset_name]
+            dataset_name, datamodule = next(iter(self.datamodules.items()))
             
+            # Access model like this: self.model 
+
             #### Insert Calculation Here #### 
             
-            return {self.logging_name +'_val': 13}
+            property_name = "example"
+            return {f"{dataset_name}_{property_name}: 13}
     ```    
     
     ***Common Pitfalls (Megan found in adding her own measurements):***

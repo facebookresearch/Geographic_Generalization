@@ -28,8 +28,6 @@ class ImageDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.image_size = image_size
         self.num_workers = num_workers
-        self.name = self.__class__.__name__.split("DataModule")[0]
-        print(self.name)
 
     def train_dataloader(self) -> DataLoader:
         augmentations = self.train_transform()

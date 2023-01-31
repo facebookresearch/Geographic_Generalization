@@ -9,14 +9,15 @@ class DCI(Measurement):
 
     def __init__(
         self,
-        logging_name: str,
         dataset_names: list[str],
         model: ClassifierModule,
         config: DictConfig,
     ):
-        super().__init__(logging_name, dataset_names, model, config)
+        super().__init__(dataset_names, model, config)
 
     def measure(
         self,
     ) -> dict[str:float]:
-        return {self.logging_name: 0}
+        dataset_name, datamodule = next(iter(self.datamodules.items()))
+        property_name = "DCI"
+        return {f"{dataset_name}_{property_name}": 0.1}

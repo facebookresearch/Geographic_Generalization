@@ -3,6 +3,6 @@ defaults:
   - base: base
   - mode: local
   - dataset_library: all
-  - model: resnet101 # resnet50, resnet18
+  - model: resnet18 # resnet50, resnet18
   - measurement_library: all
-  - measurement_group: base
+  - measurement_group: all
