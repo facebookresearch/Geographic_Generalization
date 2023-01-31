@@ -12,7 +12,7 @@ class ImageDataset(Dataset):
 
     def __init__(
         self,
-        num_samples: int = 5000,
+        num_samples: int = 500,
         num_classes: int = 1000,
     ):
         """
@@ -37,6 +37,7 @@ class DummyDataModule(ImageDataModule):
         batch_size: int = 8,
         num_classes: int = 55,
         image_size: int = 224,
+        num_samples: int = 500,
     ):
         """Randomly generated ('dummy') image dataset designed to be used with ImageNet models.
 
@@ -50,10 +51,13 @@ class DummyDataModule(ImageDataModule):
             image_size=image_size,
         )
         self.num_classes = num_classes
+        self.num_samples = num_samples
 
     def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
         shuffle = True if stage == "train" else False
-        dataset = ImageDataset(num_classes=self.num_classes)
+        dataset = ImageDataset(
+            num_classes=self.num_classes, num_samples=self.num_samples
+        )
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,

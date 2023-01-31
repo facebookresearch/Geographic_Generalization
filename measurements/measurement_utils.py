@@ -2,6 +2,7 @@ from omegaconf import DictConfig
 from abc import ABC, abstractmethod
 from models.classifier_model import ClassifierModule
 from hydra.utils import instantiate
+from datasets.image_datamodule import ImageDataModule
 
 
 class Measurement(ABC):
@@ -33,7 +34,9 @@ class Measurement(ABC):
         self.dataset_names = dataset_names
         return
 
-    def make_datamodules(self, experiment_config, dataset_names):
+    def make_datamodules(
+        self, experiment_config: DictConfig, dataset_names: list[str]
+    ) -> dict[str:ImageDataModule]:
         datamodules = {}
         for dataset_name in dataset_names:
             datamodule_config = getattr(experiment_config, dataset_name)
