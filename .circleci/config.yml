@@ -3,7 +3,7 @@ orbs:
   python: circleci/python@2.1.1
 jobs:
   build-and-test:
-    executor: python/default
+    executor: python/3.9
     steps:
       - checkout
       - run:
