@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from models.classifier_model import ClassifierModule
 from hydra.utils import instantiate
 from datasets.image_datamodule import ImageDataModule
-from typing import List
+from typing import List, Dict
 
 
 class Measurement(ABC):
@@ -37,7 +37,7 @@ class Measurement(ABC):
 
     def make_datamodules(
         self, experiment_config: DictConfig, dataset_names: List[str]
-    ) -> dict[str:ImageDataModule]:
+    ) -> Dict[str:ImageDataModule]:
         datamodules = {}
         for dataset_name in dataset_names:
             datamodule_config = getattr(experiment_config, dataset_name)
@@ -49,7 +49,7 @@ class Measurement(ABC):
     @abstractmethod
     def measure(
         self,
-    ) -> dict[str:float]:
+    ) -> Dict[str:float]:
         dataset_name, datamodule = next(iter(self.datamodules.items()))
         property_name = "property"
 
