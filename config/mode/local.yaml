@@ -4,6 +4,6 @@ project: interplay_project
 
 trainer:
   num_nodes: 1
-  gpus: 1
+  gpus: 0
   max_epochs: 10
   strategy: null
