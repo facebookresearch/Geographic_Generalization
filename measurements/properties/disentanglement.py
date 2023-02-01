@@ -1,7 +1,6 @@
 from measurement_utils import Measurement
 from models.classifier_model import ClassifierModule
 from omegaconf import DictConfig
-import pytorch_lightning as pl
 
 
 class DCI(Measurement):
@@ -19,5 +18,5 @@ class DCI(Measurement):
         self,
     ) -> dict[str:float]:
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
-        property_name = "DCI"
-        return {f"{datamodule_name}_{property_name}": 0.1}
+        property_name = "dci"
+        return {f"{datamodule_name}_test_{property_name}": 0.1}

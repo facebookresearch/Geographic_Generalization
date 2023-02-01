@@ -1,13 +1,9 @@
 from omegaconf import DictConfig
-import pytorch_lightning as pl
-from hydra.utils import instantiate
 import torchmetrics
 import torch.nn.functional as F
-from pytorch_lightning.plugins.environments import SLURMEnvironment
-import types
-
 from models.classifier_model import ClassifierModule
 from measurements.measurement_utils import Measurement
+import types
 
 
 class ClassificationAccuracyEvaluation(Measurement):
@@ -48,13 +44,8 @@ class ClassificationAccuracyEvaluation(Measurement):
         )
         self.model.validation_step = types.MethodType(new_validation_step, self.model)
 
-        # 4) Use the new validation step to call trainer.validate
-        trainer = pl.Trainer(
-            **self.experiment_config.trainer,
-            plugins=SLURMEnvironment(auto_requeue=False),
-        )
-
-        results = trainer.validate(
+        # Call validate / test function
+        results = self.trainer.validate(
             model=self.model, datamodule=datamodule
         )  # list[dict]
 
@@ -74,7 +65,7 @@ class ClassificationAccuracyEvaluation(Measurement):
             # If you make a torchmetrics metric outside of the model construction, it doesn't get automatically moved to a device
             metric = torchmetrics.Accuracy().to(self.device)
             result = metric(F.softmax(y_hat, dim=-1), y)
-            self.log(f"{datamodule_name}_accuracy", result, on_epoch=True)
+            self.log(f"{datamodule_name}_test_accuracy", result, on_epoch=True)
 
             return result
 

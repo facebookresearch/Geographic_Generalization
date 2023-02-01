@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from models.classifier_model import ClassifierModule
 from hydra.utils import instantiate
 from datasets.image_datamodule import ImageDataModule
+import pytorch_lightning as pl
+from pytorch_lightning.plugins.environments import SLURMEnvironment
 
 
 class Measurement(ABC):
@@ -14,12 +16,14 @@ class Measurement(ABC):
 
     2) self.model: the instantiated model object to use in the measurement.
 
+    3) self.trainer: the trainer you can use to evaluate the model.
+
     Args:
         datamodule_names (list[str]): list of datamodule names required for this measurement. E.g. ['imagenet', 'dollarstreet']
         model (ClassifierModule): pytorch model to perform the measurement with
         experiment_config (DictConfig): Hydra config used primarily to instantiate a trainer. Must have key: 'trainer' to be compatible with pytorch lightning.
     Return:
-        dict in the form {str: float}, where each key represents the name of the measurement, and each float is the corresponding value. Keys should be in the form: <datamodule_name>_<property_name>.
+        dict in the form {str: float}, where each key represents the name of the measurement, and each float is the corresponding value. Keys should be in the form: <datamodule_name>_<split>_<property_name>, all lowercase (e.g. imagenet_test_accuracy).
     """
 
     def __init__(
@@ -29,10 +33,18 @@ class Measurement(ABC):
         experiment_config: DictConfig,
     ):
         self.datamodules = self.make_datamodules(experiment_config, datamodule_names)
+        self.trainer = self.make_trainer(experiment_config=experiment_config)
         self.experiment_config = experiment_config
         self.model = model
         self.datamodule_names = datamodule_names
         return
+
+    def make_trainer(self, experiment_config: DictConfig):
+        trainer = pl.Trainer(
+            **experiment_config.trainer,
+            plugins=SLURMEnvironment(auto_requeue=False),
+        )
+        return trainer
 
     def make_datamodules(
         self, experiment_config: DictConfig, datamodule_names: list[str]
