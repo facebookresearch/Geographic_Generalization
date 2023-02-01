@@ -22,6 +22,8 @@ jobs:
       - run:
           name: Run tests
           command: pytest
+          environment:
+            USER: meganrichards
 workflows:
   sample:
     jobs:
