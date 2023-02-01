@@ -1,13 +1,14 @@
 version: 2.1
+orbs:
+  python: circleci/python@2.1.1
 jobs:
   build-and-test:
-    docker:
-      - image: cimg/python:3.11.1
     executor: python/default
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: pip
+      - run:
+          name: install packages 
+          command: pip install -f https://download.pytorch.org/whl/torch_stable.html -e .
       - run:
           name: Run tests
           command: pytest
