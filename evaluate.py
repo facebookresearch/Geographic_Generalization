@@ -11,11 +11,11 @@ import wandb
 import os
 import pytorch_lightning as pl
 import tempfile
-from pytorch_lightning.plugins.environments import SLURMEnvironment
 import logging
 from models.classifier_model import ClassifierModule
 import pandas as pd
 from pytorch_lightning.loggers import WandbLogger
+import copy
 
 log = logging.getLogger(__name__)
 git_hash = get_git_hash()
@@ -29,8 +29,13 @@ def main(config: DictConfig) -> None:
     pl.seed_everything(config.seed)
     wandb_logger = setup_wandb(config, log, git_hash)
 
+    # Build model
+    model = instantiate(config.model)
+
     # Run experiment functions
-    measurements = perform_measurements(config=config, wandb_logger=wandb_logger)
+    measurements = perform_measurements(
+        model=model, experiment_config=config, wandb_logger=wandb_logger
+    )
 
     # Make a dataframe, and save it
     measurements_dataframe = pd.DataFrame(measurements, index=[0])
@@ -42,12 +47,14 @@ def main(config: DictConfig) -> None:
 
 
 def perform_measurements(
-    config: DictConfig,
+    model: ClassifierModule,
+    experiment_config: DictConfig,
     wandb_logger: WandbLogger,
 ):
     """Pulls measurement configs from config.measurements list, builds measurement objects, and calls measure function on each.
 
     Args:
+        model: instantiated model object following ClassifierModule class attributes
         config (DictConfig): Hydra DictConfig with two main requirements:
                 1) a 'measurements' key which corresponds to a list of strings specifying the names of measurement objects to build
                 2) each measurement name must be a key in config, which maps to the targets / hyperparameters for the measurement object (input for hydra's instantiate call)
@@ -77,14 +84,20 @@ def perform_measurements(
         wandb_logger (WandbLogger): wandb logger to keep track of the experiment results
 
     """
-    measurement_names = config.measurements
+    measurement_names = experiment_config.measurements
     results = {}
 
     for measurement_name in measurement_names:
         print(f"\n\n *** Measuring : {measurement_name} *** \n\n")
-        measurement_config = getattr(config, measurement_name)
-        measurement = instantiate(measurement_config)
-        result = measurement.measure(config=config, model_config=config.model)
+        measurement_config = getattr(experiment_config, measurement_name)
+        print(measurement_config)
+        measurement = instantiate(
+            measurement_config,
+            model=copy.deepcopy(model),
+            experiment_config=experiment_config,
+            _recursive_=False,
+        )
+        result = measurement.measure()
         wandb.log(result)
         results.update(result)
 
