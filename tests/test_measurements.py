@@ -29,7 +29,7 @@ class TestMeasurements:
     def test_all_measurements_create_correct_datamodules(
         self, measurement: Measurement
     ):
-        assert len(measurement.datamodules) == len(measurement.dataset_names)
-        assert list(measurement.datamodules.keys()) == measurement.dataset_names
-        datamodule = measurement.datamodules[measurement.dataset_names[0]]
+        assert len(measurement.datamodules) == len(measurement.datamodule_names)
+        assert list(measurement.datamodules.keys()) == measurement.datamodule_names
+        datamodule = measurement.datamodules[measurement.datamodule_names[0]]
         assert issubclass(type(datamodule), pl.LightningDataModule)

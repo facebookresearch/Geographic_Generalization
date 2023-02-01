@@ -20,14 +20,14 @@ measurement_libary_name: all
 ## -- Performance Measures -- ##
 validation_imagenet: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
-  dataset_names: [imagenet]
+  datamodule_names: [imagenet]
   model: 
   experiment_config:
   
 ## -- Generalization Measures -- ##
 generalization_imagenet_v2: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
-  dataset_names: [v2]
+  datamodule_names: [v2]
   model: 
   experiment_config:
 
