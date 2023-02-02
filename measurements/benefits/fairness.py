@@ -9,47 +9,45 @@ import types
 import torch
 from datasets import imagenet_classes
 import numpy as np
+from models.classifier_model import ClassifierModule
 
 
 class DollarStreetPerformance(Measurement):
-    """Example measure of a measurement"""
-
-    def __init__(self, logging_name: str, dataset_names: list[str]):
-        super().__init__(logging_name=logging_name, dataset_names=dataset_names)
+    def __init__(
+        self,
+        datamodule_names: list[str],
+        model: ClassifierModule,
+        experiment_config: DictConfig,
+    ):
+        super().__init__(
+            datamodule_names=datamodule_names,
+            model=model,
+            experiment_config=experiment_config,
+        )
 
     def measure(
         self,
-        config: DictConfig,
-        model_config: dict,
     ) -> dict[str:float]:
 
         results_dict = {}
 
-        # Make your model
-        model = instantiate(model_config)
-
-        # Make a datamodule
-        first_dataset_name = self.dataset_names[0]
-        datamodule_config = getattr(config, first_dataset_name)
-        datamodule = instantiate(datamodule_config)
+        datamodule_name, datamodule = next(iter(self.datamodules.items()))
 
         new_validation_step = self.make_new_validation_step(
-            self.logging_name, self.convert_predictions_to_imagenet1k_labels
+            datamodule_name=datamodule_name,
+            pred_conversion=self.convert_predictions_to_imagenet1k_labels,
         )
 
-        model.validation_step = types.MethodType(new_validation_step, model)
+        self.model.validation_step = types.MethodType(new_validation_step, self.model)
 
-        trainer = pl.Trainer(
-            **config.trainer,
-            plugins=SLURMEnvironment(auto_requeue=False),
-        )
-
-        results = trainer.validate(model=model, datamodule=datamodule)  # list[dict]
+        results = self.trainer.validate(
+            model=self.model, datamodule=datamodule
+        )  # list[dict]
 
         for d in results:
             results_dict.update(d)
 
-        return results_dict  # to be added to CSV
+        return results_dict
 
     def convert_predictions_to_imagenet1k_labels(self, pred_indices):
         names = []
@@ -58,12 +56,12 @@ class DollarStreetPerformance(Measurement):
             names.append(pred_names)
         return names
 
-    def make_new_validation_step(self, logging_name, pred_conversion):
+    def make_new_validation_step(self, datamodule_name, pred_conversion):
         def new_validation_step(self, batch, batch_idx):
             x, y = batch
             y_hat = self.model(x)
 
-            confidences, indices = torch.nn.functional.softmax(y_hat).topk(5)
+            confidences, indices = torch.nn.functional.softmax(y_hat, dim=-1).topk(5)
             preds = pred_conversion(indices.cpu())
 
             accs = []
@@ -72,7 +70,7 @@ class DollarStreetPerformance(Measurement):
                 acc = len(all_preds & set(y[i].split(", "))) > 0
                 accs.append(acc)
 
-            self.log(logging_name + "_accuracy", np.mean(accs), on_epoch=True)
+            self.log(datamodule_name + "_test_accuracy", np.mean(accs), on_epoch=True)
 
             return 1
 

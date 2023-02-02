@@ -34,5 +34,6 @@ generalization_imagenet_v2:
 ## -- Fairness Measures -- ##
 fairness_dollarstreet: 
   _target_: measurements.benefits.fairness.DollarStreetPerformance
-  dataset_names: [dollarstreet]
-  logging_name: 'dollarstreet'
+  datamodule_names: [dollarstreet]
+  model: 
+  experiment_config:
