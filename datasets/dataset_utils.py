@@ -1,5 +1,4 @@
 import os
-from datasets.imagenet_classes import IMAGENET_CLASSES
 
 
 def convert_imagenet_ids_to_class_folders(
