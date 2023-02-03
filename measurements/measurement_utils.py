@@ -5,6 +5,8 @@ from hydra.utils import instantiate
 from datasets.image_datamodule import ImageDataModule
 import pytorch_lightning as pl
 from pytorch_lightning.plugins.environments import SLURMEnvironment
+import os
+import pandas as pd
 
 
 class Measurement(ABC):
@@ -17,6 +19,9 @@ class Measurement(ABC):
     2) self.model: the instantiated model object to use in the measurement.
 
     3) self.trainer: the trainer you can use to evaluate the model.
+
+    The base class also creates the following functions:
+    1) self.save_extra_results_to_csv: this function takes in any dictionary, makes a folder with the measurement class name, and saves the dictionary as a CSV. It can be used to store model predictions or other measurement details.
 
     Args:
         datamodule_names (list[str]): list of datamodule names required for this measurement. E.g. ['imagenet', 'dollarstreet']
@@ -56,6 +61,13 @@ class Measurement(ABC):
             datamodules[datamodule_name] = datamodule
 
         return datamodules
+
+    def save_extra_results_to_csv(self, detailed_results: dict[str:list], name: str):
+        measurement_folder = self.__class__.__name__
+        os.makedirs(measurement_folder, exist_ok=True)
+        save_path = f"{measurement_folder}/{name}.csv"
+        pd.DataFrame(detailed_results).to_csv(save_path)
+        return
 
     @abstractmethod
     def measure(
