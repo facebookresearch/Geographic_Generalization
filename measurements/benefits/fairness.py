@@ -29,13 +29,16 @@ class DollarStreetPerformance(Measurement):
     def calculate_disparities(self):
         accuracies = self.model.predictions[["url", "accurate_top5"]]
         incomes_and_geographies = self.datamodules["dollarstreet"].ds.file[
-            ["url", "income", "region"]
+            ["url", "income_bucket", "region"]
         ]
         combined = pd.merge(accuracies, incomes_and_geographies, on="url", how="left")
 
         avg_acc_by_region = combined.groupby("region")["accurate_top5"].mean().to_dict()
+        avg_acc_by_income = (
+            combined.groupby("income_bucket")["accurate_top5"].mean().to_dict()
+        )
 
-        return avg_acc_by_region
+        return avg_acc_by_region, avg_acc_by_income
 
     def convert_float_dict_to_list_dict(self, d: dict):
         for k in d.keys():
@@ -63,19 +66,31 @@ class DollarStreetPerformance(Measurement):
             results_dict.update(d)
 
         # Calculate disparities and add to results dictionary
-        acc_by_region = self.calculate_disparities()
+        acc_by_region, acc_by_income = self.calculate_disparities()
 
         acc_by_region = {
-            "dollarstreet_test_accuracy_" + k: v for k, v in acc_by_region.items()
+            "dollarstreet_test_accuracy_region_" + k: v
+            for k, v in acc_by_region.items()
+        }
+        acc_by_income = {
+            "dollarstreet_test_accuracy_income_" + k: v
+            for k, v in acc_by_income.items()
         }
 
         results_dict.update(acc_by_region)
+        results_dict.update(acc_by_income)
 
         # Save extra results to CSVs
         acc_by_region = self.convert_float_dict_to_list_dict(acc_by_region)
+        acc_by_income = self.convert_float_dict_to_list_dict(acc_by_income)
+
         self.save_extra_results_to_csv(
             detailed_results=acc_by_region,
             name=f"{datamodule_name}_accuracy_by_region",
+        )
+        self.save_extra_results_to_csv(
+            detailed_results=acc_by_income,
+            name=f"{datamodule_name}_accuracy_by_income",
         )
 
         self.save_extra_results_to_csv(

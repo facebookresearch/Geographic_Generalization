@@ -30,7 +30,7 @@ class DollarstreetDataset(Dataset):
 
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet/interplay_version.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet/interplay_version_with_buckets.csv",
         data_dir: str = "/checkpoint/marksibrahim/datasets/dollarstreet/",
         transform=timm_transform,
         return_type="image",
