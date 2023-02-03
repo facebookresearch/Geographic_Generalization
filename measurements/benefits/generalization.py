@@ -55,7 +55,7 @@ class ClassificationAccuracyEvaluation(Measurement):
 
         # Optional: save predictions
         self.save_extra_results_to_csv(
-            detailed_results=self.model.predictions,
+            extra_results=self.model.predictions,
             name=f"{datamodule_name}_predictions",
         )
 
