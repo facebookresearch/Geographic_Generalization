@@ -16,7 +16,7 @@ class ClassificationAccuracyEvaluation(Measurement):
 
         2) self.model: the instantiated model object to use in the measurement.
 
-    The base class also has a function 'save_measurement_full_details_to_csv' which can be used to store model predictions, or other detail
+    The base class also has a function 'save_extra_results_to_csv' which can be used to save model predictions, or other details.
     """
 
     def __init__(

@@ -20,6 +20,9 @@ class Measurement(ABC):
 
     3) self.trainer: the trainer you can use to evaluate the model.
 
+    The base class also creates the following functions:
+    1) self.save_extra_results_to_csv: this function takes in any dictionary, makes a folder with the measurement class name, and saves the dictionary as a CSV. It can be used to store model predictions or other measurement details.
+
     Args:
         datamodule_names (list[str]): list of datamodule names required for this measurement. E.g. ['imagenet', 'dollarstreet']
         model (ClassifierModule): pytorch model to perform the measurement with

@@ -25,9 +25,7 @@ git_hash = get_git_hash()
     version_base="1.2", config_path="config", config_name="evaluate_defaults.yaml"
 )
 def main(config: DictConfig) -> None:
-    os.environ["WANDB_SILENT"] = "true"
     pl.seed_everything(config.seed)
-
     wandb_logger = setup_wandb(config, log, git_hash)
 
     # Build model
