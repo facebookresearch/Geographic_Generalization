@@ -25,7 +25,6 @@ git_hash = get_git_hash()
     version_base="1.2", config_path="config", config_name="evaluate_defaults.yaml"
 )
 def main(config: DictConfig) -> None:
-    print_config(config)
     pl.seed_everything(config.seed)
     wandb_logger = setup_wandb(config, log, git_hash)
 
@@ -39,8 +38,6 @@ def main(config: DictConfig) -> None:
 
     # Make a dataframe, and save it
     measurements_dataframe = pd.DataFrame(measurements, index=[0])
-    print(measurements_dataframe)
-    print(f"{getattr(config, 'logs_dir')}/measurements.csv")
     measurements_dataframe.to_csv(f"{getattr(config, 'logs_dir')}/measurements.csv")
 
     wandb_logger.experiment.finish()
@@ -90,7 +87,6 @@ def perform_measurements(
     for measurement_name in measurement_names:
         print(f"\n\n *** Measuring : {measurement_name} *** \n\n")
         measurement_config = getattr(experiment_config, measurement_name)
-        print(measurement_config)
         measurement = instantiate(
             measurement_config,
             model=copy.deepcopy(model),
@@ -106,8 +102,6 @@ def perform_measurements(
 
 if __name__ == "__main__":
     user = os.getlogin()
-    print("git hash: ", git_hash)
     snapshot_dir = tempfile.mkdtemp(prefix=f"/checkpoint/{user}/tmp/")
-    print("Snapshot dir is: ", snapshot_dir)
     with RsyncSnapshot(snapshot_dir=snapshot_dir):
         main()

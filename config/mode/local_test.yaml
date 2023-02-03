@@ -2,7 +2,7 @@
 project: tmp
 
 trainer:
-  gpus: 1
+  gpus: 0
   limit_train_batches: 3
   limit_val_batches: 3
   limit_test_batches: 3

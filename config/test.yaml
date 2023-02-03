@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - base: base
-  - mode: local
+  - mode: local_test
   - dataset_library: all
   - model: resnet18 
   - measurement_library: all

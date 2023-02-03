@@ -15,6 +15,8 @@ class ClassificationAccuracyEvaluation(Measurement):
             those datamodules. To access a datamodule, simply call next(iter(self.datamodules.items()) as seen below to get the datamodule name (key) and datamodule (value), or index self.datamodules dictionary with datamodule name you want (E.g.: self.datamodules['imagenet']).
 
         2) self.model: the instantiated model object to use in the measurement.
+
+    The base class also has a function 'save_extra_results_to_csv' which can be used to save model predictions, or other details.
     """
 
     def __init__(
@@ -45,13 +47,17 @@ class ClassificationAccuracyEvaluation(Measurement):
         self.model.validation_step = types.MethodType(new_validation_step, self.model)
 
         # Call validate / test function
-        results = self.trainer.validate(
-            model=self.model, datamodule=datamodule
-        )  # list[dict]
+        results = self.trainer.validate(model=self.model, datamodule=datamodule)
 
         # 5) Format results into a dictionary and return
         for d in results:
             results_dict.update(d)
+
+        # Optional: save predictions
+        self.save_extra_results_to_csv(
+            extra_results=self.model.predictions,
+            name=f"{datamodule_name}_predictions",
+        )
 
         return results_dict  # to be added to CSV
 
@@ -66,6 +72,10 @@ class ClassificationAccuracyEvaluation(Measurement):
             metric = torchmetrics.Accuracy().to(self.device)
             result = metric(F.softmax(y_hat, dim=-1), y)
             self.log(f"{datamodule_name}_test_accuracy", result, on_epoch=True)
+
+            self.save_predictions(
+                {"prediction": y_hat.cpu().tolist(), "label": y.cpu().tolist()}
+            )
 
             return result
 
