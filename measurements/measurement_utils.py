@@ -5,6 +5,8 @@ from hydra.utils import instantiate
 from datasets.image_datamodule import ImageDataModule
 import pytorch_lightning as pl
 from pytorch_lightning.plugins.environments import SLURMEnvironment
+import os
+import pandas as pd
 
 
 class Measurement(ABC):
@@ -56,6 +58,13 @@ class Measurement(ABC):
             datamodules[datamodule_name] = datamodule
 
         return datamodules
+
+    def save_extra_results_to_csv(self, detailed_results: dict[str:list], name: str):
+        measurement_folder = self.__class__.__name__
+        os.makedirs(measurement_folder, exist_ok=True)
+        save_path = f"{measurement_folder}/{name}.csv"
+        pd.DataFrame(detailed_results).to_csv(save_path)
+        return
 
     @abstractmethod
     def measure(

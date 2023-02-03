@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import timm
 from torchvision.models.feature_extraction import get_graph_node_names
 from torchvision.models.feature_extraction import create_feature_extractor
+import pandas as pd
 
 
 class ClassifierModule(pl.LightningModule):
@@ -38,6 +39,8 @@ class ClassifierModule(pl.LightningModule):
             self.model_layers,
         ) = self.load_feature_extractor()
 
+        self.predictions = pd.DataFrame({})
+
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
         self.test_accuracy = torchmetrics.Accuracy()
@@ -46,7 +49,6 @@ class ClassifierModule(pl.LightningModule):
         model = timm.create_model(self.timm_name, pretrained=True)
         state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
         model.load_state_dict(state_dict)
-        # print(f"Model created with weights from {self.checkpoint_url}")
         return model
 
     def load_feature_extractor(self):
@@ -81,6 +83,11 @@ class ClassifierModule(pl.LightningModule):
         )
 
         return loss
+
+    def save_predictions(self, predictions: dict[str:list]):
+        preds = pd.DataFrame(predictions)
+        self.predictions = pd.concat([self.predictions, preds])
+        return
 
     def training_step(self, batch, batch_idx):
         loss = self.shared_step(batch, stage="train")
