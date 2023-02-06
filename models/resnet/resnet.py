@@ -1,9 +1,4 @@
-import torch
-from torch import Tensor
-import pytorch_lightning as pl
 import torch.nn.functional as F
-import timm
-import torchmetrics
 from models.classifier_model import ClassifierModule
 
 

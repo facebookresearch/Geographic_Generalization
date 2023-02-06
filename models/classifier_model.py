@@ -6,6 +6,9 @@ from typing import Dict, Any
 import torchmetrics
 import torch.nn.functional as F
 import timm
+from torchvision.models.feature_extraction import get_graph_node_names
+from torchvision.models.feature_extraction import create_feature_extractor
+import pandas as pd
 
 
 class ClassifierModule(pl.LightningModule):
@@ -18,6 +21,7 @@ class ClassifierModule(pl.LightningModule):
         timm_name: str = "resnet50d",
         learning_rate: float = 1e-4,
         optimizer: str = "adam",
+        feature_extraction_layer_index=-2,
         checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet50d_a1_0-e20cff14.pth",
     ):
         super().__init__()
@@ -28,6 +32,14 @@ class ClassifierModule(pl.LightningModule):
         self.feature_dim = 1000
 
         self.model = self.load_backbone()
+        self.feature_extraction_layer_index = feature_extraction_layer_index
+        (
+            self.feature_extractor,
+            self.feature_extraction_layer,
+            self.model_layers,
+        ) = self.load_feature_extractor()
+
+        self.predictions = pd.DataFrame({})
 
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
@@ -37,11 +49,21 @@ class ClassifierModule(pl.LightningModule):
         model = timm.create_model(self.timm_name, pretrained=True)
         state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
         model.load_state_dict(state_dict)
-        # print(f"Model created with weights from {self.checkpoint_url}")
         return model
+
+    def load_feature_extractor(self):
+        train_nodes, eval_nodes = get_graph_node_names(self.model)
+        feature_extraction_layer = eval_nodes[self.feature_extraction_layer_index]
+        feature_extractor = create_feature_extractor(
+            self.model, return_nodes=[feature_extraction_layer]
+        )
+        return feature_extractor, feature_extraction_layer, eval_nodes
 
     def forward(self, x):
         return self.model(x)
+
+    def forward_features(self, x):
+        return self.feature_extractor(x)[self.feature_extraction_layer]
 
     def shared_step(self, batch: Tensor, stage: str = "train"):
         # The model expects an image tensor of shape (B, C, H, W)
@@ -61,6 +83,11 @@ class ClassifierModule(pl.LightningModule):
         )
 
         return loss
+
+    def save_predictions(self, predictions: dict[str:list]):
+        preds = pd.DataFrame(predictions)
+        self.predictions = pd.concat([self.predictions, preds])
+        return
 
     def training_step(self, batch, batch_idx):
         loss = self.shared_step(batch, stage="train")

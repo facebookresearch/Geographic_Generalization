@@ -5,9 +5,10 @@ from torchvision import transforms as transform_lib
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 from typing import Callable
+from datasets.image_datamodule import ImageDataModule
 
 
-class ImageNetDataModule(pl.LightningDataModule):
+class ImageNetDataModule(ImageDataModule):
     def __init__(
         self,
         data_dir: str = "/datasets01/imagenet_full_size/061417",
@@ -23,34 +24,12 @@ class ImageNetDataModule(pl.LightningDataModule):
             num_workers (int, optional): Number of workers to use in the dataloaders. Defaults to 8.
             image_size (int, optional): Side length for image crop. Defaults to 224.
         """
-        super().__init__()
-        self.data_dir = data_dir
-        self.batch_size = batch_size
-        self.image_size = image_size
-        self.num_workers = num_workers
-
-    def train_dataloader(self) -> DataLoader:
-        augmentations = self.train_transform()
-        data_loader = self._create_dataloader("train", augmentations)
-        return data_loader
-
-    def val_dataloader(self) -> DataLoader:
-        augmentations = self.val_transform()
-        data_loader = self._create_dataloader("val", augmentations)
-        return data_loader
-
-    def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
-        path = os.path.join(self.data_dir, stage)
-        shuffle = True if stage == "train" else False
-        dataset = ImageFolder(path, augmentations)
-        data_loader = DataLoader(
-            dataset,
-            batch_size=self.batch_size,
-            pin_memory=True,
-            num_workers=self.num_workers,
-            shuffle=shuffle,
+        super().__init__(
+            data_dir=data_dir,
+            batch_size=batch_size,
+            image_size=image_size,
+            num_workers=num_workers,
         )
-        return data_loader
 
     def train_transform(self) -> Callable:
         """
