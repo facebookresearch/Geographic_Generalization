@@ -34,12 +34,3 @@ class ResNet18dClassifierModule(ClassifierModule):
     ):
         super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
         self.embedding_dim = 512
-
-    def forward_features(self, x):
-        # output without pooling
-        out = self.model.forward_features(x)
-        # pooling
-        # based on https://github.com/kuangliu/pytorch-cifar/blob/master/models/resnet.py
-        out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
-        return out

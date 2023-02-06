@@ -2,17 +2,17 @@ from measurements.properties.equivariance.equivariance import Equivariance
 import pytest
 import torch
 
+from hydra import initialize, compose
+from hydra.utils import instantiate
+
 
 class TestEquivariance:
-    resnet18_config = {
-        "_target_": "models.resnet.resnet.ResNet18dClassifierModule",
-        "learning_rate": 1e-4,
-        "optimizer": "adam",
-    }
-
     @pytest.fixture(scope="module")
     def equivariance_measure(self):
-        equivariance = Equivariance("", dataset_names=["dummy"])
+        initialize(version_base=None, config_path="../config/")
+        experiment_config = compose(config_name="test.yaml")
+        model = instantiate(experiment_config.model)
+        equivariance = Equivariance(["dummy"], model, experiment_config)
         return equivariance
 
     def test_test_step(self, equivariance_measure: Equivariance):
@@ -32,22 +32,18 @@ class TestEquivariance:
 
     def test_embeddings_are_stored(self, equivariance_measure: Equivariance):
         equivariance_measure.reset_stored_z()
-        results = equivariance_measure.measure(
-            dict(), self.resnet18_config, limit_test_batches=5
-        )
+        equivariance_measure.measure()
         assert equivariance_measure.z.shape == (8 * 5, 512)
         assert equivariance_measure.z_t.shape == (8 * 5, 512, 10)
 
     def test_results(self, equivariance_measure: Equivariance):
         equivariance_measure.reset_stored_z()
-        results = equivariance_measure.measure(
-            dict(), self.resnet18_config, limit_test_batches=5
-        )
+        results = equivariance_measure.measure()
 
-        assert "equivariance_rotate" in results
-        assert results["equivariance_rotate"] > 0.0
-        assert "invariance_rotate" in results
-        assert results["invariance_rotate"] > 0.0
+        assert "dummy_equivariance_rotate" in results
+        assert results["dummy_equivariance_rotate"] > 0.0
+        assert "dummy_invariance_rotate" in results
+        assert results["dummy_invariance_rotate"] > 0.0
 
     def test_shuffle_z_t(self, equivariance_measure: Equivariance):
         z_t = torch.rand(8, 512, 10)

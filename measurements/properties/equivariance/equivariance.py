@@ -1,12 +1,10 @@
 from measurements.measurement_utils import Measurement
 from omegaconf import DictConfig
-import pytorch_lightning as pl
 import torch
 from measurements.properties.equivariance import transformations
-from hydra.utils import instantiate
-from models.resnet.resnet import ResNet18dClassifierModule
-from datasets.dummy import DummyDataModule
 from torch import Tensor
+from typing import List, Dict
+from models.classifier_model import ClassifierModule
 
 
 class Equivariance(Measurement):
@@ -17,23 +15,25 @@ class Equivariance(Measurement):
 
     def __init__(
         self,
-        logging_name: str,
-        dataset_names: list[str],
+        datamodule_names: List[str],
+        model: ClassifierModule,
+        experiment_config: DictConfig,
         transformation_name: str = "rotate",
     ):
-        super().__init__(logging_name, dataset_names)
-        # TODO: why do we need this logging_name as an argument?
-
+        super().__init__(datamodule_names, model, experiment_config)
         self.transformation_name = transformation_name
-        self.model = ResNet18dClassifierModule()
-        self.model.test_step = self.test_step
-        self.model.on_test_end = self.on_test_end
+
+        self.set_model_test_step()
 
         # samples x embedding_dim
         self.z = torch.empty(0)
         # samples x embedding_dim x number of transformation parameters
         self.z_t = torch.empty(0)
         self.z_t_shuffled = torch.empty(0)
+
+    def set_model_test_step(self):
+        self.model.test_step = self.test_step
+        self.model.on_test_end = self.on_test_end
 
     def reset_stored_z(self):
         self.z = torch.empty(0)
@@ -62,7 +62,6 @@ class Equivariance(Measurement):
 
     def on_test_end(self):
         """Shuffle z_t"""
-        print("======= on test end shuffle called")
         self.z_t_shuffled = self.shuffle_z_t(self.z_t)
 
     def shuffle_z_t(self, z_t: torch.Tensor) -> torch.Tensor:
@@ -112,34 +111,20 @@ class Equivariance(Measurement):
 
     def measure(
         self,
-        config: DictConfig,
-        model_config: dict,
-        limit_test_batches: float = 1.0,
-    ) -> dict[str:float]:
-        # TODO: make hydra instantiation work
-        # self.model = instantiate(model_config)
+    ) -> Dict[str, float]:
+        results = dict()
 
-        self.reset_stored_z()
+        for datamodule_name, datamodule in self.datamodules.items():
+            self.reset_stored_z()
+            self.trainer.test(
+                self.model,
+                datamodule=datamodule,
+            )
 
-        gpus = 1 if torch.cuda.is_available() else 0
-        trainer = pl.Trainer(
-            gpus=gpus,
-            limit_test_batches=limit_test_batches,
-        )
-
-        dm = DummyDataModule()
-
-        trainer.test(
-            self.model,
-            datamodule=dm,
-        )
-
-        results = {
-            f"equivariance_{self.transformation_name}": self.measure_equivariance(
-                self.z, self.z_t, self.z_t_shuffled
-            ),
-            f"invariance_{self.transformation_name}": self.measure_invariance(
-                self.z, self.z_t, self.z_t_shuffled
-            ),
-        }
+            results[
+                f"{datamodule_name}_equivariance_{self.transformation_name}"
+            ] = self.measure_equivariance(self.z, self.z_t, self.z_t_shuffled)
+            results[
+                f"{datamodule_name}_invariance_{self.transformation_name}"
+            ] = self.measure_invariance(self.z, self.z_t, self.z_t_shuffled)
         return results
