@@ -6,6 +6,11 @@ measurement_libary_name: all
 #########################################
 
 ## -- Equivariance Measures -- ##
+equivariance_imagenet_dummy: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [dummy]
+  model: 
+  experiment_config:
 
  
 ## -- Disentanglement Measures -- ##
