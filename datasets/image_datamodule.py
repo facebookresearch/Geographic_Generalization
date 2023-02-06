@@ -39,6 +39,11 @@ class ImageDataModule(pl.LightningDataModule):
         data_loader = self._create_dataloader("val", augmentations)
         return data_loader
 
+    def test_dataloader(self) -> DataLoader:
+        augmentations = self.val_transform()
+        data_loader = self._create_dataloader("test", augmentations)
+        return data_loader
+
     def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
         path = os.path.join(self.data_dir, stage)
         shuffle = True if stage == "train" else False
