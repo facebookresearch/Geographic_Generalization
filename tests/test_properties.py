@@ -33,8 +33,9 @@ class TestEquivariance:
     def test_embeddings_are_stored(self, equivariance_measure: Equivariance):
         equivariance_measure.reset_stored_z()
         equivariance_measure.measure()
-        assert equivariance_measure.z.shape == (8 * 5, 512)
-        assert equivariance_measure.z_t.shape == (8 * 5, 512, 10)
+        num_batches = equivariance_measure.experiment_config.trainer.limit_test_batches
+        assert equivariance_measure.z.shape == (num_batches * 8, 512)
+        assert equivariance_measure.z_t.shape == (num_batches * 8, 512, 10)
 
     def test_results(self, equivariance_measure: Equivariance):
         equivariance_measure.reset_stored_z()
