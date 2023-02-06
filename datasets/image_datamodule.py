@@ -28,6 +28,14 @@ class ImageDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.image_size = image_size
         self.num_workers = num_workers
+        self.__mask = self.make_mask()
+
+    def make_mask(self):
+        return None
+
+    @property
+    def mask(self):
+        return self.__mask
 
     def train_dataloader(self) -> DataLoader:
         augmentations = self.train_transform()
@@ -51,7 +59,7 @@ class ImageDataModule(pl.LightningDataModule):
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
-            pin_memory=True,
+            pin_memory=False,
             num_workers=self.num_workers,
             shuffle=shuffle,
         )
@@ -70,6 +78,17 @@ class ImageDataModule(pl.LightningDataModule):
         return preprocessing
 
     def val_transform(self) -> Callable:
+        """
+        The standard transforms
+        """
+        preprocessing = transform_lib.Compose(
+            [
+                transform_lib.ToTensor(),
+            ]
+        )
+        return preprocessing
+
+    def test_transform(self) -> Callable:
         """
         The standard transforms
         """

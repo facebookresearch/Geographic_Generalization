@@ -19,6 +19,11 @@ v2:
   batch_size: 32
   num_workers: 4
 
+imagenet_r:
+  _target_: datasets.imagenet_rendition.ImageNetRenditionDataModule
+  batch_size: 32
+  num_workers: 4
+
 ###### Other ######
 
 

@@ -40,14 +40,14 @@ class ClassificationAccuracyEvaluation(Measurement):
         # 2) Access datamodules needed - self.datamodules is a dict mapping from datamodule names (str) to datamodules. E.g. {'imagenet': ImageNetDatamodule object}
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
 
-        # 3) Define the measurement by overwriting the validation step for the model
-        new_validation_step = self.make_new_validation_step(
-            datamodule_name=datamodule_name
+        # 3) Define the measurement by overwriting the test step for the model
+        new_test_step = self.make_new_test_step(
+            datamodule_name=datamodule_name, mask=datamodule.mask
         )
-        self.model.validation_step = types.MethodType(new_validation_step, self.model)
+        self.model.test_step = types.MethodType(new_test_step, self.model)
 
         # Call validate / test function
-        results = self.trainer.validate(model=self.model, datamodule=datamodule)
+        results = self.trainer.test(model=self.model, datamodule=datamodule)
 
         # 5) Format results into a dictionary and return
         for d in results:
@@ -61,11 +61,48 @@ class ClassificationAccuracyEvaluation(Measurement):
 
         return results_dict  # to be added to CSV
 
-    def make_new_validation_step(self, datamodule_name):
+    def make_new_test_step(self, datamodule_name, mask):
         # The whole purpose of this wrapper function is to allow us to pass in the 'datamodule_name' for logging.
-        # We cannot pass it into new_validation_step directly without changing the signature required by trainer.
+        # We cannot pass it into new_test_step directly without changing the signature required by trainer.
 
-        def new_validation_step(self, batch, batch_idx):
+        def new_test_step(self, batch, batch_idx):
+            x, y = batch
+            if mask:
+                y_hat = self.model(x)[:, mask]
+            else:
+                y_hat = self.model(x)
+            # If you make a torchmetrics metric outside of the model construction, it doesn't get automatically moved to a device
+            metric = torchmetrics.Accuracy().to(self.device)
+            result = metric(F.softmax(y_hat, dim=-1), y)
+            self.log(f"{datamodule_name}_test_accuracy", result, on_epoch=True)
+
+            self.save_predictions(
+                {"prediction": y_hat.cpu().tolist(), "label": y.cpu().tolist()}
+            )
+
+            return result
+
+        return new_test_step
+
+
+class ImagenetRenditionClassificationAccuracyEvaluation(Measurement):
+    def __init__(
+        self,
+        datamodule_names: list[str],
+        model: ClassifierModule,
+        experiment_config: DictConfig,
+    ):
+        super().__init__(
+            datamodule_names=datamodule_names,
+            model=model,
+            experiment_config=experiment_config,
+        )
+
+    def make_new_test_step(self, datamodule_name):
+        # The whole purpose of this wrapper function is to allow us to pass in the 'datamodule_name' for logging.
+        # We cannot pass it into new_test_step directly without changing the signature required by trainer.
+
+        def new_test_step(self, batch, batch_idx):
             x, y = batch
             y_hat = self.model(x)
             # If you make a torchmetrics metric outside of the model construction, it doesn't get automatically moved to a device
@@ -79,4 +116,4 @@ class ClassificationAccuracyEvaluation(Measurement):
 
             return result
 
-        return new_validation_step
+        return new_test_step

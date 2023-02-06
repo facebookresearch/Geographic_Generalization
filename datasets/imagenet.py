@@ -59,3 +59,17 @@ class ImageNetDataModule(ImageDataModule):
             ]
         )
         return preprocessing
+
+    def test_transform(self) -> Callable:
+        """
+        The standard imagenet transforms for validation
+        """
+        preprocessing = transform_lib.Compose(
+            [
+                transform_lib.Resize(self.image_size + 32),
+                transform_lib.CenterCrop(self.image_size),
+                transform_lib.ToTensor(),
+                imagenet_normalization(),
+            ]
+        )
+        return preprocessing

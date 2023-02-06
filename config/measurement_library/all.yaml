@@ -36,4 +36,10 @@ generalization_imagenet_v2:
   model: 
   experiment_config:
 
+generalization_imagenet_r: 
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenet_r]
+  model: 
+  experiment_config:
+
 ## -- Fairness Measures -- ##
