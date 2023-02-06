@@ -21,7 +21,7 @@ jobs:
           command: pip install -f https://download.pytorch.org/whl/torch_stable.html -e .
       - run:
           name: Run tests
-          command: python -m pytest tests/test_models.py tests/test_measurements.py tests/test_datasets.py::TestDummy
+          command: pytest tests/test_models.py tests/test_measurements.py tests/test_datasets.py::TestDummy
           environment:
             USER: meganrichards
 workflows:
