@@ -37,7 +37,7 @@ class Sparsity(Measurement):
         return None
 
     @staticmethod
-    def measure_sparsity(z: Tensor, threshold: float) -> float:
+    def measure_sparsity(z: Tensor, threshold: float, lifetime_threshold: float = 0.7, population_threshold: float = 0.7) -> float:
         """
         Args:
             z: (num samples, embedding dim)
@@ -53,7 +53,11 @@ class Sparsity(Measurement):
         lifetime_sparsity = active_neurons.mean(0)
         population_sparsity = active_neurons.mean(1)
 
-        return lifetime_sparsity, population_sparsity
+        # Return the percentage of neurons which fire for no more that lifetime_threshold of the data points
+        sparsity_neurons = (lifetime_sparsity <= lifetime_threshold).float().mean()
+        # Return the percentage of datapoints which fire no more that population_threshold of the neurons
+        sparsity_datapoints = (lifetime_sparsity <= lifetime_threshold).float().mean()
+        return sparsity_neurons, sparsity_datapoints
 
     def measure(self):
 
@@ -67,11 +71,11 @@ class Sparsity(Measurement):
             datamodule=datamodule,
         )
 
-        lifetime_sparsity, population_sparsity = self.measure_sparsity(
+        sparsity_neurons, sparsity_datapoints = self.measure_sparsity(
             self.z, self.threshold
         )
         results = {
-            f"{datamodule_name}_lifetime_sparsity": lifetime_sparsity,
-            f"{datamodule_name}_population_sparsity": population_sparsity,
+            f"{datamodule_name}_sparsity_neurons": sparsity_neurons,
+            f"{datamodule_name}_sparsity_datapoints": sparsity_datapoints,
         }
         return results
