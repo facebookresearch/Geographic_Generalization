@@ -86,3 +86,4 @@ class TestEquivariance:
         z_t_shuffled = equivariance_measure.shuffle_z_t(z_t)
         assert z_t.shape == z_t_shuffled.shape
         assert not torch.allclose(z_t, z_t_shuffled)
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
