@@ -33,4 +33,3 @@ class ResNet18dClassifierModule(ClassifierModule):
         checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/resnet18d_ra2-48a79e06.pth",
     ):
         super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
-        self.embedding_dim = 512

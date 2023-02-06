@@ -37,6 +37,7 @@ class ClassifierModule(pl.LightningModule):
             self.feature_extractor,
             self.feature_extraction_layer,
             self.model_layers,
+            self.__embedding_dim,
         ) = self.load_feature_extractor()
 
         self.predictions = pd.DataFrame({})
@@ -57,13 +58,20 @@ class ClassifierModule(pl.LightningModule):
         feature_extractor = create_feature_extractor(
             self.model, return_nodes=[feature_extraction_layer]
         )
-        return feature_extractor, feature_extraction_layer, eval_nodes
+        example = torch.rand((1, 3, 244, 244))
+        output = feature_extractor(example)[feature_extraction_layer]
+        embedding_dim = output.shape[1]
+        return feature_extractor, feature_extraction_layer, eval_nodes, embedding_dim
 
     def forward(self, x):
         return self.model(x)
 
     def forward_features(self, x):
         return self.feature_extractor(x)[self.feature_extraction_layer]
+
+    @property
+    def embedding_dim(self):
+        return self.__embedding_dim
 
     def shared_step(self, batch: Tensor, stage: str = "train"):
         # The model expects an image tensor of shape (B, C, H, W)
