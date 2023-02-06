@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 from measurements.properties.equivariance.equivariance import Equivariance
 import pytest
 import torch
-
+import hydra
 from hydra import initialize, compose
 from hydra.utils import instantiate
 
@@ -38,6 +38,7 @@ class TestMeasurementSetUp:
         assert list(measurement.datamodules.keys()) == measurement.datamodule_names
         datamodule = measurement.datamodules[measurement.datamodule_names[0]]
         assert issubclass(type(datamodule), pl.LightningDataModule)
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
 class TestEquivariance:
