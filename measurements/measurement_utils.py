@@ -7,6 +7,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 import os
 import pandas as pd
+from typing import List
 
 
 class Measurement(ABC):
@@ -33,7 +34,7 @@ class Measurement(ABC):
 
     def __init__(
         self,
-        datamodule_names: list[str],
+        datamodule_names: List[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
     ):
@@ -62,11 +63,11 @@ class Measurement(ABC):
 
         return datamodules
 
-    def save_extra_results_to_csv(self, detailed_results: dict[str:list], name: str):
+    def save_extra_results_to_csv(self, extra_results: dict[str:list], name: str):
         measurement_folder = self.__class__.__name__
         os.makedirs(measurement_folder, exist_ok=True)
         save_path = f"{measurement_folder}/{name}.csv"
-        pd.DataFrame(detailed_results).to_csv(save_path)
+        pd.DataFrame(extra_results).to_csv(save_path)
         return
 
     @abstractmethod
