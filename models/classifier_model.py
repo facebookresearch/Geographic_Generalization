@@ -58,7 +58,7 @@ class ClassifierModule(pl.LightningModule):
         feature_extractor = create_feature_extractor(
             self.model, return_nodes=[feature_extraction_layer]
         )
-        example = torch.rand((1, 3, 244, 244))
+        example = torch.rand((1, 3, 224, 224))
         output = feature_extractor(example)[feature_extraction_layer]
         embedding_dim = output.shape[1]
         return feature_extractor, feature_extraction_layer, eval_nodes, embedding_dim

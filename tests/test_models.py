@@ -6,11 +6,13 @@ from models.resnet.resnet import (
     ResNet50dClassifierModule,
     ResNet101dClassifierModule,
 )
+from models.mlp_mixer.mlp_mixer import MLPMixerClassifierModule
 
 
 class TestPreTrainedModels:
     batch_size = 8
     models = [
+        MLPMixerClassifierModule(),
         ResNet18dClassifierModule(),
         ResNet50dClassifierModule(),
         ResNet101dClassifierModule(),
