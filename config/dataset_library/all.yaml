@@ -30,6 +30,12 @@ imagenet_a:
   batch_size: 32
   num_workers: 4
 
+imagenet_sketch:
+  _target_: datasets.imagenet_sketch.ImageNetSketchDataModule
+  data_dir: /checkpoint/meganrichards/datasets/imagenet_sketch/
+  batch_size: 32
+  num_workers: 4
+
 objectnet:
   _target_: datasets.objectnet.ObjectNetDataModule
   data_dir: /checkpoint/meganrichards/datasets/objectnet/
