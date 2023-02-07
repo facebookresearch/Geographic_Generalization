@@ -1,4 +1,4 @@
 # @package _global_
 measurement_group_name: base
 
-measurements: [generalization_imagenet_r]
+measurements: [generalization_imagenet_a]

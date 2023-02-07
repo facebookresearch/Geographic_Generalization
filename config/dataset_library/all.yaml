@@ -24,6 +24,12 @@ imagenet_r:
   batch_size: 32
   num_workers: 4
 
+imagenet_a:
+  _target_: datasets.imagenet_adversarial.ImageNetAdversarialDataModule
+  data_dir: /checkpoint/meganrichards/datasets/imagenet_a/
+  batch_size: 32
+  num_workers: 4
+
 ###### Other ######
 
 

@@ -67,7 +67,7 @@ class ClassificationAccuracyEvaluation(Measurement):
 
         def new_test_step(self, batch, batch_idx):
             x, y = batch
-            if mask:
+            if mask is not None:
                 y_hat = self.model(x)[:, mask]
             else:
                 y_hat = self.model(x)
