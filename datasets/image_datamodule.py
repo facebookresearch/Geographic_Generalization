@@ -52,10 +52,13 @@ class ImageDataModule(pl.LightningDataModule):
         data_loader = self._create_dataloader("test", augmentations)
         return data_loader
 
+    def _get_dataset(self, path, augmentations):
+        return ImageFolder(path, augmentations)
+
     def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
         path = os.path.join(self.data_dir, stage)
         shuffle = True if stage == "train" else False
-        dataset = ImageFolder(path, augmentations)
+        dataset = self._get_dataset(path, augmentations)
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,

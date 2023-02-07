@@ -2,6 +2,7 @@ from datasets.dummy import DummyDataModule
 from datasets.imagenet import ImageNetDataModule
 from datasets.imagenet_rendition import ImageNetRenditionDataModule
 from datasets.imagenet_adversarial import ImageNetAdversarialDataModule
+from datasets.objectnet import ObjectNetDataModule
 from pathlib import Path
 
 
@@ -43,6 +44,18 @@ class TestImageNetR:
 class TestImageNetA:
     def test_imageneta(self):
         dm = ImageNetAdversarialDataModule(
+            batch_size=8,
+        )
+        assert Path(dm.data_dir, "test").exists()
+        test_batch = dm.test_dataloader()
+        x, y = next(iter(test_batch))
+        assert x.shape == (8, 3, 224, 224)
+        assert y.shape == (8,)
+
+
+class TestObjectNet:
+    def test_objectnet(self):
+        dm = ObjectNetDataModule(
             batch_size=8,
         )
         assert Path(dm.data_dir, "test").exists()
