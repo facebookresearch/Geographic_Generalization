@@ -9,7 +9,8 @@ class ImageNetRenditionDataModule(ImageNetDataModule):
         num_workers=8,
         image_size=224,
     ):
-        """Pytorch lightning based datamodule for ImageNet R dataset, found here: https://github.com/hendrycks/imagenet-r/
+        """Pytorch lightning based datamodule for ImageNet R dataset, found here: https://github.com/hendrycks/imagenet-r/.
+            Implementation based on https://github.com/fairinternal/cues_conditions/blob/0d9817b5c29e3a9872376b7da04bff7d4a31d578/release/dataset/imagenet_r.py.
 
         Args:
             data_dir (str, optional): Path to imagenet dataset directory. Defaults to "/datasets01/imagenet_full_size/061417".

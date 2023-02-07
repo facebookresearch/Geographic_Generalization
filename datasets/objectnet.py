@@ -8,7 +8,7 @@ from datasets.imagenet import ImageNetDataModule
 
 class ObjectNetDataset(VisionDataset):
     """
-    ObjectNet dataset.
+    ObjectNet dataset. Implementation from https://github.com/fairinternal/ssl-3d/blob/f838ce35aeace6b2d7fe337b5ff09cafad581cb5/moco_dist/eval_objectnet.py.
     Args:
         path (string): path directory where images are downloaded to. The images can be grouped in folders. (the folder structure will be ignored)
         augmentations (callable, optional): A function/transform that  takes in an PIL image
