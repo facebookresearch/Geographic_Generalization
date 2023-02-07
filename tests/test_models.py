@@ -8,6 +8,7 @@ from models.resnet.resnet import (
 )
 from models.mlp_mixer.mlp_mixer import MLPMixerClassifierModule
 from models.vit.vit import VitClassifierModule
+from models.beit.beit import BeitClassifierModule
 
 
 class TestPreTrainedModels:
@@ -18,6 +19,7 @@ class TestPreTrainedModels:
         ResNet50dClassifierModule(),
         ResNet101dClassifierModule(),
         VitClassifierModule(),
+        BeitClassifierModule(),
     ]
 
     @pytest.mark.parametrize("model", models)
