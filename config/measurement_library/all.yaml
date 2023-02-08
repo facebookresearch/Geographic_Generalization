@@ -12,7 +12,7 @@ equivariance_imagenet_dummy:
   model: 
   experiment_config:
 
-equivariance_imagenet_dummy: 
+sparsity_imagenet_dummy: 
   _target_: measurements.properties.sparsity.sparsity.Sparsity
   datamodule_names: [dummy]
   model: 
