@@ -121,5 +121,4 @@ class TestSparsity:
         sparsity_measure.reset_stored_z()
         results = sparsity_measure.measure()
 
-        assert "dummy_sparsity_neurons" in results
-        assert "dummy_sparsity_datapoints" in results
+        assert "dummy_sparsity" in results

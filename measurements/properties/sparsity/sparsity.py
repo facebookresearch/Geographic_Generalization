@@ -37,27 +37,17 @@ class Sparsity(Measurement):
         return None
 
     @staticmethod
-    def measure_sparsity(z: Tensor, threshold: float, lifetime_threshold: float = 0.7, population_threshold: float = 0.7) -> float:
+    def measure_sparsity(z: Tensor, threshold: float = 0.1) -> float:
         """
         Args:
             z: (num samples, embedding dim)
         """
-        if threshold is None:
-            # if no value is passed, use 0 or mean value ? There is no convention says Pascal, if you use post-activation like relu then 0 makes sense, to discuss 
-            # theta = z.abs().mean(0)
-            theta = 0
-        else:
-            theta = threshold * torch.ones_like(z)
+        theta = threshold * torch.ones_like(z)
 
         active_neurons = (z.abs() > theta).float()
-        lifetime_sparsity = active_neurons.mean(0)
-        population_sparsity = active_neurons.mean(1)
+        sparsity = active_neurons.mean()
 
-        # Return the percentage of neurons which fire for no more that lifetime_threshold of the data points
-        sparsity_neurons = (lifetime_sparsity <= lifetime_threshold).float().mean()
-        # Return the percentage of datapoints which fire no more that population_threshold of the neurons
-        sparsity_datapoints = (lifetime_sparsity <= lifetime_threshold).float().mean()
-        return sparsity_neurons, sparsity_datapoints
+        return sparsity
 
     def measure(self):
 
@@ -71,11 +61,10 @@ class Sparsity(Measurement):
             datamodule=datamodule,
         )
 
-        sparsity_neurons, sparsity_datapoints = self.measure_sparsity(
+        sparsity = self.measure_sparsity(
             self.z, self.threshold
         )
         results = {
-            f"{datamodule_name}_sparsity_neurons": sparsity_neurons,
-            f"{datamodule_name}_sparsity_datapoints": sparsity_datapoints,
+            f"{datamodule_name}_sparsity": sparsity,
         }
         return results
