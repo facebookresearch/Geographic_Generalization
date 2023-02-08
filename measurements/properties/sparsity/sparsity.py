@@ -24,7 +24,7 @@ class Sparsity(Measurement):
         self.model = model
         self.model.test_step = self.test_step
         self.z = torch.empty(0)
-        self.threshold = threshold # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
+        self.threshold = threshold  # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
 
     def reset_stored_z(self):
         self.z = torch.empty(0)
@@ -41,7 +41,7 @@ class Sparsity(Measurement):
         """
         Args:
             z: (num samples, embedding dim)
-        """        
+        """
         theta = threshold * torch.ones_like(z)
         active_neurons = (z.abs() > theta).float()
         sparsity = active_neurons.mean()
@@ -59,9 +59,7 @@ class Sparsity(Measurement):
             datamodule=datamodule,
         )
 
-        sparsity = self.measure_sparsity(
-            self.z, self.threshold
-        )
+        sparsity = self.measure_sparsity(self.z, self.threshold)
         results = {
             f"{datamodule_name}_sparsity": sparsity,
         }
