@@ -22,6 +22,7 @@ v2:
 ###### Fairness ######
 dollarstreet:
   _target_: datasets.dollarstreet.DollarStreetDataModule
+  data_dir: /checkpoint/meganrichards/datasets/dollarstreet_interplay/
   batch_size: 2
   num_workers: 4
 

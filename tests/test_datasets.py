@@ -1,16 +1,28 @@
 from datasets.dummy import DummyDataModule
 from datasets.imagenet import ImageNetDataModule
+from datasets.dollarstreet import DollarStreetDataModule
 from pathlib import Path
 
 
 class TestImageNet:
     def test_imagenet(self):
         dm = ImageNetDataModule(batch_size=8)
-        assert Path(dm.data_dir, "val").exists()
-        val_batch = dm.val_dataloader()
-        x, y = next(iter(val_batch))
+        assert Path(dm.data_dir, "test").exists()
+        test_loader = dm.test_dataloader()
+        x, y = next(iter(test_loader))
         assert x.shape == (8, 3, 224, 224)
         assert y.shape == (8,)
+
+
+class TestDollarStreet:
+    def test_dollarstreet(self):
+        dm = DollarStreetDataModule(batch_size=8)
+        assert Path(dm.data_dir, "test").exists()
+        test_loader = dm.test_dataloader()
+        x, y, url = next(iter(test_loader))
+
+        assert x.shape == (8, 3, 224, 224)
+        assert len(y) == 8
 
 
 class TestDummy:

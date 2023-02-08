@@ -28,7 +28,7 @@ class DollarStreetPerformance(Measurement):
 
     def calculate_disparities(self):
         accuracies = self.model.predictions[["url", "accurate_top5"]]
-        incomes_and_geographies = self.datamodules["dollarstreet"].ds.file[
+        incomes_and_geographies = self.datamodules["dollarstreet"].file[
             ["url", "income_bucket", "region"]
         ]
         combined = pd.merge(accuracies, incomes_and_geographies, on="url", how="left")
@@ -85,16 +85,16 @@ class DollarStreetPerformance(Measurement):
         acc_by_income = self.convert_float_dict_to_list_dict(acc_by_income)
 
         self.save_extra_results_to_csv(
-            detailed_results=acc_by_region,
+            extra_results=acc_by_region,
             name=f"{datamodule_name}_accuracy_by_region",
         )
         self.save_extra_results_to_csv(
-            detailed_results=acc_by_income,
+            extra_results=acc_by_income,
             name=f"{datamodule_name}_accuracy_by_income",
         )
 
         self.save_extra_results_to_csv(
-            detailed_results=self.model.predictions,
+            extra_results=self.model.predictions,
             name=f"{datamodule_name}_predictions",
         )
 
