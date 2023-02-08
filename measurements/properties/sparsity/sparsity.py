@@ -18,13 +18,13 @@ class Sparsity(Measurement):
         dataset_names: list[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
-        threshold: float = None,
+        threshold: float = 0.1,
     ):  # what if I want to put threshold in experiment_config, it will raise an error when initialize the super()
         super().__init__(dataset_names, model, experiment_config)
         self.model = model
         self.model.test_step = self.test_step
         self.z = torch.empty(0)
-        self.threshold = threshold
+        self.threshold = threshold # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
 
     def reset_stored_z(self):
         self.z = torch.empty(0)
@@ -37,13 +37,12 @@ class Sparsity(Measurement):
         return None
 
     @staticmethod
-    def measure_sparsity(z: Tensor, threshold: float = 0.1) -> float:
+    def measure_sparsity(z: Tensor, threshold: float) -> float:
         """
         Args:
             z: (num samples, embedding dim)
-        """
+        """        
         theta = threshold * torch.ones_like(z)
-
         active_neurons = (z.abs() > theta).float()
         sparsity = active_neurons.mean()
 
@@ -55,7 +54,6 @@ class Sparsity(Measurement):
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
         self.reset_stored_z()
 
-        gpus = 1 if torch.cuda.is_available() else 0
         self.trainer.test(
             self.model,
             datamodule=datamodule,
