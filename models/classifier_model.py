@@ -48,8 +48,9 @@ class ClassifierModule(pl.LightningModule):
 
     def load_backbone(self):
         model = timm.create_model(self.timm_name, pretrained=True)
-        state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
-        model.load_state_dict(state_dict)
+        if self.checkpoint_url:
+            state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
+            model.load_state_dict(state_dict)
         return model
 
     def load_feature_extractor(self):
@@ -58,7 +59,7 @@ class ClassifierModule(pl.LightningModule):
         feature_extractor = create_feature_extractor(
             self.model, return_nodes=[feature_extraction_layer]
         )
-        example = torch.rand((1, 3, 244, 244))
+        example = torch.rand((1, 3, 224, 224))
         output = feature_extractor(example)[feature_extraction_layer]
         embedding_dim = output.shape[1]
         return feature_extractor, feature_extraction_layer, eval_nodes, embedding_dim
