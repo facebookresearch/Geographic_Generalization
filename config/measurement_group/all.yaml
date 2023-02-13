@@ -2,4 +2,4 @@
 measurement_group_name: all
 
 measurements: [generalization_imagenet_v2, 
-generalization_imagenet_r, validation_imagenet, equivariance_imagenet_dummy, generalization_objectnet]
+generalization_imagenet_r, generalization_objectnet, generalization_imagenet_a, generalization_imagenet_sketch, validation_imagenet, equivariance_imagenet_dummy, ]

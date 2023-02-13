@@ -93,12 +93,12 @@ class ObjectNetDataset(VisionDataset):
         Returns:
             tuple: Tuple (image, target). target is the image file name
         """
-        img, target = self.getImage(index)
+        img, target = self.get_image(index)
         if self.augmentations is not None:
             img = self.augmentations(img)
         return img, target
 
-    def getImage(self, index):
+    def get_image(self, index):
         """
         Load the image and its label.
         Args:
