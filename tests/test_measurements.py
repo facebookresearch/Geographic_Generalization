@@ -12,6 +12,7 @@ from hydra import initialize, compose
 from hydra.utils import instantiate
 
 
+@pytest.mark.webtest
 class TestMeasurementSetUp:
     initialize(version_base=None, config_path="../config/")
     config = compose(config_name="test.yaml")
@@ -41,6 +42,7 @@ class TestMeasurementSetUp:
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
+@pytest.mark.webtest
 class TestEquivariance:
     @pytest.fixture(scope="module")
     def equivariance_measure(self):

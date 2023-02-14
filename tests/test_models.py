@@ -8,6 +8,7 @@ from models.resnet.resnet import (
 )
 
 
+@pytest.mark.webtest
 class TestPreTrainedModels:
     batch_size = 8
     models = [

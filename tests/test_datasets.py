@@ -6,6 +6,7 @@ from datasets.objectnet import ObjectNetDataModule
 from datasets.imagenet_sketch import ImageNetSketchDataModule
 from datasets.imagenet_1k import ImageNet1kDataModule
 from pathlib import Path
+import pytest
 
 
 class TestImageNet:
@@ -79,6 +80,7 @@ class TestObjectNet:
         assert y.shape == (8,)
 
 
+@pytest.mark.webtest
 class TestDummy:
     def test_dummy(self):
         dm = DummyDataModule(batch_size=8, num_samples=50)
