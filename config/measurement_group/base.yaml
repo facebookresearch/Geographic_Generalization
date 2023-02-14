@@ -1,4 +1,3 @@
 # @package _global_
 measurement_group_name: base
-
-measurements: [generalization_objectnet]
+measurements: [fairness_dollarstreet]

@@ -63,7 +63,7 @@ class ImageDataModule(pl.LightningDataModule):
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
-            pin_memory=True,
+            pin_memory=False,
             num_workers=self.num_workers,
             shuffle=shuffle,
         )
