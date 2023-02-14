@@ -56,10 +56,11 @@ class ClassificationAccuracyEvaluation(Measurement):
                 results_dict.update(d)
 
             # Optional: save predictions
-            self.save_extra_results_to_csv(
-                extra_results=self.model.predictions,
-                name=f"{datamodule_name}_predictions",
-            )
+            if self.save_detailed_results:
+                self.save_extra_results_to_csv(
+                    extra_results=self.model.predictions,
+                    name=f"{datamodule_name}_predictions",
+                )
 
         return results_dict  # to be added to CSV
 

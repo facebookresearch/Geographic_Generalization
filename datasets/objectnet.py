@@ -3,7 +3,7 @@ from torchvision.datasets.vision import VisionDataset
 import os
 import json
 from PIL import Image
-from datasets.imagenet import ImageNetDataModule
+from datasets.image_datamodule import ImageDataModule
 
 
 class ObjectNetDataset(VisionDataset):
@@ -127,10 +127,10 @@ class ObjectNetDataset(VisionDataset):
             return img.convert("RGB")
 
 
-class ObjectNetDataModule(ImageNetDataModule):
+class ObjectNetDataModule(ImageDataModule):
     def __init__(
         self,
-        data_dir: str = "/checkpoint/meganrichards/datasets/object_net/",
+        data_dir: str = "/checkpoint/meganrichards/datasets/objectnet/",
         batch_size: int = 32,
         num_workers=8,
         image_size=224,
@@ -138,7 +138,7 @@ class ObjectNetDataModule(ImageNetDataModule):
         """Pytorch lightning based datamodule for ObjectNet dataset, found here: https://objectnet.dev/
 
         Args:
-            data_dir (str, optional): Path to imagenet dataset directory. Defaults to "/checkpoint/meganrichards/datasets/object_net/".
+            data_dir (str, optional): Path to imagenet dataset directory. Defaults to "/checkpoint/meganrichards/datasets/objectnet/".
             batch_size (int, optional): Batch size to use in datamodule. Defaults to 32.
             num_workers (int, optional): Number of workers to use in the dataloaders. Defaults to 8.
             image_size (int, optional): Side length for image crop. Defaults to 224.

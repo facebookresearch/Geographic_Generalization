@@ -9,12 +9,12 @@ dummy:
  
 ###### Imagenet & Variants ######
 imagenet:
-  _target_: datasets.imagenet.ImageNetDataModule
+  _target_: datasets.imagenet_1k.ImageNet1kDataModule
   batch_size: 32
   num_workers: 4
 
 v2:
-  _target_: datasets.imagenet.ImageNetDataModule
+  _target_: datasets.image_datamodule.ImageDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenetv2-matched-frequency/
   batch_size: 32
   num_workers: 4

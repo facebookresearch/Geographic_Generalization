@@ -1,8 +1,8 @@
-from datasets.imagenet import ImageNetDataModule
+from datasets.image_datamodule import ImageDataModule
 import torch
 
 
-class ImageNetAdversarialDataModule(ImageNetDataModule):
+class ImageNetAdversarialDataModule(ImageDataModule):
     def __init__(
         self,
         data_dir: str = "/checkpoint/meganrichards/datasets/imagenet_a/",

@@ -1,7 +1,7 @@
-from datasets.imagenet import ImageNetDataModule
+from datasets.image_datamodule import ImageDataModule
 
 
-class ImageNetRenditionDataModule(ImageNetDataModule):
+class ImageNetRenditionDataModule(ImageDataModule):
     def __init__(
         self,
         data_dir: str = "/checkpoint/meganrichards/datasets/imagenet_r/",

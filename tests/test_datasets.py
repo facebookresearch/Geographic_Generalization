@@ -1,16 +1,17 @@
 from datasets.dummy import DummyDataModule
-from datasets.imagenet import ImageNetDataModule
+from datasets.image_datamodule import ImageDataModule
 from datasets.imagenet_rendition import ImageNetRenditionDataModule
 from datasets.imagenet_adversarial import ImageNetAdversarialDataModule
 from datasets.objectnet import ObjectNetDataModule
 from datasets.imagenet_sketch import ImageNetSketchDataModule
+from datasets.imagenet_1k import ImageNet1kDataModule
 from pathlib import Path
 
 
 class TestImageNet:
     def test_imagenet(self):
-        dm = ImageNetDataModule(batch_size=8)
-        assert Path(dm.data_dir, "test").exists()
+        dm = ImageNet1kDataModule(batch_size=8)
+        assert Path(dm.data_dir, "val").exists()
         test_batch = dm.test_dataloader()
         x, y = next(iter(test_batch))
         assert x.shape == (8, 3, 224, 224)
@@ -19,7 +20,7 @@ class TestImageNet:
 
 class TestImageNetV2:
     def test_imagenetv2(self):
-        dm = ImageNetDataModule(
+        dm = ImageDataModule(
             data_dir="/checkpoint/meganrichards/datasets/imagenetv2-matched-frequency/",
             batch_size=8,
         )
