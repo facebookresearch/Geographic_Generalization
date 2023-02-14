@@ -23,7 +23,7 @@ class DollarstreetDataset(Dataset):
     def __init__(
         self,
         file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet/interplay_version_with_buckets.csv",
-        data_dir: str = "/checkpoint/marksibrahim/datasets/dollarstreet/test/",
+        data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_interplay/test",
         augmentations=timm_transform,
         return_type="image",
     ):
@@ -44,10 +44,11 @@ class DollarstreetDataset(Dataset):
         image_name = url.split("/")[-1]
         image_path = os.path.join(self.data_dir, image_name)
 
-        if os.path.exists(image_path):
-            image = Image.open(image_path)
-        else:
-            image = Image.open(requests.get(url, stream=True).raw)
+        # if os.path.exists(image_path):
+        #     image = Image.open(image_path)
+        # else:
+        #     image = Image.open(requests.get(url, stream=True).raw)
+        image = Image.open(image_path)
 
         if self.augmentations:
             image = self.augmentations(image)
@@ -81,5 +82,5 @@ class DollarStreetDataModule(ImageDataModule):
         self.file = ds.file
         return ds
 
-    def val_transform(self) -> Callable:
+    def test_transform(self) -> Callable:
         return timm_transform

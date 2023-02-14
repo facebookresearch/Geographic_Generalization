@@ -53,15 +53,15 @@ class DollarStreetPerformance(Measurement):
 
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
 
-        new_validation_step = self.make_new_validation_step(
+        new_test_step = self.make_new_test_step(
             datamodule_name=datamodule_name,
             pred_conversion=self.convert_predictions_to_imagenet1k_labels,
         )
 
-        self.model.validation_step = types.MethodType(new_validation_step, self.model)
+        self.model.test_step = types.MethodType(new_test_step, self.model)
 
         # Calculate overall results and add to results dictionary
-        results = self.trainer.validate(model=self.model, datamodule=datamodule)
+        results = self.trainer.test(model=self.model, datamodule=datamodule)
         for d in results:
             results_dict.update(d)
 
@@ -81,22 +81,23 @@ class DollarStreetPerformance(Measurement):
         results_dict.update(acc_by_income)
 
         # Save extra results to CSVs
-        acc_by_region = self.convert_float_dict_to_list_dict(acc_by_region)
-        acc_by_income = self.convert_float_dict_to_list_dict(acc_by_income)
+        if self.save_detailed_results == "True":
+            acc_by_region = self.convert_float_dict_to_list_dict(acc_by_region)
+            acc_by_income = self.convert_float_dict_to_list_dict(acc_by_income)
 
-        self.save_extra_results_to_csv(
-            extra_results=acc_by_region,
-            name=f"{datamodule_name}_accuracy_by_region",
-        )
-        self.save_extra_results_to_csv(
-            extra_results=acc_by_income,
-            name=f"{datamodule_name}_accuracy_by_income",
-        )
+            self.save_extra_results_to_csv(
+                extra_results=acc_by_region,
+                name=f"{datamodule_name}_accuracy_by_region",
+            )
+            self.save_extra_results_to_csv(
+                extra_results=acc_by_income,
+                name=f"{datamodule_name}_accuracy_by_income",
+            )
 
-        self.save_extra_results_to_csv(
-            extra_results=self.model.predictions,
-            name=f"{datamodule_name}_predictions",
-        )
+            self.save_extra_results_to_csv(
+                extra_results=self.model.predictions,
+                name=f"{datamodule_name}_predictions",
+            )
 
         return results_dict
 
@@ -107,8 +108,8 @@ class DollarStreetPerformance(Measurement):
             names.append(pred_names)
         return names
 
-    def make_new_validation_step(self, datamodule_name, pred_conversion):
-        def new_validation_step(self, batch, batch_idx):
+    def make_new_test_step(self, datamodule_name, pred_conversion):
+        def new_test_step(self, batch, batch_idx):
             x, y, url = batch
             y_hat = self.model(x)
 
@@ -143,4 +144,4 @@ class DollarStreetPerformance(Measurement):
 
             return 1
 
-        return new_validation_step
+        return new_test_step
