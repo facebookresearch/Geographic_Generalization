@@ -12,6 +12,7 @@ from hydra import initialize, compose
 from hydra.utils import instantiate
 
 
+@pytest.mark.webtest
 class TestMeasurementSetUp:
     initialize(version_base=None, config_path="../config/")
     config = compose(config_name="test.yaml")
@@ -41,6 +42,7 @@ class TestMeasurementSetUp:
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
+@pytest.mark.webtest
 class TestEquivariance:
     @pytest.fixture(scope="module")
     def equivariance_measure(self):
@@ -86,3 +88,39 @@ class TestEquivariance:
         z_t_shuffled = equivariance_measure.shuffle_z_t(z_t)
         assert z_t.shape == z_t_shuffled.shape
         assert not torch.allclose(z_t, z_t_shuffled)
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+
+
+class TestGeneralization:
+    hydra.core.global_hydra.GlobalHydra.instance().clear()
+    initialize(version_base=None, config_path="../config/")
+    config = compose(config_name="test.yaml")
+
+    model = instantiate(config.model)
+    measurement_names = config.measurements
+    generalization_measurements = [
+        x for x in measurement_names if "generalization" in x
+    ]
+
+    measurements = []
+    for measurement_name in generalization_measurements:
+        measurement_config = getattr(config, measurement_name)
+        measurements.append(
+            instantiate(
+                measurement_config,
+                model=copy.deepcopy(model),
+                experiment_config=config,
+                _recursive_=False,
+            )
+        )
+
+    @pytest.mark.parametrize("measurement", measurements)
+    def test_generalization_measurements_report_correct_values(
+        self, measurement: Measurement
+    ):
+        result = measurement.measure()
+        assert len(result) > 0
+        for val in list(result.values()):
+            assert val is not None
+            assert val > 0.0
+        hydra.core.global_hydra.GlobalHydra.instance().clear()

@@ -11,6 +11,7 @@ from models.vit.vit import VitClassifierModule
 from models.beit.beit import BeitClassifierModule
 
 
+@pytest.mark.webtest
 class TestPreTrainedModels:
     batch_size = 8
     models = [
