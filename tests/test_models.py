@@ -6,15 +6,21 @@ from models.resnet.resnet import (
     ResNet50dClassifierModule,
     ResNet101dClassifierModule,
 )
+from models.mlp_mixer.mlp_mixer import MLPMixerClassifierModule
+from models.vit.vit import VitClassifierModule
+from models.beit.beit import BeitClassifierModule
 
 
 @pytest.mark.webtest
 class TestPreTrainedModels:
     batch_size = 8
     models = [
+        MLPMixerClassifierModule(),
         ResNet18dClassifierModule(),
         ResNet50dClassifierModule(),
         ResNet101dClassifierModule(),
+        VitClassifierModule(),
+        BeitClassifierModule(),
     ]
 
     @pytest.mark.parametrize("model", models)

@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - base: base
-  - mode: local
+  - mode: cluster_one_gpu
   - dataset_library: all
   - model: resnet101 # resnet50, resnet18
   - measurement_library: all
