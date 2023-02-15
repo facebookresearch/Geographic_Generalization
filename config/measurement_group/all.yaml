@@ -1,4 +1,5 @@
 # @package _global_
 measurement_group_name: all
 
-measurements: [generalization_imagenet_v2, validation_imagenet, equivariance_imagenet_dummy]
+measurements: [generalization_imagenet_v2, 
+generalization_imagenet_r, generalization_objectnet, generalization_imagenet_a, generalization_imagenet_sketch, validation_imagenet, equivariance_imagenet_dummy, ]

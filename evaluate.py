@@ -94,7 +94,7 @@ def perform_measurements(
             _recursive_=False,
         )
         result = measurement.measure()
-        wandb.log(result)
+        wandb.log({f"{measurement_name}/{k}": result[k] for k in list(result.keys())})
         results.update(result)
 
     return results

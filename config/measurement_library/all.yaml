@@ -41,4 +41,34 @@ generalization_imagenet_v2:
   model: 
   experiment_config:
 
+generalization_imagenet_r: 
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenet_r]
+  model: 
+  experiment_config:
+
+generalization_imagenet_a: 
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenet_a]
+  model: 
+  experiment_config:
+
+generalization_imagenet_sketch: 
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenet_sketch]
+  model: 
+  experiment_config:
+
+generalization_objectnet: 
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [objectnet]
+  model: 
+  experiment_config:
+  
 ## -- Fairness Measures -- ##
+fairness_dollarstreet: 
+  _target_: measurements.benefits.fairness.DollarStreetPerformance
+  datamodule_names: [dollarstreet]
+  model: 
+  experiment_config:
+

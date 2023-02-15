@@ -12,10 +12,11 @@ class ImageDataModule(pl.LightningDataModule):
         self,
         data_dir: str = "/datasets01/imagenet_full_size/061417",
         batch_size: int = 32,
-        num_workers=8,
-        image_size=224,
+        num_workers: int = 8,
+        image_size: int = 224,
+        test_dir_name: str = "test",
     ):
-        """Pytorch lightning based datamodule for dummy dataset.
+        """Pytorch lightning based datamodule with imagenet defaults.
 
         Args:
             data_dir (str, optional): Path to dataset directory. Defaults to "/datasets01/imagenet_full_size/061417".
@@ -28,6 +29,14 @@ class ImageDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.image_size = image_size
         self.num_workers = num_workers
+        self.__mask = self.make_mask()
+
+    def make_mask(self):
+        return None
+
+    @property
+    def mask(self):
+        return self.__mask
 
     def train_dataloader(self) -> DataLoader:
         augmentations = self.train_transform()
@@ -44,10 +53,13 @@ class ImageDataModule(pl.LightningDataModule):
         data_loader = self._create_dataloader("test", augmentations)
         return data_loader
 
+    def _get_dataset(self, path, augmentations):
+        return ImageFolder(path, augmentations)
+
     def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
         path = os.path.join(self.data_dir, stage)
         shuffle = True if stage == "train" else False
-        dataset = ImageFolder(path, augmentations)
+        dataset = self._get_dataset(path, augmentations)
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
@@ -59,23 +71,42 @@ class ImageDataModule(pl.LightningDataModule):
 
     def train_transform(self) -> Callable:
         """
-        The standard transform
+        The standard imagenet transforms
         """
         preprocessing = transform_lib.Compose(
             [
+                transform_lib.RandomResizedCrop(self.image_size),
+                transform_lib.RandomHorizontalFlip(),
                 transform_lib.ToTensor(),
+                imagenet_normalization(),
             ]
         )
-
         return preprocessing
 
     def val_transform(self) -> Callable:
         """
-        The standard transforms
+        The standard imagenet transforms for validation
         """
         preprocessing = transform_lib.Compose(
             [
+                transform_lib.Resize(self.image_size + 32),
+                transform_lib.CenterCrop(self.image_size),
                 transform_lib.ToTensor(),
+                imagenet_normalization(),
+            ]
+        )
+        return preprocessing
+
+    def test_transform(self) -> Callable:
+        """
+        The standard imagenet transforms for validation
+        """
+        preprocessing = transform_lib.Compose(
+            [
+                transform_lib.Resize(self.image_size + 32),
+                transform_lib.CenterCrop(self.image_size),
+                transform_lib.ToTensor(),
+                imagenet_normalization(),
             ]
         )
         return preprocessing

@@ -1,4 +1,3 @@
 # @package _global_
 measurement_group_name: base
-
-measurements: [equivariance_imagenet_dummy]
+measurements: [fairness_dollarstreet]

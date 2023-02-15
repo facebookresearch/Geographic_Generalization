@@ -37,37 +37,43 @@ class ClassificationAccuracyEvaluation(Measurement):
         # 1) Make a dict to store measurements
         results_dict = {}
 
-        # 2) Access datamodules needed - self.datamodules is a dict mapping from datamodule names (str) to datamodules. E.g. {'imagenet': ImageNetDatamodule object}
-        datamodule_name, datamodule = next(iter(self.datamodules.items()))
+        for data_module_name, datamodule in self.datamodules.items():
 
-        # 3) Define the measurement by overwriting the validation step for the model
-        new_validation_step = self.make_new_validation_step(
-            datamodule_name=datamodule_name
-        )
-        self.model.validation_step = types.MethodType(new_validation_step, self.model)
+            # 2) Access datamodules needed - self.datamodules is a dict mapping from datamodule names (str) to datamodules. E.g. {'imagenet': ImageNetDatamodule object}
+            datamodule_name, datamodule = next(iter(self.datamodules.items()))
 
-        # Call validate / test function
-        results = self.trainer.validate(model=self.model, datamodule=datamodule)
+            # 3) Define the measurement by overwriting the test step for the model
+            new_test_step = self.make_new_test_step(
+                datamodule_name=datamodule_name, mask=datamodule.mask
+            )
+            self.model.test_step = types.MethodType(new_test_step, self.model)
 
-        # 5) Format results into a dictionary and return
-        for d in results:
-            results_dict.update(d)
+            # Call validate / test function
+            results = self.trainer.test(model=self.model, datamodule=datamodule)
 
-        # Optional: save predictions
-        self.save_extra_results_to_csv(
-            extra_results=self.model.predictions,
-            name=f"{datamodule_name}_predictions",
-        )
+            # 5) Format results into a dictionary and return
+            for d in results:
+                results_dict.update(d)
+
+            # Optional: save predictions
+            if self.save_detailed_results:
+                self.save_extra_results_to_csv(
+                    extra_results=self.model.predictions,
+                    name=f"{datamodule_name}_predictions",
+                )
 
         return results_dict  # to be added to CSV
 
-    def make_new_validation_step(self, datamodule_name):
+    def make_new_test_step(self, datamodule_name, mask):
         # The whole purpose of this wrapper function is to allow us to pass in the 'datamodule_name' for logging.
-        # We cannot pass it into new_validation_step directly without changing the signature required by trainer.
+        # We cannot pass it into new_test_step directly without changing the signature required by trainer.
 
-        def new_validation_step(self, batch, batch_idx):
+        def new_test_step(self, batch, batch_idx):
             x, y = batch
-            y_hat = self.model(x)
+            if mask is not None:
+                y_hat = self.model(x)[:, mask]
+            else:
+                y_hat = self.model(x)
             # If you make a torchmetrics metric outside of the model construction, it doesn't get automatically moved to a device
             metric = torchmetrics.Accuracy().to(self.device)
             result = metric(F.softmax(y_hat, dim=-1), y)
@@ -79,4 +85,4 @@ class ClassificationAccuracyEvaluation(Measurement):
 
             return result
 
-        return new_validation_step
+        return new_test_step

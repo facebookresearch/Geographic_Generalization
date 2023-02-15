@@ -41,6 +41,7 @@ class Measurement(ABC):
         self.datamodules = self.make_datamodules(experiment_config, datamodule_names)
         self.trainer = self.make_trainer(experiment_config=experiment_config)
         self.experiment_config = experiment_config
+        self.save_detailed_results = experiment_config.save_detailed_results
         self.model = model
         self.datamodule_names = datamodule_names
         return
@@ -54,7 +55,7 @@ class Measurement(ABC):
 
     def make_datamodules(
         self, experiment_config: DictConfig, datamodule_names: list[str]
-    ) -> dict[str:ImageDataModule]:
+    ) -> dict[str, ImageDataModule]:
         datamodules = {}
         for datamodule_name in datamodule_names:
             datamodule_config = getattr(experiment_config, datamodule_name)
@@ -63,17 +64,22 @@ class Measurement(ABC):
 
         return datamodules
 
-    def save_extra_results_to_csv(self, extra_results: dict[str:list], name: str):
-        measurement_folder = self.__class__.__name__
-        os.makedirs(measurement_folder, exist_ok=True)
-        save_path = f"{measurement_folder}/{name}.csv"
-        pd.DataFrame(extra_results).to_csv(save_path)
+    def save_extra_results_to_csv(self, extra_results: dict[str, list], name: str):
+        if self.save_detailed_results == "True":
+            measurement_folder = self.__class__.__name__
+            os.makedirs(measurement_folder, exist_ok=True)
+            save_path = f"{measurement_folder}/{name}.csv"
+            pd.DataFrame(extra_results).to_csv(save_path)
+        else:
+            print(
+                "\n\n save_extra_results was called, but did not run because the configuration parameter 'save_detailed_results' is set to False. If you'd like to save detailed results, change the 'save_detailed_results' parameter in config/mode to 'True'."
+            )
         return
 
     @abstractmethod
     def measure(
         self,
-    ) -> dict[str:float]:
+    ) -> dict[str, float]:
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
         property_name = "property"
 

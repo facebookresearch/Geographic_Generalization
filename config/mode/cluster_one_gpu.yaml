@@ -29,3 +29,5 @@ hydra:
     # only 32gb GPUs with good networking
     # based on https://github.com/fairinternal/fairscale_benchmarks/commit/2b4ed0f8c49bdd182cdc02baa955487a65dd079c
     constraint: volta32gb,ib4
+
+save_detailed_results: True
