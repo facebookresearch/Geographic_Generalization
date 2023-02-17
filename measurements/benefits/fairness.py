@@ -1,10 +1,5 @@
 from measurements.measurement_utils import Measurement
 from omegaconf import DictConfig
-import pytorch_lightning as pl
-from hydra.utils import instantiate
-import torchmetrics
-import torch.nn.functional as F
-from pytorch_lightning.plugins.environments import SLURMEnvironment
 import types
 import torch
 from datasets import imagenet_classes
@@ -54,8 +49,7 @@ class DollarStreetPerformance(Measurement):
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
 
         new_test_step = self.make_new_test_step(
-            datamodule_name=datamodule_name,
-            pred_conversion=self.convert_predictions_to_imagenet1k_labels,
+            datamodule_name=datamodule_name, mask=datamodule.mask
         )
 
         self.model.test_step = types.MethodType(new_test_step, self.model)
@@ -65,20 +59,24 @@ class DollarStreetPerformance(Measurement):
         for d in results:
             results_dict.update(d)
 
+        self.save_extra_results_to_csv(
+            extra_results=self.model.predictions, name="dollarstreet_results"
+        )
+
         # Calculate disparities and add to results dictionary
-        acc_by_region, acc_by_income = self.calculate_disparities()
+        # acc_by_region, acc_by_income = self.calculate_disparities()
 
-        acc_by_region = {
-            "dollarstreet_test_accuracy_region_" + k: v
-            for k, v in acc_by_region.items()
-        }
-        acc_by_income = {
-            "dollarstreet_test_accuracy_income_" + k: v
-            for k, v in acc_by_income.items()
-        }
+        # acc_by_region = {
+        #     "dollarstreet_test_accuracy_region_" + k: v
+        #     for k, v in acc_by_region.items()
+        # }
+        # acc_by_income = {
+        #     "dollarstreet_test_accuracy_income_" + k: v
+        #     for k, v in acc_by_income.items()
+        # }
 
-        results_dict.update(acc_by_region)
-        results_dict.update(acc_by_income)
+        # results_dict.update(acc_by_region)
+        # results_dict.update(acc_by_income)
 
         # Save extra results to CSVs
         if self.save_detailed_results == "True":
@@ -108,23 +106,21 @@ class DollarStreetPerformance(Measurement):
             names.append(pred_names)
         return names
 
-    def make_new_test_step(self, datamodule_name, pred_conversion):
+    def make_new_test_step(self, datamodule_name, mask):
         def new_test_step(self, batch, batch_idx):
-            x, y, url = batch
-            y_hat = self.model(x)
+            x, y, identifier = batch
+
+            y_hat = self.model(x)[:, mask]
 
             confidences5, indices5 = torch.nn.functional.softmax(y_hat, dim=-1).topk(5)
             confidences1, indices1 = torch.nn.functional.softmax(y_hat, dim=-1).topk(1)
-            preds5 = pred_conversion(indices5.cpu())
-            preds1 = pred_conversion(indices1.cpu())
 
             acc5s = []
             acc1s = []
             for i in range(len(y)):
-                all_preds5 = set(sum([x.split(", ") for x in preds5[i]], []))
-                all_preds1 = set(sum([x.split(", ") for x in preds1[i]], []))
-                acc5 = len(all_preds5 & set(y[i].split(", "))) > 0
-                acc1 = len(all_preds1 & set(y[i].split(", "))) > 0
+                y_int = [int(x) for x in y[i].split(",")]
+                acc5 = len(set(y_int) & set(indices5[i].tolist())) > 0
+                acc1 = len(set(y_int) & set(indices1[i].tolist())) > 0
                 acc5s.append(acc5)
                 acc1s.append(acc1)
 
@@ -132,9 +128,9 @@ class DollarStreetPerformance(Measurement):
 
             self.save_predictions(
                 {
-                    "url": list(url),
+                    "ID": list(identifier),
                     "output": y_hat.cpu().tolist(),
-                    "predictions": preds5,
+                    "predictions": indices5.cpu().tolist(),
                     "confidences": confidences5.cpu().tolist(),
                     "label": list(y),
                     "accurate_top1": acc1s,
@@ -142,6 +138,6 @@ class DollarStreetPerformance(Measurement):
                 }
             )
 
-            return 1
+            return
 
         return new_test_step

@@ -67,3 +67,8 @@ fairness_dollarstreet:
   model: 
   experiment_config:
 
+fairness_dollarstreet_kaggle: 
+  _target_: measurements.benefits.fairness.DollarStreetPerformance
+  datamodule_names: [dollarstreet_kaggle]
+  model: 
+  experiment_config:
