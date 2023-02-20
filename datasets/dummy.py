@@ -54,7 +54,10 @@ class DummyDataModule(ImageDataModule):
         self.num_samples = num_samples
 
     def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
-        shuffle = True if stage == "train" else False
+        if stage == "train":
+            shuffle = True
+        else:
+            shuffle = False
         dataset = ImageDataset(
             num_classes=self.num_classes, num_samples=self.num_samples
         )

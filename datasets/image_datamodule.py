@@ -49,7 +49,7 @@ class ImageDataModule(pl.LightningDataModule):
         return data_loader
 
     def test_dataloader(self) -> DataLoader:
-        augmentations = self.val_transform()
+        augmentations = self.test_transform()
         data_loader = self._create_dataloader("test", augmentations)
         return data_loader
 
