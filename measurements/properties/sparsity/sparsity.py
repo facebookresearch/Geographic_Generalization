@@ -15,15 +15,15 @@ class Sparsity(Measurement):
 
     def __init__(
         self,
-        dataset_names: list[str],
+        datamodule_names: list[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
         threshold: float = 0.1,
     ):  # what if I want to put threshold in experiment_config, it will raise an error when initialize the super()
-        super().__init__(dataset_names, model, experiment_config)
+        super().__init__(datamodule_names, model, experiment_config)
         self.model = model
         self.model.test_step = self.test_step
-        self.z = torch.empty(0)
+        self.reset_stored_z()
         self.threshold = threshold  # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
 
     def reset_stored_z(self):
@@ -32,7 +32,7 @@ class Sparsity(Measurement):
     def test_step(self, batch, batch_idx):
         x, _ = batch
         # if we make forward features all layers, we could play with the layer we compute metrics on
-        z = self.model.forward_features(x)
+        z = self.model.forward_features(x).cpu()
         self.z = torch.cat([self.z, z])
         return None
 
@@ -46,7 +46,7 @@ class Sparsity(Measurement):
         active_neurons = (z.abs() > theta).float()
         sparsity = active_neurons.mean()
 
-        return sparsity
+        return sparsity.item()
 
     def measure(self):
 
