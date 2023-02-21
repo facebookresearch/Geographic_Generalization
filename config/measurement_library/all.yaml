@@ -6,22 +6,78 @@ measurement_libary_name: all
 #########################################
 
 ## -- Equivariance Measures -- ##
-equivariance_imagenet_dummy: 
+equivariance_imagenet: 
   _target_: measurements.properties.equivariance.equivariance.Equivariance
-  datamodule_names: [dummy]
+  datamodule_names: [imagenet]
   model: 
   experiment_config:
 
-sparsity_imagenet_dummy: 
-  _target_: measurements.properties.sparsity.sparsity.Sparsity
-  datamodule_names: [dummy]
+equivariance_v2: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [v2]
+  model: 
+  experiment_config:
+
+equivariance_imagenet_r: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imagenet_r]
+  model: 
+  experiment_config:
+
+equivariance_imagenet_a: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imagenet_a]
+  model: 
+  experiment_config:
+
+equivariance_imagenet_sketch: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imagenet_a]
+  model: 
+  experiment_config:
+
+equivariance_dollarstreet: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [dollarstreet]
   model: 
   experiment_config:
  
-## -- Disentanglement Measures -- ##
+## -- Sparsity Measures -- ##
+sparsity_imagenet: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenet]
+  model: 
+  experiment_config:
 
+sparsity_v2: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [v2]
+  model: 
+  experiment_config:
 
+sparsity_imagenet_r: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenet_r]
+  model: 
+  experiment_config:
 
+sparsity_imagenet_a: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenet_a]
+  model: 
+  experiment_config:
+
+sparsity_imagenet_sketch: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenet_sketch]
+  model: 
+  experiment_config:
+
+sparsity_dollarstreet: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [dollarstreet]
+  model: 
+  experiment_config:
 
 ##################################################
 ############ | Downstream Benefits | #############

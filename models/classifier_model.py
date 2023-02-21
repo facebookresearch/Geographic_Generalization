@@ -9,6 +9,7 @@ import timm
 from torchvision.models.feature_extraction import get_graph_node_names
 from torchvision.models.feature_extraction import create_feature_extractor
 import pandas as pd
+from typing import Dict, List
 
 
 class ClassifierModule(pl.LightningModule):
@@ -93,7 +94,7 @@ class ClassifierModule(pl.LightningModule):
 
         return loss
 
-    def save_predictions(self, predictions: dict[str:list]):
+    def save_predictions(self, predictions):
         preds = pd.DataFrame(predictions)
         self.predictions = pd.concat([self.predictions, preds])
         return

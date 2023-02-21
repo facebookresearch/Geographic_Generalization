@@ -90,6 +90,7 @@ class TestEquivariance:
         assert z_t.shape == z_t_shuffled.shape
         assert not torch.allclose(z_t, z_t_shuffled)
 
+
 class TestSparsity:
     @pytest.fixture(scope="module")
     def sparsity_measure(self):
@@ -97,7 +98,7 @@ class TestSparsity:
         initialize(version_base=None, config_path="../config/")
         experiment_config = compose(config_name="test.yaml")
         model = instantiate(experiment_config.model)
-        sparsity = Sparsity(["dummy"], model, experiment_config)
+        sparsity = Sparsity(["v2"], model, experiment_config)
         return sparsity
 
     def test_test_step(self, sparsity_measure: Sparsity):
@@ -117,13 +118,14 @@ class TestSparsity:
         sparsity_measure.reset_stored_z()
         sparsity_measure.measure()
         num_batches = sparsity_measure.experiment_config.trainer.limit_test_batches
-        assert sparsity_measure.z.shape == (num_batches * 8, 512)
+        assert sparsity_measure.z.shape == (num_batches * 32, 512)
 
     def test_results(self, sparsity_measure: Sparsity):
         sparsity_measure.reset_stored_z()
         results = sparsity_measure.measure()
 
-        assert "dummy_sparsity" in results
+        assert len(results) > 0
+        assert "v2_sparsity_1" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
@@ -160,4 +162,3 @@ class TestGeneralization:
             assert val is not None
             assert val > 0.0
         hydra.core.global_hydra.GlobalHydra.instance().clear()
-
