@@ -42,7 +42,7 @@ class Equivariance(Measurement):
 
     def test_step(self, batch, batch_idx):
         x, labels = batch
-        z = self.model.forward_features(x).cpu()
+        z = self.model.forward_features(x)
         z_t = None
 
         for magnitude_idx in range(10):
@@ -50,12 +50,16 @@ class Equivariance(Measurement):
                 self.transformation_name, magnitude_idx
             )
             x_i_t = transform(x)
-            z_i_t = self.model.forward_features(x_i_t).cpu()
+            z_i_t = self.model.forward_features(x_i_t)
             if z_t is None:
                 z_t = z_i_t.unsqueeze(-1)
             else:
                 z_t = torch.cat([z_t, z_i_t.unsqueeze(-1)], dim=-1)
 
+        if self.z.device != z.device:
+            self.z = self.z.to(z.device)
+        if self.z_t.device != z_t.device:
+            self.z_t = self.z_t.to(z_t.device)
         self.z = torch.cat([self.z, z])
         self.z_t = torch.cat([self.z_t, z_t])
         return None

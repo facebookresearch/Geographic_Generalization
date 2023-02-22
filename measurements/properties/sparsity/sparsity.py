@@ -32,7 +32,9 @@ class Sparsity(Measurement):
     def test_step(self, batch, batch_idx):
         x, _ = batch
         # if we make forward features all layers, we could play with the layer we compute metrics on
-        z = self.model.forward_features(x).cpu()
+        z = self.model.forward_features(x)
+        if self.z.device != z.device:
+            self.z = self.z.to(z.device)
         self.z = torch.cat([self.z, z])
         return None
 
