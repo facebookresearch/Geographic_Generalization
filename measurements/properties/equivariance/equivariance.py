@@ -56,6 +56,10 @@ class Equivariance(Measurement):
             else:
                 z_t = torch.cat([z_t, z_i_t.unsqueeze(-1)], dim=-1)
 
+        if self.z.device != z.device:
+            self.z = self.z.to(z.device)
+        if self.z_t.device != z_t.device:
+            self.z_t = self.z_t.to(z_t.device)
         self.z = torch.cat([self.z, z])
         self.z_t = torch.cat([self.z_t, z_t])
         return None
