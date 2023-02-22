@@ -22,7 +22,7 @@ class NLL(Measurement):
             x, y = batch
             y_hat = self.model(x)
             loss = F.cross_entropy(y_hat, y)
-            self.log(f"{datamodule_name}_nll", loss, on_epoch=True)
+            self.log(f"{datamodule_name}_calibration_nll", loss, on_epoch=True)
             return loss
 
         return test_step
@@ -110,6 +110,6 @@ class ECE(Measurement):
                 np.array(self.model.predictions["label"].tolist()),
                 n_bins=self.n_bins
             )
-            results_dict[f"{datamodule_name}_ece"] = ece_val
+            results_dict[f"{datamodule_name}_calibration_ece"] = ece_val
 
         return results_dict
