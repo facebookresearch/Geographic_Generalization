@@ -6,11 +6,13 @@ from measurements.measurement_utils import Measurement
 import pytorch_lightning as pl
 from measurements.properties.equivariance.equivariance import Equivariance
 from measurements.properties.sparsity.sparsity import Sparsity
+from measurements.properties.calibration.calibration import ECE, NLL
 import pytest
 import torch
 import hydra
 from hydra import initialize, compose
 from hydra.utils import instantiate
+import numpy as np
 
 
 @pytest.mark.webtest
@@ -161,3 +163,44 @@ class TestGeneralization:
             assert val > 0.0
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
+
+class TestNLL:
+    @pytest.fixture(scope="module")
+    def nll_measure(self):
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+        initialize(version_base=None, config_path="../config/")
+        experiment_config = compose(config_name="test.yaml")
+        model = instantiate(experiment_config.model)
+        nll = NLL(["dummy"], model, experiment_config)
+        return nll
+
+    def test_results(self, nll_measure: NLL):
+        results = nll_measure.measure()
+        assert "dummy_nll" in results
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+
+
+class TestECE:
+    @pytest.fixture(scope="module")
+    def ece_measure(self):
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+        initialize(version_base=None, config_path="../config/")
+        experiment_config = compose(config_name="test.yaml")
+        model = instantiate(experiment_config.model)
+        ece = ECE(["dummy"], model, experiment_config)
+        return ece
+
+    def test_ece_measure(self, ece_measure: ECE):
+        preds = np.ones((2, 100))
+        preds[0] *= (0.6 / 99); preds[0][0] = 0.4
+        preds[1] *= (0.1 / 99); preds[1][0] = 0.9
+        targets = np.array([1, 0])
+        n_bins = 2
+        ece_val = ece_measure.measure_ece(preds, targets, n_bins)
+        assert ece_val == 0.25
+
+
+    def test_results(self, ece_measure: ECE):
+        results = ece_measure.measure()
+        assert "dummy_ece" in results
+        hydra.core.global_hydra.GlobalHydra.instance().clear()

@@ -1,6 +1,6 @@
 from measurements.measurement_utils import Measurement
 from omegaconf import DictConfig
-from typing import List, Dict
+from typing import List
 from models.classifier_model import ClassifierModule
 import torch.nn.functional as F
 import types
@@ -51,8 +51,10 @@ class ECE(Measurement):
         datamodule_names: List[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
+        n_bins: int = 15,
     ):
         super().__init__(datamodule_names, model, experiment_config)
+        self.n_bins = n_bins
 
     def make_new_test_step(self):
         def test_step(self, batch, batch_idx):
@@ -67,7 +69,12 @@ class ECE(Measurement):
 
     @staticmethod
     def measure_ece(preds, targets, n_bins=15):
-        """ Adapted from https://github.com/SamsungLabs/pytorch-ensembles/blob/master/metrics.py """
+        """ Adapted from https://github.com/SamsungLabs/pytorch-ensembles/blob/master/metrics.py
+        Args:
+            preds: numpy array of shape (num samples, num classes)
+            targets: numpy array of shape (num samples,)
+            n_bins: number of bins in [0, 1] range for ECE estimation
+        """
         bin_boundaries = np.linspace(0, 1, n_bins + 1)
         bin_lowers = bin_boundaries[:-1]
         bin_uppers = bin_boundaries[1:]
@@ -100,7 +107,8 @@ class ECE(Measurement):
 
             ece_val = self.measure_ece(
                 np.array(self.model.predictions["prediction"].tolist()),
-                np.array(self.model.predictions["label"].tolist())
+                np.array(self.model.predictions["label"].tolist()),
+                n_bins=self.n_bins
             )
             results_dict[f"{datamodule_name}_ece"] = ece_val
 

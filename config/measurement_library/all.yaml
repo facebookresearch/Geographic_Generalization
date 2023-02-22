@@ -29,6 +29,7 @@ ece_imagenet_dummy:
   datamodule_names: [dummy]
   model:
   experiment_config:
+  n_bins: 15
 
 ## -- Disentanglement Measures -- ##
 
