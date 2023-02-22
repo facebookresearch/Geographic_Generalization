@@ -17,7 +17,20 @@ sparsity_imagenet_dummy:
   datamodule_names: [dummy]
   model: 
   experiment_config:
- 
+
+nll_imagenet_dummy:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [dummy]
+  model:
+  experiment_config:
+
+ece_imagenet_dummy:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [dummy]
+  model:
+  experiment_config:
+  n_bins: 15
+
 ## -- Disentanglement Measures -- ##
 
 
