@@ -49,6 +49,7 @@ class TestMeasurementSetUp:
 class TestEquivariance:
     @pytest.fixture(scope="module")
     def equivariance_measure(self):
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
         initialize(version_base=None, config_path="../config/")
         experiment_config = compose(config_name="test.yaml")
         model = instantiate(experiment_config.model)
@@ -56,7 +57,7 @@ class TestEquivariance:
         return equivariance
 
     def test_test_step(self, equivariance_measure: Equivariance):
-        batch_size = 8
+        batch_size = 32
         batch = (
             torch.rand(batch_size, 3, 224, 224),
             torch.randint(10, (batch_size, 1)),
@@ -74,8 +75,8 @@ class TestEquivariance:
         equivariance_measure.reset_stored_z()
         equivariance_measure.measure()
         num_batches = equivariance_measure.experiment_config.trainer.limit_test_batches
-        assert equivariance_measure.z.shape == (num_batches * 8, 512)
-        assert equivariance_measure.z_t.shape == (num_batches * 8, 512, 10)
+        assert equivariance_measure.z.shape == (num_batches * 32, 512)
+        assert equivariance_measure.z_t.shape == (num_batches * 32, 512, 10)
 
     def test_results(self, equivariance_measure: Equivariance):
         equivariance_measure.reset_stored_z()
@@ -194,16 +195,16 @@ class TestECE:
 
     def test_ece_measure(self, ece_measure: ECE):
         preds = np.ones((2, 100))
-        preds[0] *= (0.6 / 99); preds[0][0] = 0.4
-        preds[1] *= (0.1 / 99); preds[1][0] = 0.9
+        preds[0] *= 0.6 / 99
+        preds[0][0] = 0.4
+        preds[1] *= 0.1 / 99
+        preds[1][0] = 0.9
         targets = np.array([1, 0])
         n_bins = 2
         ece_val = ece_measure.measure_ece(preds, targets, n_bins)
         assert ece_val == 0.25
 
-
     def test_results(self, ece_measure: ECE):
         results = ece_measure.measure()
         assert "dummy_ece" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
-
