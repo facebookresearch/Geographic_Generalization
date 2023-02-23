@@ -49,7 +49,6 @@ class TestMeasurementSetUp:
 class TestEquivariance:
     @pytest.fixture(scope="module")
     def equivariance_measure(self):
-        hydra.core.global_hydra.GlobalHydra.instance().clear()
         initialize(version_base=None, config_path="../config/")
         experiment_config = compose(config_name="test.yaml")
         model = instantiate(experiment_config.model)
