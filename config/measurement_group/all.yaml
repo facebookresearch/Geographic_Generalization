@@ -1,5 +1,5 @@
 # @package _global_
 measurement_group_name: all
 
-measurements: [validation_imagenet, generalization_imagenet_v2, generalization_imagenet_r, generalization_objectnet, generalization_imagenet_a, generalization_imagenet_sketch, equivariance_imagenet, equivariance_v2, sparsity_imagenet, sparsity_v2, 
-sparsity_imagenet_r, sparsity_imagenet_a, sparsity_imagenet_sketch, sparsity_dollarstreet]
+measurements: [equivariance_imagenet, sparsity_imagenet, sparsity_imagenetv2, 
+sparsity_imagenetr, sparsity_imageneta, sparsity_imagenetsketch, sparsity_dollarstreet, sparsity_objectnet, sparsity_dollarstreet, validation_imagenet, generalization_imagenetv2, generalization_imagenetr, generalization_objectnet, generalization_imageneta, generalization_imagenetsketch, fairness_dollarstreet ]

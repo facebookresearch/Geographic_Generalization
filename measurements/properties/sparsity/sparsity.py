@@ -18,7 +18,7 @@ class Sparsity(Measurement):
         datamodule_names: list[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
-        thresholds: float = [-1, -0.5, 0, 0.1, 0.5, 1],
+        thresholds: float = [0.1, 0.5, 1, 1.5, 2, 2.5, 3],
     ):  # what if I want to put threshold in experiment_config, it will raise an error when initialize the super()
         super().__init__(datamodule_names, model, experiment_config)
         self.model.test_step = self.test_step
@@ -29,10 +29,13 @@ class Sparsity(Measurement):
         self.z = torch.empty(0)
 
     def test_step(self, batch, batch_idx):
-        x, _ = batch
+        if len(batch) == 2:
+            x, _ = batch
+        elif len(batch) == 3:
+            x, _, _ = batch
         # if we make forward features all layers, we could play with the layer we compute metrics on
         z = self.model.forward_features(x)
-        self.z = torch.cat([self.z, z])
+        self.z = torch.cat([self.z.to(self.model.device), z])
         return None
 
     @staticmethod

@@ -43,13 +43,16 @@ def main(config: DictConfig) -> None:
     measurements_dataframe["Model"] = [config.model_name]
     measurements_dataframe.to_csv(f"{getattr(config, 'logs_dir')}/measurements.csv")
 
-    # Generate Plots and Save Them
-    plots = make_experiment_plots(
-        results=measurements_dataframe,
-        log_dir=getattr(config, "logs_dir"),
-    )
+    try:
+        # Generate Plots and Save Them
+        plots = make_experiment_plots(
+            results=measurements_dataframe,
+            log_dir=getattr(config, "logs_dir"),
+        )
+        wandb.log({"Plots": [wandb.Image(image) for image in plots.values()]})
 
-    wandb.log({"Plots": [wandb.Image(image) for image in plots.values()]})
+    except Exception as e:
+        print(str(e))
 
     wandb_logger.experiment.finish()
 

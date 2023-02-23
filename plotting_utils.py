@@ -4,6 +4,34 @@ from matplotlib.lines import Line2D
 import pandas as pd
 import os
 
+font = {"weight": "normal", "size": 12}
+
+# Make universal color and marker maps
+model_names = ["resnet18", "resnet50", "resnet101", "mlpmixer", "vit"]
+
+COLORDICT = {
+    "dummy": "grey",
+    "imagenet": "red",
+    "imagenetv2": "brown",
+    "objectnet": "green",
+    "imageneta": "purple",
+    "imagenetr": "pink",
+    "imagenetsketch": "orange",
+    "dollarstreet": "blue",
+    "dollarstreet-high": "#0d7add",
+    "dollarstreet-middle": "#55a1e7",
+    "dollarstreet-low": "#b6d7f4",
+    "dollarstreet-africa": "#21f0ea",
+    "dollarstreet-europe": "#1ac0bb",
+    "dollarstreet-the americas": "#17a8a3",
+    "dollarstreet-asia": "#0d605d",
+}
+
+markers = ["*", "X", "D", "s", "v", "o"]
+
+MARKERDICT = dict(zip(model_names, markers[0 : len(model_names)]))
+plt.rc("font", **font)
+
 
 def make_performance_comparison_plots_across_models(
     results, filter_str="_test_accuracy", anti_filter_str="-"
@@ -16,7 +44,7 @@ def make_performance_comparison_plots_across_models(
     ]
 
     x = np.arange(len(generalization_names))
-    width = 0.4
+    width = 0.1
     fig, ax = plt.subplots(figsize=(14, 8))
 
     for i in range(len(results)):
@@ -25,10 +53,10 @@ def make_performance_comparison_plots_across_models(
         bar_plt = plt.bar(
             x + i * width, generalization_vals, label=row["Model"], width=width
         )
-        plt.bar_label(bar_plt, padding=3, fmt="%.2f")
+        # plt.bar_label(bar_plt, padding=3, fmt="%.2f")
 
     if len(results) > 1:
-        ax.set_xticks(ticks=x + 0.5 * (1 * width))
+        ax.set_xticks(ticks=x + 0.5 * (len(results) - 1) * width)
     else:
         ax.set_xticks(ticks=x)
     ax.set_xticklabels(generalization_names)
@@ -134,7 +162,6 @@ def make_property_vs_benefit_plot_across_models(
         benefits_df["Specific_Dataset"] = benefits_df["index"].apply(
             lambda x: x.split("_")[0]
         )  # 'Dollarstreet-africa'
-        # print(benefits_df)
 
         res = (
             pd.merge(
@@ -227,14 +254,15 @@ def make_threshold_analysis_plots(results, property_name="sparsity"):
         dataset_values = []
 
         for dataset in datasets_used:
-            dataset_df = subset[[x for x in cols if dataset in x]]
+            dataset_df = row[[x for x in cols if dataset in x]]
+
             dataset_values = dataset_values + [
-                x.split("_")[0].split("-")[0] for x in dataset_df.columns.values
+                x.split("_")[0].split("-")[0] for x in dataset_df.keys()
             ]
             threshold_values = threshold_values + [
-                x.split("_")[-1] for x in dataset_df.columns.values
+                x.split("_")[-1] for x in dataset_df.keys()
             ]
-            property_values = property_values + dataset_df.iloc[0].values.tolist()
+            property_values = property_values + dataset_df.values.tolist()
 
         df = pd.DataFrame(
             {
@@ -286,41 +314,14 @@ def make_threshold_analysis_plots(results, property_name="sparsity"):
     return plots
 
 
-font = {"weight": "normal", "size": 12}
-
-# Make universal color and marker maps
-model_names = ["resnet101", "mlpmixer"]
-
-COLORDICT = {
-    "dummy": "grey",
-    "imagenet": "red",
-    "imagenetv2": "brown",
-    "objectnet": "green",
-    "imageneta": "purple",
-    "imagenetr": "pink",
-    "imagenetsketch": "orange",
-    "dollarstreet": "blue",
-    "dollarstreet-high": "#0d7add",
-    "dollarstreet-middle": "#55a1e7",
-    "dollarstreet-low": "#b6d7f4",
-    "dollarstreet-africa": "#21f0ea",
-    "dollarstreet-europe": "#1ac0bb",
-    "dollarstreet-americas": "#17a8a3",
-    "dollarstreet-asia": "#0d605d",
-}
-
-markers = ["*", "X", "D", "s", "v", "o"]
-
-MARKERDICT = dict(zip(model_names, markers[0 : len(model_names)]))
-plt.rc("font", **font)
-
-
 def save_plots(plots={}, log_dir=""):
     os.makedirs(os.path.join(log_dir, "plots"), exist_ok=True)
     plots_path = os.path.join(log_dir, "plots")
     for plot_name, image in plots.items():
         path = os.path.join(plots_path, plot_name)
         image.savefig(path)
+
+    print(f"Plots Saved to {plots_path}")
 
 
 def make_experiment_plots(results, log_dir=""):
@@ -332,7 +333,6 @@ def make_experiment_plots(results, log_dir=""):
         for x in results.columns.values
         if ("test_accuracy" in x and "-" not in x) or "Model" in x
     ]
-    print("included_benefits", included_benefits)
     if included_benefits != []:
         plots[
             "Performance_Comparison.JPEG"
@@ -341,51 +341,91 @@ def make_experiment_plots(results, log_dir=""):
         )
 
     # Make property-benefit graphs
-    included_properties = [
-        x for x in results.columns.values if "accuracy" not in x and "Model" not in x
-    ]
-    print("included_properties", included_properties)
+
+    included_properties = list(
+        set(
+            [
+                x.split("_")[1]
+                for x in results.columns.values
+                if "accuracy" not in x and "Model" not in x
+            ]
+        )
+    )
     properties_with_thresholds = ["sparsity"]
+    print(included_properties)
 
     if included_properties != [] and included_benefits != []:
         for property_name in included_properties:
-            if any(map(property_name.__contains__, properties_with_thresholds)):
-                basic_property_name = [
-                    x
-                    for x in properties_with_thresholds
-                    if property_name.__contains__(x)
-                ][0]
 
+            # Make property-benefit plots at different thresholds
+            if property_name in properties_with_thresholds:
                 thresholds = [
-                    x.split(f"{basic_property_name}_")[-1]
-                    for x in included_properties
-                    if f"{basic_property_name}" in x
+                    x.split(f"{property_name}_")[-1]
+                    for x in results.columns.values
+                    if f"{property_name}" in x
                 ]
-                for threshold in thresholds:
+                thresholds = list(set(thresholds))
 
+                for threshold in thresholds:
                     plots[
-                        f"{basic_property_name.capitalize()}_{threshold}.JPEG"
+                        f"{property_name.capitalize()}_{threshold}.JPEG"
                     ] = make_property_vs_benefit_plot_across_models(
                         results=results,
-                        property_name=basic_property_name,
+                        property_name=property_name,
                         threshold=threshold,
-                        filter_str=f"_{basic_property_name}_{threshold}",
+                        filter_str=f"_{property_name}_{threshold}",
                         select_datasets=False,
                         select_models=False,
                     )
+                    # If dollarstreet is included and we measured this property on dollarstreet, graph dollarstreet subsets in seperate graph
+                    if any(
+                        "dollarstreet" in string for string in results.columns.values
+                    ) and any(
+                        "dollarstreet_{property_name}" in string
+                        for string in results.columns.values
+                    ):
+                        plots[
+                            f"{property_name.capitalize()}_{threshold}_dollarstreet.JPEG"
+                        ] = make_property_vs_benefit_plot_across_models(
+                            results=results,
+                            property_name=property_name,
+                            threshold=threshold,
+                            filter_str=f"_{property_name}_{threshold}",
+                            select_datasets=True,
+                            datasets_to_select=["dollarstreet"],
+                            select_models=False,
+                        )
+
+            # Make property-benefit plot without thresholds
             else:
-                print(property_name)
-                basic_property_name = property_name.split("_")[1]
                 plots[
-                    f"{basic_property_name.capitalize()}.JPEG"
+                    f"{property_name.capitalize()}.JPEG"
                 ] = make_property_vs_benefit_plot_across_models(
                     results=results,
-                    property_name=basic_property_name,
+                    property_name=property_name,
                     threshold=None,
-                    filter_str=f"_{basic_property_name}",
+                    filter_str=f"_{property_name}",
                     select_datasets=False,
                     select_models=False,
                 )
+                # If dollarstreet is included and we measured this property on dollarstreet, graph dollarstreet subsets in seperate graph
+                if any(
+                    "dollarstreet" in string for string in results.columns.values
+                ) and any(
+                    "dollarstreet_{property_name}" in string
+                    for string in results.columns.values
+                ):
+                    plots[
+                        f"{property_name.capitalize()}_dollarstreet.JPEG"
+                    ] = make_property_vs_benefit_plot_across_models(
+                        results=results,
+                        property_name=property_name,
+                        threshold=None,
+                        filter_str=f"_{property_name}",
+                        select_datasets=True,
+                        datasets_to_select=["dollarstreet"],
+                        select_models=False,
+                    )
 
     # Make plots for thresholds
     for property_with_threshold in properties_with_thresholds:
@@ -397,3 +437,31 @@ def make_experiment_plots(results, log_dir=""):
     if log_dir:
         save_plots(plots=plots, log_dir=log_dir)
     return plots
+
+
+def generate_aggregate_plots(
+    experiment_name="cluster_run",
+    base_logging_path="/checkpoint/meganrichards/logs/interplay_project/",
+):
+    # Aggregate model results into one results CSV
+    model_names = [
+        x
+        for x in os.listdir(os.path.join(base_logging_path, experiment_name))
+        if "plot" not in x
+    ]
+
+    measurement_results = []
+    for model_name in model_names:
+        measurements = pd.read_csv(
+            f"{os.path.join(base_logging_path, experiment_name)}/{model_name}/{model_name}_all_measures/measurements.csv",
+            index_col=0,
+        )
+        measurement_results.append(measurements)
+
+    results = pd.concat(measurement_results)
+
+    # Generate plots
+    make_experiment_plots(
+        results, log_dir=os.path.join(base_logging_path, experiment_name)
+    )
+    return

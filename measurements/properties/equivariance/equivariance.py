@@ -26,10 +26,11 @@ class Equivariance(Measurement):
         self.set_model_test_step()
 
         # samples x embedding_dim
-        self.z = torch.empty(0).to(self.model.device)
+        self.z = torch.empty(0)
+
         # samples x embedding_dim x number of transformation parameters
-        self.z_t = torch.empty(0).to(self.model.device)
-        self.z_t_shuffled = torch.empty(0).to(self.model.device)
+        self.z_t = torch.empty(0)
+        self.z_t_shuffled = torch.empty(0)
 
     def set_model_test_step(self):
         self.model.test_step = self.test_step
@@ -56,8 +57,8 @@ class Equivariance(Measurement):
             else:
                 z_t = torch.cat([z_t, z_i_t.unsqueeze(-1)], dim=-1)
 
-        self.z = torch.cat([self.z, z])
-        self.z_t = torch.cat([self.z_t, z_t])
+        self.z = torch.cat([self.z.to(self.model.device), z])
+        self.z_t = torch.cat([self.z_t.to(self.model.device), z_t])
         return None
 
     def on_test_end(self):
