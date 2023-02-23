@@ -5,6 +5,6 @@ defaults:
   - dataset_library: all
   - model: resnet18 
   - measurement_library: all
-  - measurement_group: all
+  - measurement_group: base
 
-experiment_identifier: cluster_run
+experiment_identifier: test

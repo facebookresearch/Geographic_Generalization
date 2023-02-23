@@ -30,6 +30,9 @@ def main(config: DictConfig) -> None:
     print_config(config)
     wandb_logger = setup_wandb(config, log, git_hash)
 
+    # Check config
+    check_config_measurements(config)
+
     # Build model
     model = instantiate(config.model)
 
@@ -118,6 +121,20 @@ def perform_measurements(
             print(str(e))
 
     return results
+
+
+def check_config_measurements(config):
+    for measurement in config.measurements:
+        if not measurement in config:
+            raise Exception(
+                f"{measurement} measure not available in the experiment config."
+            )
+        measurement_datamodules = config[measurement]["datamodule_names"]
+        for measurement_datamodule in measurement_datamodules:
+            if not measurement_datamodule in config:
+                raise Exception(
+                    f"{measurement} uses the dataset {measurement_datamodule}, but this dataset is not available in the experiment config."
+                )
 
 
 if __name__ == "__main__":
