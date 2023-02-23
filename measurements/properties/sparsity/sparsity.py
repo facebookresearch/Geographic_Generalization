@@ -25,6 +25,7 @@ class Sparsity(Measurement):
         self.z = torch.empty(0)
         self.thresholds = thresholds  # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
 
+
     def reset_stored_z(self):
         self.z = torch.empty(0)
 
@@ -36,6 +37,7 @@ class Sparsity(Measurement):
         # if we make forward features all layers, we could play with the layer we compute metrics on
         z = self.model.forward_features(x)
         self.z = torch.cat([self.z.to(self.model.device), z])
+
         return None
 
     @staticmethod
@@ -48,7 +50,7 @@ class Sparsity(Measurement):
         active_neurons = (z.abs() > theta).float()
         sparsity = active_neurons.mean()
 
-        return sparsity
+        return sparsity.item()
 
     def measure(self):
         # Get datamodule of interest
