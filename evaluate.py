@@ -16,6 +16,7 @@ from models.classifier_model import ClassifierModule
 import pandas as pd
 from pytorch_lightning.loggers import WandbLogger
 import copy
+from plotting_utils import make_experiment_plots
 
 log = logging.getLogger(__name__)
 git_hash = get_git_hash()
@@ -26,6 +27,7 @@ git_hash = get_git_hash()
 )
 def main(config: DictConfig) -> None:
     pl.seed_everything(config.seed)
+    print_config(config)
     wandb_logger = setup_wandb(config, log, git_hash)
 
     # Build model
@@ -38,7 +40,16 @@ def main(config: DictConfig) -> None:
 
     # Make a dataframe, and save it
     measurements_dataframe = pd.DataFrame(measurements, index=[0])
+    measurements_dataframe["Model"] = [config.model_name]
     measurements_dataframe.to_csv(f"{getattr(config, 'logs_dir')}/measurements.csv")
+
+    # Generate Plots and Save Them
+    plots = make_experiment_plots(
+        results=measurements_dataframe,
+        log_dir=getattr(config, "logs_dir"),
+    )
+
+    wandb.log({"Plots": [wandb.Image(image) for image in plots.values()]})
 
     wandb_logger.experiment.finish()
 
@@ -86,16 +97,22 @@ def perform_measurements(
 
     for measurement_name in measurement_names:
         print(f"\n\n *** Measuring : {measurement_name} *** \n\n")
-        measurement_config = getattr(experiment_config, measurement_name)
-        measurement = instantiate(
-            measurement_config,
-            model=copy.deepcopy(model),
-            experiment_config=experiment_config,
-            _recursive_=False,
-        )
-        result = measurement.measure()
-        wandb.log({f"{measurement_name}/{k}": result[k] for k in list(result.keys())})
-        results.update(result)
+        try:
+            measurement_config = getattr(experiment_config, measurement_name)
+            measurement = instantiate(
+                measurement_config,
+                model=copy.deepcopy(model),
+                experiment_config=experiment_config,
+                _recursive_=False,
+            )
+            result = measurement.measure()
+            wandb.log(
+                {f"{measurement_name}/{k}": result[k] for k in list(result.keys())}
+            )
+            results.update(result)
+        except Exception as e:
+            print(measurement_name)
+            print(str(e))
 
     return results
 

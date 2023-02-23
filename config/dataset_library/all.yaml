@@ -13,24 +13,24 @@ imagenet:
   batch_size: 32
   num_workers: 8
 
-v2:
+imagenetv2:
   _target_: datasets.image_datamodule.ImageDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenetv2-matched-frequency/
   batch_size: 32
   num_workers: 8
 
-imagenet_r:
+imagenetr:
   _target_: datasets.imagenet_rendition.ImageNetRenditionDataModule
   batch_size: 32
   num_workers: 8
 
-imagenet_a:
+imageneta:
   _target_: datasets.imagenet_adversarial.ImageNetAdversarialDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenet_a/
   batch_size: 32
   num_workers: 8
 
-imagenet_sketch:
+imagenetsketch:
   _target_: datasets.imagenet_sketch.ImageNetSketchDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenet_sketch/
   batch_size: 32
