@@ -224,7 +224,7 @@ def make_property_vs_benefit_plot_across_models(
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax = plt.gca().add_artist(color_legend)
     plt.legend(
-        title="Model", handles=m_handles, bbox_to_anchor=(1.05, 0.2), loc="upper left"
+        title="Model", handles=m_handles, bbox_to_anchor=(1.05, 0.35), loc="upper left"
     )
 
     if threshold != None:

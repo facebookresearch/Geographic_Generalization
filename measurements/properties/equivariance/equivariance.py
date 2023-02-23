@@ -42,7 +42,10 @@ class Equivariance(Measurement):
         self.z_t_shuffled = torch.empty(0)
 
     def test_step(self, batch, batch_idx):
-        x, labels = batch
+        if len(batch) == 2:
+            x, labels = batch
+        else:
+            x, labels, _ = batch
         z = self.model.forward_features(x)
         z_t = None
 

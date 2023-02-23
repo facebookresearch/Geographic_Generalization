@@ -18,13 +18,12 @@ class Sparsity(Measurement):
         datamodule_names: list[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
-        thresholds: float = [0.1, 0.5, 1, 1.5, 2, 2.5, 3],
+        thresholds: float = [0.05, 0.1, 0.25, 0.5, 1, 1.5, 2, 2.5, 3],
     ):  # what if I want to put threshold in experiment_config, it will raise an error when initialize the super()
         super().__init__(datamodule_names, model, experiment_config)
         self.model.test_step = self.test_step
         self.z = torch.empty(0)
         self.thresholds = thresholds  # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
-
 
     def reset_stored_z(self):
         self.z = torch.empty(0)
