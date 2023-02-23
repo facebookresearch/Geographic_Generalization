@@ -59,6 +59,7 @@ class Equivariance(Measurement):
 
         self.z = torch.cat([self.z.to(self.model.device), z])
         self.z_t = torch.cat([self.z_t.to(self.model.device), z_t])
+
         return None
 
     def on_test_end(self):
