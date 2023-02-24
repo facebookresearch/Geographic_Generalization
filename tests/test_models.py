@@ -16,6 +16,12 @@ from models.clip.clip import (
     CLIPLAION2BClassifierModule,
     CLIPLAION400MClassifierModule,
 )
+from models.seer.seer import (
+    Seer320ClassifierModule,
+    Seer640ClassifierModule,
+    Seer1280ClassifierModule,
+    Seer10bClassifierModule,
+)
 
 
 @pytest.mark.webtest
@@ -23,17 +29,21 @@ class TestPreTrainedModels:
     batch_size = 8
     models = [
         MLPMixerClassifierModule(),
-        # ResNet18dClassifierModule(),
-        # ResNet50dClassifierModule(),
-        # ResNet101dClassifierModule(),
-        # BeitClassifierModule(),
-        # VitClassifierModule(),
-        # VitLargeClassifierModule(),
-        # ConvNextlassifierModule(),
-        # SimCLRClassifierModule(),
-        # CLIPOPENAI400MClassifierModule(),
-        # CLIPLAION400MClassifierModule(),
-        # CLIPLAION2BClassifierModule(),
+        ResNet18dClassifierModule(),
+        ResNet50dClassifierModule(),
+        ResNet101dClassifierModule(),
+        BeitClassifierModule(),
+        VitClassifierModule(),
+        VitLargeClassifierModule(),
+        ConvNextlassifierModule(),
+        SimCLRClassifierModule(),
+        CLIPOPENAI400MClassifierModule(),
+        CLIPLAION400MClassifierModule(),
+        CLIPLAION2BClassifierModule(),
+        Seer320ClassifierModule(),
+        # Seer10bClassifierModule(), this took more than 30min to test independently...
+        Seer640ClassifierModule(),
+        Seer1280ClassifierModule(),
     ]
 
     @pytest.mark.parametrize("model", models)

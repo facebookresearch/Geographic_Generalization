@@ -1,5 +1,5 @@
 # @package _global_
-model_name: clip_pretrained
+model_name: clip
 
 model: 
   _target_: models.clip.clip.CLIPOPENAI400MClassifierModule
