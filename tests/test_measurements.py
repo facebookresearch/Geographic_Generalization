@@ -93,6 +93,7 @@ class TestEquivariance:
         assert not torch.allclose(z_t, z_t_shuffled)
 
 
+@pytest.mark.webtest
 class TestSparsity:
     @pytest.fixture(scope="module")
     def sparsity_measure(self):
@@ -100,7 +101,7 @@ class TestSparsity:
         initialize(version_base=None, config_path="../config/")
         experiment_config = compose(config_name="test.yaml")
         model = instantiate(experiment_config.model)
-        sparsity = Sparsity(["v2"], model, experiment_config)
+        sparsity = Sparsity(["dummy"], model, experiment_config)
         return sparsity
 
     def test_test_step(self, sparsity_measure: Sparsity):
@@ -127,7 +128,7 @@ class TestSparsity:
         results = sparsity_measure.measure()
 
         assert len(results) > 0
-        assert "v2_sparsity_1" in results
+        assert "dummy_sparsity_1" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
@@ -166,6 +167,7 @@ class TestGeneralization:
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
+@pytest.mark.webtest
 class TestNLL:
     @pytest.fixture(scope="module")
     def nll_measure(self):
@@ -178,10 +180,11 @@ class TestNLL:
 
     def test_results(self, nll_measure: NLL):
         results = nll_measure.measure()
-        assert "dummy_nll" in results
+        assert "dummy_calibration_nll" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
+@pytest.mark.webtest
 class TestECE:
     @pytest.fixture(scope="module")
     def ece_measure(self):
@@ -205,5 +208,5 @@ class TestECE:
 
     def test_results(self, ece_measure: ECE):
         results = ece_measure.measure()
-        assert "dummy_ece" in results
+        assert "dummy_calibration_ece" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
