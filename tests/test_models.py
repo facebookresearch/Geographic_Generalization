@@ -11,21 +11,29 @@ from models.vit.vit import VitClassifierModule, VitLargeClassifierModule
 from models.beit.beit import BeitClassifierModule
 from models.simclr.simclr import SimCLRClassifierModule
 from models.convnext.convnext import ConvNextlassifierModule
+from models.clip.clip import (
+    CLIPOPENAI400MClassifierModule,
+    CLIPLAION2BClassifierModule,
+    CLIPLAION400MClassifierModule,
+)
 
 
 @pytest.mark.webtest
 class TestPreTrainedModels:
     batch_size = 8
     models = [
-        # MLPMixerClassifierModule(),
+        MLPMixerClassifierModule(),
         # ResNet18dClassifierModule(),
         # ResNet50dClassifierModule(),
         # ResNet101dClassifierModule(),
-        # VitClassifierModule(),
         # BeitClassifierModule(),
+        # VitClassifierModule(),
         # VitLargeClassifierModule(),
         # ConvNextlassifierModule(),
-        SimCLRClassifierModule(),
+        # SimCLRClassifierModule(),
+        # CLIPOPENAI400MClassifierModule(),
+        # CLIPLAION400MClassifierModule(),
+        # CLIPLAION2BClassifierModule(),
     ]
 
     @pytest.mark.parametrize("model", models)

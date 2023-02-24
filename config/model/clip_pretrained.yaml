@@ -2,9 +2,6 @@
 model_name: clip_pretrained
 
 model: 
-  _target_: models.clip.clip.CLIPPretrained
+  _target_: models.clip.clip.CLIPOPENAI400MClassifierModule
 
-best_learning_rate:
-  finetuning: 0.000001
-  linear_eval: 0.000251
 

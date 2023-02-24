@@ -8,7 +8,3 @@ class MLPMixerClassifierModule(ClassifierModule):
         checkpoint_url: str = "",
     ):
         super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
-
-    def forward(self, x):
-        feats = self.model.forward_features(x)
-        return feats
