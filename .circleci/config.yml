@@ -13,7 +13,7 @@ executors:
                 type: string
 jobs:
   build-and-test:
-    resource_class: xlarge
+    resource_class: 2xlarge
     executor: default2
     steps:
       - checkout
