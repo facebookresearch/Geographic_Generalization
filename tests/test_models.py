@@ -37,13 +37,13 @@ class TestPreTrainedModels:
         VitLargeClassifierModule(),
         ConvNextlassifierModule(),
         SimCLRClassifierModule(),
-        CLIPOPENAI400MClassifierModule(),
-        CLIPLAION400MClassifierModule(),
-        CLIPLAION2BClassifierModule(),
+        CLIPOPENAI400MClassifierModule(),  # only testing 1 CLIP and 1 SEER because they break the testing environment otherwise
+        # CLIPLAION400MClassifierModule(),
+        # CLIPLAION2BClassifierModule(),
         Seer320ClassifierModule(),
         # Seer10bClassifierModule(), this took more than 30min to test independently...
-        Seer640ClassifierModule(),
-        Seer1280ClassifierModule(),
+        # Seer640ClassifierModule(),
+        # Seer1280ClassifierModule(),
     ]
 
     @pytest.mark.parametrize("model", models)
