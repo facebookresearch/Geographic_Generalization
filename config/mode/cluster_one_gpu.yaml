@@ -13,7 +13,7 @@ trainer:
 partitions:
   dianeb: learnlab,devlab
   marksibrahim: learnlab,devlab
-  meganrichards: learnfair
+  meganrichards: learnlab,devlab
   # H1 only has learnfair, not learnlab
 
 hydra:
