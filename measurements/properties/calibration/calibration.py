@@ -10,7 +10,8 @@ import numpy as np
 class NLL(Measurement):
     """Negative Log-Likelihood"""
 
-    def __init__(self,
+    def __init__(
+        self,
         datamodule_names: List[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
@@ -19,7 +20,10 @@ class NLL(Measurement):
 
     def make_new_test_step(self, datamodule_name):
         def test_step(self, batch, batch_idx):
-            x, y = batch
+            if len(batch) == 3:
+                x, y, _ = batch
+            else:
+                x, y = batch
             y_hat = self.model(x)
             loss = F.cross_entropy(y_hat, y)
             self.log(f"{datamodule_name}_calibration_nll", loss, on_epoch=True)
@@ -47,7 +51,8 @@ class NLL(Measurement):
 class ECE(Measurement):
     """Expected Calibration Error"""
 
-    def __init__(self,
+    def __init__(
+        self,
         datamodule_names: List[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
@@ -61,7 +66,10 @@ class ECE(Measurement):
             x, y = batch
             y_hat = self.model(x)
             self.save_predictions(
-                {"prediction": F.softmax(y_hat, dim=-1).cpu().tolist(), "label": y.cpu().tolist()}
+                {
+                    "prediction": F.softmax(y_hat, dim=-1).cpu().tolist(),
+                    "label": y.cpu().tolist(),
+                }
             )
             return None
 
@@ -69,7 +77,7 @@ class ECE(Measurement):
 
     @staticmethod
     def measure_ece(preds, targets, n_bins=15):
-        """ Adapted from https://github.com/SamsungLabs/pytorch-ensembles/blob/master/metrics.py
+        """Adapted from https://github.com/SamsungLabs/pytorch-ensembles/blob/master/metrics.py
         Args:
             preds: numpy array of shape (num samples, num classes)
             targets: numpy array of shape (num samples,)
@@ -80,7 +88,7 @@ class ECE(Measurement):
         bin_uppers = bin_boundaries[1:]
 
         confidences, predictions = np.max(preds, 1), np.argmax(preds, 1)
-        accuracies = (predictions == targets)
+        accuracies = predictions == targets
 
         ece = 0.0
         for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
@@ -108,7 +116,7 @@ class ECE(Measurement):
             ece_val = self.measure_ece(
                 np.array(self.model.predictions["prediction"].tolist()),
                 np.array(self.model.predictions["label"].tolist()),
-                n_bins=self.n_bins
+                n_bins=self.n_bins,
             )
             results_dict[f"{datamodule_name}_calibration_ece"] = ece_val
 

@@ -6,41 +6,114 @@ measurement_libary_name: all
 #########################################
 
 ## -- Equivariance Measures -- ##
-equivariance_imagenet_dummy: 
+equivariance_dummy: 
   _target_: measurements.properties.equivariance.equivariance.Equivariance
   datamodule_names: [dummy]
   model: 
   experiment_config:
 
-sparsity_imagenet_dummy: 
+equivariance_imagenet: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imagenet]
+  model: 
+  experiment_config:
+
+equivariance_imagenetv2: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imagenetv2]
+  model: 
+  experiment_config:
+
+equivariance_imagenetr: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imagenetr]
+  model: 
+  experiment_config:
+
+equivariance_imageneta: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imageneta]
+  model: 
+  experiment_config:
+
+equivariance_imagenetsketch: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [imagenetsketch]
+  model: 
+  experiment_config:
+
+equivariance_objectnet: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [objectnet]
+  model: 
+  experiment_config:
+
+equivariance_dollarstreet: 
+  _target_: measurements.properties.equivariance.equivariance.Equivariance
+  datamodule_names: [dollarstreet]
+  model: 
+  experiment_config:
+ 
+## -- Sparsity Measures -- ##
+sparsity_dummy: 
   _target_: measurements.properties.sparsity.sparsity.Sparsity
   datamodule_names: [dummy]
   model: 
   experiment_config:
 
-nll_imagenet_dummy:
-  _target_: measurements.properties.calibration.calibration.NLL
-  datamodule_names: [dummy]
-  model:
+sparsity_imagenet: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenet]
+  model: 
   experiment_config:
 
-ece_imagenet_dummy:
-  _target_: measurements.properties.calibration.calibration.ECE
-  datamodule_names: [dummy]
-  model:
+sparsity_imagenetv2: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenetv2]
+  model: 
   experiment_config:
-  n_bins: 15
 
-## -- Disentanglement Measures -- ##
+sparsity_imagenetr: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenetr]
+  model: 
+  experiment_config:
 
+sparsity_imageneta: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imageneta]
+  model: 
+  experiment_config:
 
+sparsity_imagenetsketch: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [imagenetsketch]
+  model: 
+  experiment_config:
 
+sparsity_objectnet: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [objectnet]
+  model: 
+  experiment_config:
+
+sparsity_dollarstreet: 
+  _target_: measurements.properties.sparsity.sparsity.Sparsity
+  datamodule_names: [dollarstreet]
+  model: 
+  experiment_config:
 
 ##################################################
 ############ | Downstream Benefits | #############
 ##################################################
 
 ## -- Performance Measures -- ##
+generalization_dummy: 
+  _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [dummy]
+  model: 
+  experiment_config:
+
 validation_imagenet: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
   datamodule_names: [imagenet]
@@ -48,27 +121,27 @@ validation_imagenet:
   experiment_config:
   
 ## -- Generalization Measures -- ##
-generalization_imagenet_v2: 
+generalization_imagenetv2: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
-  datamodule_names: [v2]
+  datamodule_names: [imagenetv2]
   model: 
   experiment_config:
 
-generalization_imagenet_r: 
+generalization_imagenetr: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
-  datamodule_names: [imagenet_r]
+  datamodule_names: [imagenetr]
   model: 
   experiment_config:
 
-generalization_imagenet_a: 
+generalization_imageneta: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
-  datamodule_names: [imagenet_a]
+  datamodule_names: [imageneta]
   model: 
   experiment_config:
 
-generalization_imagenet_sketch: 
+generalization_imagenetsketch: 
   _target_: measurements.benefits.generalization.ClassificationAccuracyEvaluation
-  datamodule_names: [imagenet_sketch]
+  datamodule_names: [imagenetsketch]
   model: 
   experiment_config:
 
@@ -84,4 +157,110 @@ fairness_dollarstreet:
   datamodule_names: [dollarstreet]
   model: 
   experiment_config:
+
+## -- Calibration Measures -- ##
+
+nll_dummy:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [dummy]
+  model:
+  experiment_config:
+
+ece_dummy:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [dummy]
+  model:
+  experiment_config:
+  n_bins: 15
+
+nll_imagenet:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [imagenet]
+  model:
+  experiment_config:
+
+ece_imagenet:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [imagenet]
+  model:
+  experiment_config:
+  n_bins: 15
+
+nll_imagenetsketch:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [imagenetsketch]
+  model:
+  experiment_config:
+
+ece_imagenetsketch:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [imagenetsketch]
+  model:
+  experiment_config:
+  n_bins: 15
+
+nll_imagenetr:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [imagenetr]
+  model:
+  experiment_config:
+
+ece_imagenetr:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [imagenetr]
+  model:
+  experiment_config:
+  n_bins: 15
+
+nll_imageneta:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [imageneta]
+  model:
+  experiment_config:
+
+ece_imageneta:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [imageneta]
+  model:
+  experiment_config:
+  n_bins: 15
+
+nll_imagenetv2:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [imagenetv2]
+  model:
+  experiment_config:
+
+ece_imagenetv2:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [imagenetv2]
+  model:
+  experiment_config:
+  n_bins: 15
+
+nll_objectnet:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [objectnet]
+  model:
+  experiment_config:
+
+ece_objectnet:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [objectnet]
+  model:
+  experiment_config:
+  n_bins: 15
+
+nll_dollarstreet:
+  _target_: measurements.properties.calibration.calibration.NLL
+  datamodule_names: [dollarstreet]
+  model:
+  experiment_config:
+
+ece_dollarstreet:
+  _target_: measurements.properties.calibration.calibration.ECE
+  datamodule_names: [dollarstreet]
+  model:
+  experiment_config:
+  n_bins: 15
 

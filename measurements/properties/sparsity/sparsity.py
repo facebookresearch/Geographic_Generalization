@@ -18,24 +18,25 @@ class Sparsity(Measurement):
         datamodule_names: list[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
-        threshold: float = 0.1,
+        thresholds: float = [0.05, 0.1, 0.25, 0.5, 1, 1.5, 2, 2.5, 3],
     ):  # what if I want to put threshold in experiment_config, it will raise an error when initialize the super()
         super().__init__(datamodule_names, model, experiment_config)
-        self.model = model
         self.model.test_step = self.test_step
-        self.reset_stored_z()
-        self.threshold = threshold  # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
+        self.z = self.reset_stored_z()
+        self.thresholds = thresholds  # Right now, threshold is an attribute of Sparsity object, but we can also pass it as argument to measure_sparsity()
 
     def reset_stored_z(self):
         self.z = torch.empty(0)
 
     def test_step(self, batch, batch_idx):
-        x, _ = batch
+        if len(batch) == 2:
+            x, _ = batch
+        elif len(batch) == 3:
+            x, _, _ = batch
         # if we make forward features all layers, we could play with the layer we compute metrics on
         z = self.model.forward_features(x)
-        if self.z.device != z.device:
-            self.z = self.z.to(z.device)
-        self.z = torch.cat([self.z, z])
+        self.z = torch.cat([self.z.to(self.model.device), z])
+
         return None
 
     @staticmethod
@@ -51,18 +52,21 @@ class Sparsity(Measurement):
         return sparsity.item()
 
     def measure(self):
-
         # Get datamodule of interest
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
-        self.reset_stored_z()
 
-        self.trainer.test(
-            self.model,
-            datamodule=datamodule,
-        )
+        results = {}
 
-        sparsity = self.measure_sparsity(self.z, self.threshold)
-        results = {
-            f"{datamodule_name}_sparsity": sparsity,
-        }
+        for threshold in self.thresholds:
+
+            self.reset_stored_z()
+
+            self.trainer.test(
+                self.model,
+                datamodule=datamodule,
+            )
+
+            sparsity = self.measure_sparsity(self.z, threshold)
+            results[f"{datamodule_name}_sparsity_{threshold}"] = sparsity
+
         return results

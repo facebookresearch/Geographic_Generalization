@@ -69,11 +69,11 @@ class DollarStreetPerformance(Measurement):
         acc_by_region, acc_by_income = self.calculate_disparities()
 
         acc_by_region = {
-            "dollarstreet_test_accuracy_region_" + k: v
+            f"dollarstreet-{k.lower()}_test_accuracy": v
             for k, v in acc_by_region.items()
         }
         acc_by_income = {
-            "dollarstreet_test_accuracy_income_" + k: v
+            f"dollarstreet-{k.lower()}_test_accuracy": v
             for k, v in acc_by_income.items()
         }
 

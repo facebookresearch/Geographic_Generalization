@@ -6,3 +6,5 @@ defaults:
   - model: resnet18 
   - measurement_library: all
   - measurement_group: all
+
+experiment_identifier: test
