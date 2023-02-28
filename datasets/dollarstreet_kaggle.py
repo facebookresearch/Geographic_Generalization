@@ -11,11 +11,11 @@ from datasets.image_datamodule import imagenet_normalization
 class DollarstreetDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_groups.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/",
         augmentations=imagenet_normalization,
     ):
-        self.file = pd.read_csv(file_path, index_col=0).reset_index().head(100)
+        self.file = pd.read_csv(file_path, index_col=0).reset_index()
 
         self.file["imagenet_sysnet_id"] = self.file["imagenet_sysnet_id"].apply(
             literal_eval
@@ -23,8 +23,6 @@ class DollarstreetDataset(Dataset):
 
         self.data_dir = data_dir
         self.augmentations = augmentations
-        print("making dataset")
-        print(augmentations)
 
     def __len__(self):
         return len(self.file)
@@ -170,38 +168,3 @@ MAPPING = {
     "listening to the radio": "radio",
     "dinner guests": "eating place",
 }
-
-
-# def make_imagenet_class_to_dollarstreet_idx():
-#     imagenet_class_to_dollarstreet_idx = {}
-
-#     for m in list(MAPPING.values()):
-#         for i, imagenet_class in IMAGENET1K_IDX_TO_NAMES.items():
-#             if m.strip() in imagenet_class:
-#                 if m.strip() in imagenet_class_to_dollarstreet_idx:
-#                     imagenet_class_to_dollarstreet_idx[m.strip()].append(i)
-#                 else:
-#                     imagenet_class_to_dollarstreet_idx[m.strip()] = [i]
-
-#     for cl, ls in imagenet_class_to_dollarstreet_idx.items():
-#         imagenet_class_to_dollarstreet_idx[cl] = list(set(ls))
-#     return imagenet_class_to_dollarstreet_idx
-
-
-# def make_idx_to_label(imagenet_class_to_dollarstreet_idx):
-#     idx_to_label = {}
-#     for name, idx_list in imagenet_class_to_dollarstreet_idx.items():
-#         for idx in idx_list:
-#             if idx in idx_to_label:
-#                 idx_to_label[idx].append(name)
-#             else:
-#                 idx_to_label[idx] = [name]
-
-#     return idx_to_label
-
-
-# def make_dollarstreet_mask():
-#     imagenet_class_to_dollarstreet_idx = make_imagenet_class_to_dollarstreet_idx()
-#     idx_to_label = make_idx_to_label(imagenet_class_to_dollarstreet_idx)
-#     imagenet_mask = list(idx_to_label.keys())
-#     return imagenet_mask
