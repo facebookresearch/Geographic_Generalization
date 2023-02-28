@@ -24,7 +24,7 @@ class NLL(Measurement):
                 x, y, _ = batch
             else:
                 x, y = batch
-            y_hat = self.model(x)
+            y_hat = self(x)
             loss = F.cross_entropy(y_hat, y)
             self.log(f"{datamodule_name}_calibration_nll", loss, on_epoch=True)
             return loss
@@ -64,7 +64,7 @@ class ECE(Measurement):
     def make_new_test_step(self):
         def test_step(self, batch, batch_idx):
             x, y = batch
-            y_hat = self.model(x)
+            y_hat = self(x)
             self.save_predictions(
                 {
                     "prediction": F.softmax(y_hat, dim=-1).cpu().tolist(),

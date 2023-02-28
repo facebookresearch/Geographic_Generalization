@@ -91,7 +91,7 @@ class DollarStreetPerformance(Measurement):
         def new_test_step(self, batch, batch_idx):
             x, y, identifier = batch
 
-            y_hat = self.model(x)  # [:, mask]
+            y_hat = self(x)  # [:, mask]
 
             confidences5, indices5 = torch.nn.functional.softmax(y_hat, dim=-1).topk(5)
             confidences1, indices1 = torch.nn.functional.softmax(y_hat, dim=-1).topk(1)
