@@ -7,8 +7,6 @@ import os
 font = {"weight": "normal", "size": 12}
 
 # Make universal color and marker maps
-model_names = ["resnet18", "resnet50", "resnet101", "mlpmixer", "vit"]
-
 COLORDICT = {
     "dummy": "grey",
     "imagenet": "red",
@@ -18,18 +16,49 @@ COLORDICT = {
     "imagenetr": "pink",
     "imagenetsketch": "orange",
     "dollarstreet": "blue",
-    "dollarstreet-high": "#0d7add",
-    "dollarstreet-middle": "#55a1e7",
-    "dollarstreet-low": "#b6d7f4",
+    "dollarstreet-q1": "#0d7add",
+    "dollarstreet-q2": "#55a1e7",
+    "dollarstreet-q3": "#b6d7f4",
+    "dollarstreet-q4": "#21f0ea",
     "dollarstreet-africa": "#21f0ea",
     "dollarstreet-europe": "#1ac0bb",
     "dollarstreet-the americas": "#17a8a3",
     "dollarstreet-asia": "#0d605d",
 }
 
-markers = ["*", "X", "D", "s", "v", "o"]
+# MARKERDICT = {
+#     "resnet18": "$R18$",
+#     "resnet50": "$R50$",
+#     "resnet101": "$R101$",
+#     "resnet152": "$R152$",
+#     "mlpmixer": "$MLP$",
+#     "vit": "$V$",
+#     "vitlarge": "$V+$",
+#     "simclr": "$Sim$",
+#     "seer320": "$S320$",
+#     "seer640": "$S640$",
+#     "seer1280": "$S1280$",
+#     "clip": "$CLIP$",
+#     "clip-laion400M": "$CLIP400$",
+# }
 
-MARKERDICT = dict(zip(model_names, markers[0 : len(model_names)]))
+MARKERDICT = {
+    "resnet18": "v",
+    "resnet50": "^",
+    "resnet101": "<",
+    "resnet152": ">",
+    "mlpmixer": "d",
+    "vit": ".",
+    "vitlarge": "o",
+    "simclr": "D",
+    "seer320": "p",
+    "seer640": "h",
+    "seer1280": "H",
+    "clip": "x",
+    "clip-laion400M": "X",
+    "convnext": "2",
+}
+
 plt.rc("font", **font)
 
 
@@ -44,8 +73,8 @@ def make_performance_comparison_plots_across_models(
     ]
 
     x = np.arange(len(generalization_names))
-    width = 0.1
-    fig, ax = plt.subplots(figsize=(14, 8))
+    width = 0.06
+    fig, ax = plt.subplots(figsize=(25, 8))
 
     for i in range(len(results)):
         row = results.iloc[i]
@@ -56,7 +85,8 @@ def make_performance_comparison_plots_across_models(
         # plt.bar_label(bar_plt, padding=3, fmt="%.2f")
 
     if len(results) > 1:
-        ax.set_xticks(ticks=x + 0.5 * (len(results) - 1) * width)
+        print("setting ticks")
+        ax.set_xticks(ticks=x + 0.5 * (len(results)) * width)
     else:
         ax.set_xticks(ticks=x)
     ax.set_xticklabels(generalization_names)
@@ -94,7 +124,6 @@ def make_property_vs_benefit_plot_across_models(
         results = results[results["Model"].isin(models_to_select)]
         markerdict = {k: MARKERDICT[k] for k in models_to_select}
 
-    # fig = plt.figure(figsize=(14, 8))
     fig, ax = plt.subplots(figsize=(14, 8))
     property_cols = [x for x in results.columns.values if filter_str in x]
 
@@ -333,6 +362,7 @@ def make_experiment_plots(results, log_dir=""):
         for x in results.columns.values
         if ("test_accuracy" in x and "-" not in x) or "Model" in x
     ]
+
     if included_benefits != []:
         plots[
             "Performance_Comparison.JPEG"
@@ -381,7 +411,7 @@ def make_experiment_plots(results, log_dir=""):
                     if any(
                         "dollarstreet" in string for string in results.columns.values
                     ) and any(
-                        "dollarstreet_{property_name}" in string
+                        f"dollarstreet_{property_name}" in string
                         for string in results.columns.values
                     ):
                         plots[
@@ -409,10 +439,17 @@ def make_experiment_plots(results, log_dir=""):
                     select_models=False,
                 )
                 # If dollarstreet is included and we measured this property on dollarstreet, graph dollarstreet subsets in seperate graph
+                print(
+                    any("dollarstreet" in string for string in results.columns.values)
+                    and any(
+                        f"dollarstreet_{property_name}" in string
+                        for string in results.columns.values
+                    )
+                )
                 if any(
                     "dollarstreet" in string for string in results.columns.values
                 ) and any(
-                    "dollarstreet_{property_name}" in string
+                    f"dollarstreet_{property_name}" in string
                     for string in results.columns.values
                 ):
                     plots[
@@ -452,11 +489,14 @@ def generate_aggregate_plots(
 
     measurement_results = []
     for model_name in model_names:
-        measurements = pd.read_csv(
-            f"{os.path.join(base_logging_path, experiment_name)}/{model_name}/{model_name}_all_measures/measurements.csv",
-            index_col=0,
-        )
-        measurement_results.append(measurements)
+        try:
+            measurements = pd.read_csv(
+                f"{os.path.join(base_logging_path, experiment_name)}/{model_name}/measurements.csv",
+                index_col=0,
+            )
+            measurement_results.append(measurements)
+        except Exception as e:
+            print(str(e))
 
     results = pd.concat(measurement_results)
 

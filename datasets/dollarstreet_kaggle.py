@@ -15,7 +15,7 @@ class DollarstreetDataset(Dataset):
         data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/",
         augmentations=imagenet_normalization,
     ):
-        self.file = pd.read_csv(file_path, index_col=0).reset_index().head(100)
+        self.file = pd.read_csv(file_path, index_col=0).reset_index()
 
         self.file["imagenet_sysnet_id"] = self.file["imagenet_sysnet_id"].apply(
             literal_eval

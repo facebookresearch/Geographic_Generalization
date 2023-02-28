@@ -31,9 +31,7 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
 
     def load_backbone(self):
         model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        print("Model loaded")
         self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-        print("processor loaded")
         return model
 
     def forward(self, x):
