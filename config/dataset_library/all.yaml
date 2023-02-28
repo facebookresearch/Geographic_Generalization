@@ -43,13 +43,13 @@ objectnet:
   num_workers: 4
 
 ###### Fairness ######
-dollarstreet:
-  _target_: datasets.dollarstreet.DollarStreetDataModule
-  data_dir: /checkpoint/meganrichards/datasets/dollarstreet_interplay/
-  batch_size: 32
-  num_workers: 8
+# dollarstreet-old:
+#   _target_: datasets.dollarstreet.DollarStreetDataModule
+#   data_dir: /checkpoint/meganrichards/datasets/dollarstreet_interplay/
+#   batch_size: 32
+#   num_workers: 8
 
-dollarstreet_kaggle:
+dollarstreet:
   _target_: datasets.dollarstreet_kaggle.DollarStreetDataModule
   data_dir: /checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/
   batch_size: 32
