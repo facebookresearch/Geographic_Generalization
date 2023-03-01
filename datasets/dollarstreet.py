@@ -42,6 +42,8 @@ class DollarstreetDataset(Dataset):
         label = ", ".join(row["label_1k"])
 
         image_name = url.split("/")[-1]
+        image_path = os.path.join(self.data_dir, image_name)
+
         if os.path.exists(image_path):
              image = Image.open(image_path)
         else:
