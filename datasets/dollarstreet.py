@@ -42,8 +42,10 @@ class DollarstreetDataset(Dataset):
         label = ", ".join(row["label_1k"])
 
         image_name = url.split("/")[-1]
-        image_path = os.path.join(self.data_dir, image_name)
-        image = Image.open(image_path)
+        if os.path.exists(image_path):
+             image = Image.open(image_path)
+        else:
+             image = Image.open(requests.get(url, stream=True).raw)
 
         if self.augmentations:
             image = self.augmentations(image)
