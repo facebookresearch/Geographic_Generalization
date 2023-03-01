@@ -1,7 +1,6 @@
 # @package _global_
 measurement_group_name: all
 
-
 measurements: [
   fairness_dollarstreet,
   validation_imagenet, generalization_imagenetv2, generalization_imagenetr, generalization_imageneta, generalization_imagenetsketch, generalization_objectnet, 
