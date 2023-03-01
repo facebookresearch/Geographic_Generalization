@@ -4,43 +4,43 @@ dataset_libary_name: all
 ###### Testing ######
 dummy:
   _target_: datasets.dummy.DummyDataModule
-  batch_size: 8
+  batch_size: 32
   num_classes: 1000
  
 ###### Imagenet & Variants ######
 imagenet:
   _target_: datasets.imagenet_1k.ImageNet1kDataModule
   batch_size: 32
-  num_workers: 4
+  num_workers: 8
 
-v2:
+imagenetv2:
   _target_: datasets.image_datamodule.ImageDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenetv2-matched-frequency/
   batch_size: 32
-  num_workers: 4
+  num_workers: 8
 
-imagenet_r:
+imagenetr:
   _target_: datasets.imagenet_rendition.ImageNetRenditionDataModule
   batch_size: 32
-  num_workers: 4
+  num_workers: 8
 
-imagenet_a:
+imageneta:
   _target_: datasets.imagenet_adversarial.ImageNetAdversarialDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenet_a/
   batch_size: 32
-  num_workers: 4
+  num_workers: 8
 
-imagenet_sketch:
+imagenetsketch:
   _target_: datasets.imagenet_sketch.ImageNetSketchDataModule
   data_dir: /checkpoint/meganrichards/datasets/imagenet_sketch/
   batch_size: 32
-  num_workers: 4
+  num_workers: 8
 
 objectnet:
   _target_: datasets.objectnet.ObjectNetDataModule
   data_dir: /checkpoint/meganrichards/datasets/objectnet/
   batch_size: 32
-  num_workers: 4
+  num_workers: 8
 
 ###### Fairness ######
 # dollarstreet-old:

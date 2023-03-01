@@ -5,11 +5,14 @@ import copy
 from measurements.measurement_utils import Measurement
 import pytorch_lightning as pl
 from measurements.properties.equivariance.equivariance import Equivariance
+from measurements.properties.sparsity.sparsity import Sparsity
+from measurements.properties.calibration.calibration import ECE, NLL
 import pytest
 import torch
 import hydra
 from hydra import initialize, compose
 from hydra.utils import instantiate
+import numpy as np
 
 
 @pytest.mark.webtest
@@ -53,7 +56,7 @@ class TestEquivariance:
         return equivariance
 
     def test_test_step(self, equivariance_measure: Equivariance):
-        batch_size = 8
+        batch_size = 32
         batch = (
             torch.rand(batch_size, 3, 224, 224),
             torch.randint(10, (batch_size, 1)),
@@ -71,8 +74,8 @@ class TestEquivariance:
         equivariance_measure.reset_stored_z()
         equivariance_measure.measure()
         num_batches = equivariance_measure.experiment_config.trainer.limit_test_batches
-        assert equivariance_measure.z.shape == (num_batches * 8, 512)
-        assert equivariance_measure.z_t.shape == (num_batches * 8, 512, 10)
+        assert equivariance_measure.z.shape == (num_batches * 32, 512)
+        assert equivariance_measure.z_t.shape == (num_batches * 32, 512, 10)
 
     def test_results(self, equivariance_measure: Equivariance):
         equivariance_measure.reset_stored_z()
@@ -88,6 +91,44 @@ class TestEquivariance:
         z_t_shuffled = equivariance_measure.shuffle_z_t(z_t)
         assert z_t.shape == z_t_shuffled.shape
         assert not torch.allclose(z_t, z_t_shuffled)
+
+
+@pytest.mark.webtest
+class TestSparsity:
+    @pytest.fixture(scope="module")
+    def sparsity_measure(self):
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+        initialize(version_base=None, config_path="../config/")
+        experiment_config = compose(config_name="test.yaml")
+        model = instantiate(experiment_config.model)
+        sparsity = Sparsity(["dummy"], model, experiment_config)
+        return sparsity
+
+    def test_test_step(self, sparsity_measure: Sparsity):
+        batch_size = 8
+        batch = (
+            torch.rand(batch_size, 3, 224, 224),
+            torch.randint(10, (batch_size, 1)),
+        )
+        sparsity_measure.reset_stored_z()
+        sparsity_measure.test_step(batch, 0)
+        assert sparsity_measure.z.shape == (
+            batch_size,
+            512,
+        )
+
+    def test_embeddings_are_stored(self, sparsity_measure: Sparsity):
+        sparsity_measure.reset_stored_z()
+        sparsity_measure.measure()
+        num_batches = sparsity_measure.experiment_config.trainer.limit_test_batches
+        assert sparsity_measure.z.shape == (num_batches * 32, 512)
+
+    def test_results(self, sparsity_measure: Sparsity):
+        sparsity_measure.reset_stored_z()
+        results = sparsity_measure.measure()
+
+        assert len(results) > 0
+        assert "dummy_sparsity_1" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
@@ -124,7 +165,6 @@ class TestGeneralization:
             assert val is not None
             assert val > 0.0
         hydra.core.global_hydra.GlobalHydra.instance().clear()
-
 
 class TestFairness:
     hydra.core.global_hydra.GlobalHydra.instance().clear()
@@ -167,4 +207,47 @@ class TestFairness:
         assert "dollarstreet-q3_test_accuracy" in result.keys()
         assert "dollarstreet-q4_test_accuracy" in result.keys()
 
+
+@pytest.mark.webtest
+class TestNLL:
+    @pytest.fixture(scope="module")
+    def nll_measure(self):
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+        initialize(version_base=None, config_path="../config/")
+        experiment_config = compose(config_name="test.yaml")
+        model = instantiate(experiment_config.model)
+        nll = NLL(["dummy"], model, experiment_config)
+        return nll
+
+    def test_results(self, nll_measure: NLL):
+        results = nll_measure.measure()
+        assert "dummy_calibration_nll" in results
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+
+
+@pytest.mark.webtest
+class TestECE:
+    @pytest.fixture(scope="module")
+    def ece_measure(self):
+        hydra.core.global_hydra.GlobalHydra.instance().clear()
+        initialize(version_base=None, config_path="../config/")
+        experiment_config = compose(config_name="test.yaml")
+        model = instantiate(experiment_config.model)
+        ece = ECE(["dummy"], model, experiment_config)
+        return ece
+
+    def test_ece_measure(self, ece_measure: ECE):
+        preds = np.ones((2, 100))
+        preds[0] *= 0.6 / 99
+        preds[0][0] = 0.4
+        preds[1] *= 0.1 / 99
+        preds[1][0] = 0.9
+        targets = np.array([1, 0])
+        n_bins = 2
+        ece_val = ece_measure.measure_ece(preds, targets, n_bins)
+        assert ece_val == 0.25
+
+    def test_results(self, ece_measure: ECE):
+        results = ece_measure.measure()
+        assert "dummy_calibration_ece" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()

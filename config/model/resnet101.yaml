@@ -3,5 +3,3 @@ model_name: resnet101
 
 model: 
   _target_: models.resnet.resnet.ResNet101dClassifierModule
-  learning_rate: 1e-4
-  optimizer: adam
