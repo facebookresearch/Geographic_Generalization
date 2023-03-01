@@ -124,3 +124,47 @@ class TestGeneralization:
             assert val is not None
             assert val > 0.0
         hydra.core.global_hydra.GlobalHydra.instance().clear()
+
+
+class TestFairness:
+    hydra.core.global_hydra.GlobalHydra.instance().clear()
+    initialize(version_base=None, config_path="../config/")
+    config = compose(config_name="test.yaml")
+
+    model = instantiate(config.model)
+    measurement_names = config.measurements
+    print(measurement_names)
+    fairness_measurements = [x for x in measurement_names if "fairness" in x]
+
+    measurements = []
+    for measurement_name in fairness_measurements:
+        measurement_config = getattr(config, measurement_name)
+        measurements.append(
+            instantiate(
+                measurement_config,
+                model=copy.deepcopy(model),
+                experiment_config=config,
+                _recursive_=False,
+            )
+        )
+
+    @pytest.mark.parametrize("measurement", measurements)
+    def test_fairness_measurements_report_correct_values(
+        self, measurement: Measurement
+    ):
+        result = measurement.measure()
+        assert len(result) > 0
+        for val in list(result.values()):
+            assert val is not None
+            assert val > 0.0
+
+        assert "dollarstreet-africa_test_accuracy" in result.keys()
+        assert "dollarstreet-americas_test_accuracy" in result.keys()
+        assert "dollarstreet-asia_test_accuracy" in result.keys()
+        assert "dollarstreet-europe_test_accuracy" in result.keys()
+        assert "dollarstreet-q1_test_accuracy" in result.keys()
+        assert "dollarstreet-q2_test_accuracy" in result.keys()
+        assert "dollarstreet-q3_test_accuracy" in result.keys()
+        assert "dollarstreet-q4_test_accuracy" in result.keys()
+
+        hydra.core.global_hydra.GlobalHydra.instance().clear()

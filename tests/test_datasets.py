@@ -7,7 +7,7 @@ from datasets.objectnet import ObjectNetDataModule
 from datasets.imagenet_sketch import ImageNetSketchDataModule
 from datasets.imagenet_1k import ImageNet1kDataModule
 
-from datasets.dollarstreet import DollarStreetDataModule
+from datasets.dollarstreet_kaggle import DollarStreetDataModule
 from pathlib import Path
 import pytest
 
@@ -86,12 +86,13 @@ class TestObjectNet:
 class TestDollarStreet:
     def test_dollarstreet(self):
         dm = DollarStreetDataModule(batch_size=8)
-        assert Path(dm.data_dir, "test").exists()
         test_loader = dm.test_dataloader()
-        x, y, url = next(iter(test_loader))
+        x, y, id = next(iter(test_loader))
 
         assert x.shape == (8, 3, 224, 224)
         assert len(y) == 8
+        assert len(id) == 8
+        assert type(id[0]) == str
 
 
 @pytest.mark.webtest
