@@ -1,0 +1,6 @@
+# @package _global_
+model_name: vitlarge
+
+model: 
+  _target_: models.vit.vit.VitLargeClassifierModule
+

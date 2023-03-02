@@ -4,8 +4,8 @@ seed: 0
 hydra/job_logging: colorlog
 hydra/hydra_logging: colorlog
 
-name: ${model_name}_${measurement_group_name}_measures
-logs_dir: /checkpoint/${oc.env:USER}/logs/${project}/${name}/${now:%Y-%m-%d_%H-%M-%S}
+name: ${experiment_identifier}_${model_name}
+logs_dir: /checkpoint/${oc.env:USER}/logs/${project}/${experiment_identifier}/${model_name}/
 
 
 wandb:

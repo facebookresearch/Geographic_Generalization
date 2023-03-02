@@ -1,0 +1,5 @@
+# @package _global_
+model_name: clip-laion2B
+
+model: 
+  _target_: models.clip.clip.CLIPLAION2BClassifierModule
