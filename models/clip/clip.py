@@ -11,6 +11,61 @@ from datasets.imagenet_classes import IMAGENET_CLASSES
 from models.classifier_model import ClassifierModule
 
 
+class CLIPClassifierModule(ClassifierModule):
+    """CLIP zero shot classiifer"""
+
+    def __init__(
+        self,
+        timm_name: str = "",
+        feature_extraction_layer_index=-2,
+        checkpoint_url: str = "",
+    ):
+        super().__init__(
+            timm_name=timm_name,
+            feature_extraction_layer_index=feature_extraction_layer_index,
+            checkpoint_url=checkpoint_url,
+        )
+
+    # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
+    CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in IMAGENET_CLASSES]
+    text_tokens = tokenizer.tokenize(CLASS_NAME_PROMPTS)
+
+    def load_backbone(self):
+        model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-16")
+        self.preprocess = preprocess
+        return model
+
+    def forward(self, x):
+        text_input = self.processor(
+            text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
+        ).to(self.device)
+        image_input = {"pixel_values": x}
+        all_inputs = {**text_input, **image_input}
+        outputs = self.model(**all_inputs)
+        logits_per_image = outputs.logits_per_image
+        return logits_per_image
+
+    def forward_features(self, x):
+        with torch.no_grad():
+            self.feature_extraction_layer = "image_embeds"
+            self.processor.eval()
+            self.model.eval()
+            text_input = self.processor(
+                text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
+            ).to(self.device)
+
+            image_input = {"pixel_values": x}
+            all_inputs = {**text_input, **image_input}
+            outputs = self.model(**all_inputs)
+        return outputs[self.feature_extraction_layer]
+
+    def load_feature_extractor(self):
+        example = torch.rand((1, 3, 224, 224))
+        output = self.forward_features(example)
+        embedding_dim = output.shape[1]
+        return None, self.feature_extraction_layer, [], embedding_dim
+
+
 class CLIPOPENAI400MClassifierModule(ClassifierModule):
     """CLIP zero shot classiifer"""
 
@@ -47,13 +102,17 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
         return logits_per_image
 
     def forward_features(self, x):
-        self.feature_extraction_layer = "image_embeds"
-        text_input = self.processor(
-            text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
-        ).to(self.device)
-        image_input = {"pixel_values": x}
-        all_inputs = {**text_input, **image_input}
-        outputs = self.model(**all_inputs)
+        with torch.no_grad():
+            self.feature_extraction_layer = "image_embeds"
+            self.processor.eval()
+            self.model.eval()
+            text_input = self.processor(
+                text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
+            ).to(self.device)
+
+            image_input = {"pixel_values": x}
+            all_inputs = {**text_input, **image_input}
+            outputs = self.model(**all_inputs)
         return outputs[self.feature_extraction_layer]
 
     def load_feature_extractor(self):
