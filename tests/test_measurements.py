@@ -56,7 +56,7 @@ class TestEquivariance:
         return equivariance
 
     def test_test_step(self, equivariance_measure: Equivariance):
-        batch_size = 8
+        batch_size = 32
         batch = (
             torch.rand(batch_size, 3, 224, 224),
             torch.randint(10, (batch_size, 1)),
@@ -74,8 +74,8 @@ class TestEquivariance:
         equivariance_measure.reset_stored_z()
         equivariance_measure.measure()
         num_batches = equivariance_measure.experiment_config.trainer.limit_test_batches
-        assert equivariance_measure.z.shape == (num_batches * 8, 512)
-        assert equivariance_measure.z_t.shape == (num_batches * 8, 512, 10)
+        assert equivariance_measure.z.shape == (num_batches * 32, 512)
+        assert equivariance_measure.z_t.shape == (num_batches * 32, 512, 10)
 
     def test_results(self, equivariance_measure: Equivariance):
         equivariance_measure.reset_stored_z()
@@ -92,6 +92,8 @@ class TestEquivariance:
         assert z_t.shape == z_t_shuffled.shape
         assert not torch.allclose(z_t, z_t_shuffled)
 
+
+@pytest.mark.webtest
 class TestSparsity:
     @pytest.fixture(scope="module")
     def sparsity_measure(self):
@@ -119,13 +121,14 @@ class TestSparsity:
         sparsity_measure.reset_stored_z()
         sparsity_measure.measure()
         num_batches = sparsity_measure.experiment_config.trainer.limit_test_batches
-        assert sparsity_measure.z.shape == (num_batches * 8, 512)
+        assert sparsity_measure.z.shape == (num_batches * 32, 512)
 
     def test_results(self, sparsity_measure: Sparsity):
         sparsity_measure.reset_stored_z()
         results = sparsity_measure.measure()
 
-        assert "dummy_sparsity" in results
+        assert len(results) > 0
+        assert "dummy_sparsity_1" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
@@ -164,6 +167,7 @@ class TestGeneralization:
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
+@pytest.mark.webtest
 class TestNLL:
     @pytest.fixture(scope="module")
     def nll_measure(self):
@@ -180,6 +184,7 @@ class TestNLL:
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
+@pytest.mark.webtest
 class TestECE:
     @pytest.fixture(scope="module")
     def ece_measure(self):
@@ -192,8 +197,10 @@ class TestECE:
 
     def test_ece_measure(self, ece_measure: ECE):
         preds = np.ones((2, 100))
-        preds[0] *= (0.6 / 99); preds[0][0] = 0.4
-        preds[1] *= (0.1 / 99); preds[1][0] = 0.9
+        preds[0] *= 0.6 / 99
+        preds[0][0] = 0.4
+        preds[1] *= 0.1 / 99
+        preds[1][0] = 0.9
         targets = np.array([1, 0])
         n_bins = 2
         ece_val = ece_measure.measure_ece(preds, targets, n_bins)
@@ -207,7 +214,6 @@ class TestECE:
         n_bins = 2
         ece_val = ece_measure.measure_ece(preds, targets, n_bins)
         assert ece_val == 0.25
-
 
     def test_results(self, ece_measure: ECE):
         results = ece_measure.measure()
