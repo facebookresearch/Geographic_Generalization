@@ -65,15 +65,25 @@ plt.rc("font", **font)
 def make_performance_comparison_plots_across_models(
     results, filter_str="_test_accuracy", anti_filter_str="-"
 ):
+    results = results.sort_values(by="imagenet_test_accuracy", ascending=False)
+    # generalization_cols = [
+    #     x for x in results.columns if filter_str in x and anti_filter_str not in x
+    # ]
     generalization_cols = [
-        x for x in results.columns if filter_str in x and anti_filter_str not in x
+        "imagenet_test_accuracy",
+        "imagenetv2_test_accuracy",
+        "imagenetr_test_accuracy",
+        "dollarstreet_test_accuracy",
+        "imagenetsketch_test_accuracy",
+        "objectnet_test_accuracy",
+        "imageneta_test_accuracy",
     ]
     generalization_names = [
         x.split(filter_str)[0] for x in list(results[generalization_cols].keys())
     ]
 
     x = np.arange(len(generalization_names))
-    width = 0.06
+    width = 0.04
     fig, ax = plt.subplots(figsize=(25, 8))
 
     for i in range(len(results)):
@@ -85,12 +95,12 @@ def make_performance_comparison_plots_across_models(
         # plt.bar_label(bar_plt, padding=3, fmt="%.2f")
 
     if len(results) > 1:
-        print("setting ticks")
+        print("setting custom ticks")
         ax.set_xticks(ticks=x + 0.5 * (len(results)) * width)
     else:
         ax.set_xticks(ticks=x)
-    ax.set_xticklabels(generalization_names)
 
+    ax.set_xticklabels(generalization_names)
     plt.xlabel("Dataset")
     plt.ylabel("Top 1 Accuracy")
     plt.title("Model Performance Comparison Across Datasets")
@@ -253,7 +263,7 @@ def make_property_vs_benefit_plot_across_models(
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax = plt.gca().add_artist(color_legend)
     plt.legend(
-        title="Model", handles=m_handles, bbox_to_anchor=(1.05, 0.35), loc="upper left"
+        title="Model", handles=m_handles, bbox_to_anchor=(1.05, 0.55), loc="upper left"
     )
 
     if threshold != None:
@@ -261,7 +271,7 @@ def make_property_vs_benefit_plot_across_models(
         plt.title(f"{property_name.capitalize()} v.s Accuracy, (T={threshold})")
     else:
         plt.xlabel(f"{property_name.capitalize()}")
-        plt.title(f"{property_name.capitalize()} v.s Accuracy")
+        plt.title(f"{property_name.capitalize()} v.s Performance")
     plt.ylabel("Test Accuracy")
     plt.show()
     return fig
@@ -301,6 +311,7 @@ def make_threshold_analysis_plots(results, property_name="sparsity"):
             }
         )
         df["Color"] = df["Dataset"].apply(lambda x: COLORDICT[x])
+        model = row["Model"]
 
         # Plot
         fig, ax = plt.subplots(figsize=(14, 8))
@@ -308,6 +319,7 @@ def make_threshold_analysis_plots(results, property_name="sparsity"):
             x=df["Threshold"],
             y=df["Property"],
             c=df["Color"],
+            marker=MARKERDICT[model],
             s=200,
         )
 
