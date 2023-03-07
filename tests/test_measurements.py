@@ -176,7 +176,7 @@ class TestNLL:
 
     def test_results(self, nll_measure: NLL):
         results = nll_measure.measure()
-        assert "dummy_nll" in results
+        assert "dummy_calibration_nll" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()
 
 
@@ -199,8 +199,17 @@ class TestECE:
         ece_val = ece_measure.measure_ece(preds, targets, n_bins)
         assert ece_val == 0.25
 
+    def test_ece_measure_multilabel(self, ece_measure: ECE):
+        preds = np.ones((2, 100))
+        preds[0] *= (0.6 / 99); preds[0][0] = 0.4
+        preds[1] *= (0.1 / 99); preds[1][0] = 0.9
+        targets = np.array([[1, 2], [0, 3]])
+        n_bins = 2
+        ece_val = ece_measure.measure_ece(preds, targets, n_bins)
+        assert ece_val == 0.25
+
 
     def test_results(self, ece_measure: ECE):
         results = ece_measure.measure()
-        assert "dummy_ece" in results
+        assert "dummy_calibration_ece" in results
         hydra.core.global_hydra.GlobalHydra.instance().clear()

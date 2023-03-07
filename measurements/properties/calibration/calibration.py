@@ -2,6 +2,7 @@ from measurements.measurement_utils import Measurement
 from omegaconf import DictConfig
 from typing import List
 from models.classifier_model import ClassifierModule
+import torch
 import torch.nn.functional as F
 import types
 import numpy as np
@@ -19,8 +20,18 @@ class NLL(Measurement):
 
     def make_new_test_step(self, datamodule_name):
         def test_step(self, batch, batch_idx):
-            x, y = batch
+            x, y = batch[0], batch[1]
             y_hat = self.model(x)
+            if isinstance(y, list) and isinstance(y[0], str):  # multi-label case
+                y_hat = y_hat.cpu()
+                y_new = np.zeros(len(y), dtype=int)
+                # TODO: not sure if this conversion maybe
+                # should happen in the dataloader?
+                y = [np.array(sorted([int(x) for x in y[i].split(',')]), dtype=int) for i in range(len(y))]
+                for i in range(len(y)):
+                    y_new[i] = y[i][np.argmax(y_hat[i][y[i]])]
+                y = y_new
+                y, y_hat = torch.from_numpy(y).to(x.device), y_hat.to(x.device)
             loss = F.cross_entropy(y_hat, y)
             self.log(f"{datamodule_name}_calibration_nll", loss, on_epoch=True)
             return loss
@@ -58,10 +69,16 @@ class ECE(Measurement):
 
     def make_new_test_step(self):
         def test_step(self, batch, batch_idx):
-            x, y = batch
+            x, y = batch[0], batch[1]
+            if isinstance(y, torch.Tensor):
+                y = y.cpu().tolist()
+            if isinstance(y, list) and isinstance(y[0], str):  # multi-label case
+                # TODO: not sure if this conversion maybe
+                # should happen in the dataloader?
+                y = [[int(x) for x in y[i].split(',')] for i in range(len(y))]
             y_hat = self.model(x)
             self.save_predictions(
-                {"prediction": F.softmax(y_hat, dim=-1).cpu().tolist(), "label": y.cpu().tolist()}
+                {"prediction": F.softmax(y_hat, dim=-1).cpu().tolist(), "label": y}
             )
             return None
 
@@ -80,7 +97,12 @@ class ECE(Measurement):
         bin_uppers = bin_boundaries[1:]
 
         confidences, predictions = np.max(preds, 1), np.argmax(preds, 1)
-        accuracies = (predictions == targets)
+        if isinstance(targets[0], list) or isinstance(targets[0], np.ndarray):  # multi-label case
+            accuracies = np.zeros(len(targets))
+            for i in range(len(targets)):
+                accuracies[i] = predictions[i] in targets[i]
+        else:
+            accuracies = (predictions == targets)
 
         ece = 0.0
         for bin_lower, bin_upper in zip(bin_lowers, bin_uppers):
