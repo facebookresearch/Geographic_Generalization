@@ -2,5 +2,5 @@
 model_name: resnet50
 
 model: 
-  _target_: models.resnet.resnet.ResNet50dClassifierModule
+  _target_: models.resnet.resnet.ResNet50ClassifierModule
 

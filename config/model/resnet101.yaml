@@ -2,4 +2,4 @@
 model_name: resnet101
 
 model: 
-  _target_: models.resnet.resnet.ResNet101dClassifierModule
+  _target_: models.resnet.resnet.ResNet101ClassifierModule

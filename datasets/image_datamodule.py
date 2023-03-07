@@ -5,6 +5,11 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 from typing import Callable
 import os
+from torchvision.transforms import InterpolationMode
+
+# resnet50: bilinear
+# resnet101: bicubic
+#
 
 
 class ImageDataModule(pl.LightningDataModule):
@@ -89,12 +94,15 @@ class ImageDataModule(pl.LightningDataModule):
         """
         preprocessing = transform_lib.Compose(
             [
-                transform_lib.Resize(self.image_size + 32),
+                transform_lib.Resize(
+                    int(self.image_size * 1.05), interpolation=InterpolationMode.BICUBIC
+                ),
                 transform_lib.CenterCrop(self.image_size),
                 transform_lib.ToTensor(),
                 imagenet_normalization(),
             ]
         )
+        print("using val transform\n", preprocessing)
         return preprocessing
 
     def test_transform(self) -> Callable:
