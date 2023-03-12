@@ -2,5 +2,5 @@
 model_name: resnet18
 
 model: 
-  _target_: models.resnet.resnet.ResNet18dClassifierModule
+  _target_: models.resnet.resnet.ResNet18ClassifierModule
 

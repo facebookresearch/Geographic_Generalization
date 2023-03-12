@@ -19,11 +19,11 @@ class ClassifierModule(pl.LightningModule):
 
     def __init__(
         self,
-        timm_name: str = "resnet50d",
+        timm_name: str = "resnet50",
         learning_rate: float = 1e-4,
         optimizer: str = "adam",
         feature_extraction_layer_index=-2,
-        checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet50d_a1_0-e20cff14.pth",
+        checkpoint_url: str = "",
     ):
         super().__init__()
         self.timm_name = timm_name
@@ -48,21 +48,27 @@ class ClassifierModule(pl.LightningModule):
         self.test_accuracy = torchmetrics.Accuracy()
 
     def load_backbone(self):
-        model = timm.create_model(self.timm_name, pretrained=True)
         if self.checkpoint_url:
+            model = timm.create_model(self.timm_name, pretrained=False)
             state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
             model.load_state_dict(state_dict)
+        else:
+            model = timm.create_model(self.timm_name, pretrained=True)
+
         return model
 
     def load_feature_extractor(self):
-        train_nodes, eval_nodes = get_graph_node_names(self.model)
-        feature_extraction_layer = eval_nodes[self.feature_extraction_layer_index]
-        feature_extractor = create_feature_extractor(
-            self.model, return_nodes=[feature_extraction_layer]
-        )
-        example = torch.rand((1, 3, 224, 224))
-        output = feature_extractor(example)[feature_extraction_layer]
-        embedding_dim = output.shape[1]
+        print("using classifier model's feature extractor")
+        with torch.no_grad():
+            train_nodes, eval_nodes = get_graph_node_names(self.model)
+            feature_extraction_layer = eval_nodes[self.feature_extraction_layer_index]
+            feature_extractor = create_feature_extractor(
+                self.model, return_nodes=[feature_extraction_layer]
+            )
+            feature_extractor.eval()
+            example = torch.rand((1, 3, 224, 224))
+            output = feature_extractor(example)[feature_extraction_layer]
+            embedding_dim = output.shape[1]
         return feature_extractor, feature_extraction_layer, eval_nodes, embedding_dim
 
     def forward(self, x):
