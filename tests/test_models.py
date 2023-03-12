@@ -2,9 +2,9 @@ import torch
 import pytest
 
 from models.resnet.resnet import (
-    ResNet18dClassifierModule,
-    ResNet50dClassifierModule,
-    ResNet101dClassifierModule,
+    ResNet18ClassifierModule,
+    ResNet50ClassifierModule,
+    ResNet101ClassifierModule,
 )
 from models.mlp_mixer.mlp_mixer import MLPMixerClassifierModule
 from models.vit.vit import VitClassifierModule, VitLargeClassifierModule
@@ -28,15 +28,15 @@ from models.seer.seer import (
 class TestPreTrainedModels:
     batch_size = 8
     models = [
-        # MLPMixerClassifierModule(),
-        # ResNet18dClassifierModule(),
-        # ResNet50dClassifierModule(),
-        # ResNet101dClassifierModule(),
-        # BeitClassifierModule(),
-        # VitClassifierModule(),
-        # VitLargeClassifierModule(),
-        # ConvNextlassifierModule(),
-        # SimCLRClassifierModule(),
+        MLPMixerClassifierModule(),
+        ResNet18ClassifierModule(),
+        ResNet50ClassifierModule(),
+        ResNet101ClassifierModule(),
+        BeitClassifierModule(),
+        VitClassifierModule(),
+        VitLargeClassifierModule(),
+        ConvNextlassifierModule(),
+        SimCLRClassifierModule(),
         CLIPOPENAI400MClassifierModule(),  # only testing 1 CLIP and 1 SEER because they break the testing environment otherwise
         # CLIPLAION400MClassifierModule(),
         # CLIPLAION2BClassifierModule(),

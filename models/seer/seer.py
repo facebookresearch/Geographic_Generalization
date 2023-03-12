@@ -22,14 +22,18 @@ class Seer320ClassifierModule(ClassifierModule):
         return model
 
     def forward(self, x):
-        return self.model(x).logits
+        outputs = self.model(x)
+        assert "logits" in outputs
+        return outputs.logits
 
     def forward_features(self, x):
-        output = self.model.forward(x, output_hidden_states=True, return_dict=True)[
-            "hidden_states"
-        ][-1]
-        pool = AdaptiveAvgPool2d(output_size=(1, 1))
-        feat = torch.flatten(pool(output), start_dim=1, end_dim=-1)
+        with torch.no_grad():
+            self.model.eval()
+            output = self.model.forward(x, output_hidden_states=True, return_dict=True)[
+                "hidden_states"
+            ][-1]
+            pool = AdaptiveAvgPool2d(output_size=(1, 1))
+            feat = torch.flatten(pool(output), start_dim=1, end_dim=-1)
         return feat
 
     def load_feature_extractor(self):
@@ -48,11 +52,11 @@ class Seer640ClassifierModule(Seer320ClassifierModule):
         super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
 
 
-class Seer10bClassifierModule(Seer320ClassifierModule):
+class Seer1280ClassifierModule(Seer320ClassifierModule):
     def __init__(
         self,
         timm_name: str = "",
-        checkpoint_url: str = "facebook/regnet-y-10b-seer-in1k",
+        checkpoint_url: str = "facebook/regnet-y-1280-seer-in1k",
     ):
         super().__init__(
             timm_name=timm_name,
@@ -60,11 +64,11 @@ class Seer10bClassifierModule(Seer320ClassifierModule):
         )
 
 
-class Seer1280ClassifierModule(Seer320ClassifierModule):
+class Seer10bClassifierModule(Seer320ClassifierModule):
     def __init__(
         self,
         timm_name: str = "",
-        checkpoint_url: str = "facebook/regnet-y-1280-seer-in1k",
+        checkpoint_url: str = "facebook/regnet-y-10b-seer-in1k",
     ):
         super().__init__(
             timm_name=timm_name,

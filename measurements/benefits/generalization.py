@@ -78,8 +78,8 @@ class ClassificationAccuracyEvaluation(Measurement):
             else:
                 y_hat = self(x)
             # If you make a torchmetrics metric outside of the model construction, it doesn't get automatically moved to a device
-            metric = torchmetrics.Accuracy().to(self.device)
-            result = metric(F.softmax(y_hat, dim=-1), y)
+
+            result = self.test_accuracy(F.softmax(y_hat, dim=-1), y)
             self.log(f"{datamodule_name}_test_accuracy", result, on_epoch=True)
 
             self.save_predictions(
