@@ -58,6 +58,7 @@ class ClassifierModule(pl.LightningModule):
         return model
 
     def load_feature_extractor(self):
+        print("using classifier model's feature extractor")
         with torch.no_grad():
             train_nodes, eval_nodes = get_graph_node_names(self.model)
             feature_extraction_layer = eval_nodes[self.feature_extraction_layer_index]
