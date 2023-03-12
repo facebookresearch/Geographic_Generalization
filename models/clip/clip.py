@@ -48,7 +48,6 @@ class CLIPClassifierModule(ClassifierModule):
     def forward_features(self, x):
         with torch.no_grad():
             self.feature_extraction_layer = "image_embeds"
-            self.processor.eval()
             self.model.eval()
             text_input = self.processor(
                 text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
@@ -103,9 +102,8 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
 
     def forward_features(self, x):
         with torch.no_grad():
-            self.feature_extraction_layer = "image_embeds"
-            self.processor.eval()
             self.model.eval()
+            self.feature_extraction_layer = "image_embeds"
             text_input = self.processor(
                 text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
             ).to(self.device)
@@ -132,10 +130,14 @@ class CLIPLAION400MClassifierModule(CLIPOPENAI400MClassifierModule):
         return model
 
     def forward(self, x):
-        self.text_tokens = tokenizer.tokenize(self.CLASS_NAME_PROMPTS).to(self.device)
-        self.text_features = self.model.encode_text(self.text_tokens).float()
-        self.text_features /= self.text_features.norm(dim=-1, keepdim=True)
-        image_features = self.model.encode_image(x).float()
+        with torch.no_grad():
+            self.model.eval()
+            self.text_tokens = tokenizer.tokenize(self.CLASS_NAME_PROMPTS).to(
+                self.device
+            )
+            self.text_features = self.model.encode_text(self.text_tokens).float()
+            self.text_features /= self.text_features.norm(dim=-1, keepdim=True)
+            image_features = self.model.encode_image(x).float()
 
         logits = 100.0 * image_features @ self.text_features.T
         return logits
