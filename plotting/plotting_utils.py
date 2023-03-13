@@ -12,10 +12,6 @@ COLORDICT = {
     "dummy": "grey",
     "imagenet": "red",
     "imagenetv2": "brown",
-    "objectnet": "green",
-    "imageneta": "purple",
-    "imagenetr": "pink",
-    "imagenetsketch": "orange",
     "dollarstreet": "blue",
     "dollarstreet-q1": "#0d7add",
     "dollarstreet-q2": "#55a1e7",
@@ -25,6 +21,10 @@ COLORDICT = {
     "dollarstreet-europe": "#1ac0bb",
     "dollarstreet-the americas": "#17a8a3",
     "dollarstreet-asia": "#0d605d",
+    "imagenetr": "pink",
+    "imagenetsketch": "orange",
+    "objectnet": "green",
+    "imageneta": "purple",
 }
 
 
@@ -124,7 +124,14 @@ def make_property_vs_benefit_plot_across_models(
     fig, ax = plt.subplots(figsize=(14, 8))
     property_cols = [x for x in results.columns.values if filter_str in x]
 
-    model_corr = {}
+    model_corr = (
+        {}
+    )  # bc we are iterating over models, we can compute directly in line and add to this dict
+    dataset_info_for_corr = {}  # we have to aggregate values instead, per dataset :(
+    for dataset in list(
+        set([x.split("_")[0] for x in results.columns.values if "Model" not in x])
+    ):
+        dataset_info_for_corr[dataset] = {"property": [], "benefit": []}
 
     for i in range(len(results)):
         row = results.iloc[i]
@@ -202,9 +209,16 @@ def make_property_vs_benefit_plot_across_models(
             .dropna()
             .drop(columns=["index_y", "index_x"])
         )
-
+        # Calculate / update correlation data
         corr, p = pearsonr(x=res[property_name.capitalize()], y=res["Accuracy"])
         model_corr[model] = f"({corr:.2f}, {p:.2f})"
+        for d in res["Specific_Dataset"].unique():
+            dataset_info_for_corr[d]["property"].append(
+                res[res["Specific_Dataset"] == d][property_name.capitalize()].item()
+            )
+            dataset_info_for_corr[d]["benefit"].append(
+                res[res["Specific_Dataset"] == d]["Accuracy"].item()
+            )
 
         res["Color"] = res["Specific_Dataset"].apply(lambda x: colordict[x])
 
@@ -216,6 +230,13 @@ def make_property_vs_benefit_plot_across_models(
             marker=markerdict[model],
             s=200,
         )
+
+    # Calculate data correlations
+    dataset_corr = {}
+    for dataset, values_dict in dataset_info_for_corr.items():
+        if values_dict["property"]:
+            corr, p = pearsonr(values_dict["property"], values_dict["benefit"])
+            dataset_corr[dataset] = f"({corr:.2f}, {p:.2f})"
 
     m_handles = [
         Line2D(
@@ -232,6 +253,20 @@ def make_property_vs_benefit_plot_across_models(
         if k in results["Model"].tolist()
     ]
 
+    easier_dataset_names = {
+        "imagenet": "Im-Val",
+        "imageneta": "Im-Adv",
+        "imagenetr": "Im-Rend",
+        "imagenetv2": "Im-V2",
+        "imagenetsketch": "I-Sketch",
+        "objectnet": "Objectnet",
+        "dollarstreet": "DS",
+        "dollarstreet-q1": "DS-q1",
+        "dollarstreet-q2": "DS-q2",
+        "dollarstreet-q3": "DS-q3",
+        "dollarstreet-q3": "DS-q3",
+    }
+
     c_handles = [
         Line2D(
             [0.01],
@@ -239,16 +274,17 @@ def make_property_vs_benefit_plot_across_models(
             marker="o",
             color="w",
             markerfacecolor=v,
-            label=k,
+            label=f"{easier_dataset_names[k]} {dataset_corr[k]}",
             markersize=12,
         )
         for k, v in colordict.items()
         if k in res["Specific_Dataset"].tolist()
     ]
+    print(sorted(res["Specific_Dataset"].tolist()))
     color_legend = plt.legend(
         title="Dataset",
         handles=c_handles,
-        bbox_to_anchor=(1.02, 1),
+        bbox_to_anchor=(1.0, 1),
         loc="upper left",
         title_fontproperties={"size": 15},
         labelspacing=0.75,
@@ -259,7 +295,7 @@ def make_property_vs_benefit_plot_across_models(
     plt.legend(
         title="Model (corr, p-val)",
         handles=m_handles,
-        bbox_to_anchor=(1.02, 0.6),
+        bbox_to_anchor=(1.0, 0.6),
         loc="upper left",
         title_fontproperties={"size": 15},
         labelspacing=0.75,
@@ -321,7 +357,7 @@ def make_threshold_analysis_plots(results, property_name="sparsity"):
         model = row["Model"]
 
         # Plot
-        fig, ax = plt.subplots(figsize=(14, 8))
+        fig, ax = plt.subplots(figsize=(20, 10))
         plt.scatter(
             x=df["Threshold"],
             y=df["Property"],
@@ -357,6 +393,7 @@ def make_threshold_analysis_plots(results, property_name="sparsity"):
             f"{property_name.capitalize()} Values by Threshold Across Datasets, {row['Model'].capitalize()}"
         )
         plt.ylabel(f"{property_name.capitalize()} Value")
+
         plots[f"{property_name.capitalize()}_Thresholds_{row['Model']}"] = fig
 
     return plots
