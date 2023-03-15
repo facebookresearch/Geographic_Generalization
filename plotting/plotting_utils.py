@@ -30,6 +30,7 @@ COLORDICT = {
 
 MARKERDICT = {
     "resnet18": "v",
+    "resnet34": "v",
     "resnet50": "^",
     "resnet101": "<",
     "resnet152": ">",
@@ -40,8 +41,8 @@ MARKERDICT = {
     "seer320": "p",
     "seer640": "h",
     "seer1280": "H",
-    "clip": "x",
-    "clip-laion400M": "X",
+    "clip-b16": "x",
+    "clip-b32": "X",
     "convnext": "2",
 }
 
@@ -51,6 +52,7 @@ plt.rc("font", **font)
 def make_performance_comparison_plots_across_models(
     results, filter_str="_test_accuracy", anti_filter_str="-"
 ):
+
     results = results.sort_values(by="imagenet_test_accuracy", ascending=False)
 
     generalization_cols = [
@@ -95,20 +97,40 @@ def make_performance_comparison_plots_across_models(
 def make_property_vs_benefit_plot_across_models(
     results,
     property_name,
-    threshold=None,
+    benefit_name,
+    property_threshold=None,
+    benefit_threshold=None,
     select_datasets=False,
     datasets_to_select=[],
     select_models=False,
     models_to_select=[],
+    xlabel="",
+    ylabel="",
+    title="",
+    xlim=(),
+    ylim=(),
+    calculate_model_corr=True,
+    calculate_dataset_corr=True,
 ):
+    # Define constants / assumptions
     colordict = COLORDICT
     markerdict = MARKERDICT
 
-    if threshold:
-        filter_str = f"_{property_name}_{threshold}"
-    else:
-        filter_str = f"_{property_name}"
+    easier_dataset_names = {
+        "imagenet": "Val",
+        "imageneta": "Adv",
+        "imagenetr": "Rend",
+        "imagenetv2": "V2",
+        "imagenetsketch": "Sk",
+        "objectnet": "Obj",
+        "dollarstreet": "DS",
+        "dollarstreet-q1": "DS-q1",
+        "dollarstreet-q2": "DS-q2",
+        "dollarstreet-q3": "DS-q3",
+        "dollarstreet-q4": "DS-q4",
+    }
 
+    # Select results subset
     if select_datasets:
         cols = [
             x
@@ -121,26 +143,53 @@ def make_property_vs_benefit_plot_across_models(
         results = results[results["Model"].isin(models_to_select)]
         markerdict = {k: MARKERDICT[k] for k in models_to_select}
 
-    fig, ax = plt.subplots(figsize=(14, 8))
-    property_cols = [x for x in results.columns.values if filter_str in x]
+    # Define filter strings to select relevant columns
+    if property_threshold:
+        property_filter_str = f"_{property_name}_{property_threshold}"
+    else:
+        property_filter_str = f"_{property_name}"
 
-    model_corr = (
-        {}
-    )  # bc we are iterating over models, we can compute directly in line and add to this dict
+    if benefit_name.lower() == "fairness":
+        results["dollarstreet_test_accuracy_gap"] = (
+            results["dollarstreet-q1_test_accuracy"]
+            - results["dollarstreet-q4_test_accuracy"]
+        )
+        benefit_filter_str = f"_test_accuracy_gap"
+        benefit_name = "performance_gap_by_income"
+
+    elif benefit_threshold:
+        benefit_filter_str = f"_{benefit_name}_{benefit_threshold}"
+    else:
+        benefit_filter_str = f"_{benefit_name}"
+
+    # Start a plot
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    # Define which columns to select, and analysis. Also which datasets are used (to be displayed)
+    property_cols = [x for x in results.columns.values if property_filter_str in x]
+    benefit_cols = [x for x in results.columns.values if benefit_filter_str in x]
+    used_datasets = set([x.split("_")[0] for x in property_cols]) & set(
+        [x.split("_")[0] for x in benefit_cols]
+    )
+
+    # Set up logging for correlations as they're calculated
+    # bc we are iterating over models, we can compute directly in line and add to this dict
+    model_corr = {}
     dataset_info_for_corr = {}  # we have to aggregate values instead, per dataset :(
-    for dataset in list(
-        set([x.split("_")[0] for x in results.columns.values if "Model" not in x])
-    ):
+
+    for dataset in list(easier_dataset_names.keys()):
         dataset_info_for_corr[dataset] = {"property": [], "benefit": []}
 
+    # Iterate through each model's results
     for i in range(len(results)):
         row = results.iloc[i]
         model = row["Model"]
+        print("Analyzing ", model)
 
         # Get property data
         property_vals = row[property_cols].values.tolist()
         property_dict = {
-            property_cols[i].split(filter_str)[0]: property_vals[i]
+            property_cols[i].split(property_filter_str)[0]: property_vals[i]
             for i in range(len(property_vals))
         }
 
@@ -150,74 +199,48 @@ def make_property_vs_benefit_plot_across_models(
             .reset_index()
         )
 
-        # Get generalization data
-        generalization_cols = [
-            x for x in results.columns if "accuracy" in x and "dollarstreet-" not in x
-        ]
-        generalization_vals = row[generalization_cols].tolist()
-        generalization_dict = {
-            generalization_cols[i].split("_test_accuracy")[0]: generalization_vals[i]
-            for i in range(len(generalization_cols))
+        # Get benefits data
+        benefits_vals = row[benefit_cols].tolist()
+        benefits_dict = {
+            benefit_cols[i].split(benefit_filter_str)[0]: benefits_vals[i]
+            for i in range(len(benefit_cols))
         }
 
-        generalization_df = (
-            pd.DataFrame.from_dict(generalization_dict, orient="index")
-            .rename(columns={0: "Accuracy"})
+        benefits_df = (
+            pd.DataFrame.from_dict(benefits_dict, orient="index")
+            .rename(columns={0: benefit_name.capitalize()})
             .reset_index()
         )
 
-        # Get detailed fairness data
-        if select_datasets and datasets_to_select == ["dollarstreet"]:
-            fairness_cols = [x for x in results.columns if "dollarstreet-" in x]
-        else:
-            fairness_cols = [
-                x
-                for x in results.columns
-                if "dollarstreet-" in x and ("low" in x or "africa" in x)
-            ]
+        res = pd.merge(
+            property_df,
+            benefits_df,
+            how="left",
+            left_on="index",
+            right_on="index",
+        ).dropna()
 
-        fairness_vals = row[fairness_cols].tolist()
-
-        fairness_dict = {
-            fairness_cols[i].replace("_test_accuracy", ""): fairness_vals[i]
-            for i in range(len(fairness_cols))
-        }
-        fairness_df = (
-            pd.DataFrame.from_dict(fairness_dict, orient="index")
-            .rename(columns={0: "Accuracy"})
-            .reset_index()
-        )
-
-        # Combine and make colors
-        benefits_df = pd.concat([fairness_df, generalization_df])
-
-        benefits_df["Base_Dataset"] = benefits_df["index"].apply(
+        # Make dataset column for colors
+        res["Base_Dataset"] = res["index"].apply(
             lambda x: x.split("_")[0].split("-")[0]
         )  # e.g 'Dollarstreet'
-        benefits_df["Specific_Dataset"] = benefits_df["index"].apply(
+        res["Specific_Dataset"] = res["index"].apply(
             lambda x: x.split("_")[0]
         )  # 'Dollarstreet-africa'
 
-        res = (
-            pd.merge(
-                property_df,
-                benefits_df,
-                how="left",
-                left_on="index",
-                right_on="Base_Dataset",
-            )
-            .dropna()
-            .drop(columns=["index_y", "index_x"])
-        )
         # Calculate / update correlation data
-        corr, p = pearsonr(x=res[property_name.capitalize()], y=res["Accuracy"])
-        model_corr[model] = f"({corr:.2f}, {p:.2f})"
+        if calculate_model_corr:
+            corr, p = pearsonr(
+                x=res[f"{property_name.capitalize()}"], y=res[benefit_name.capitalize()]
+            )
+            model_corr[model] = f"({corr:.2f}, {p:.2f})"
+
         for d in res["Specific_Dataset"].unique():
             dataset_info_for_corr[d]["property"].append(
                 res[res["Specific_Dataset"] == d][property_name.capitalize()].item()
             )
             dataset_info_for_corr[d]["benefit"].append(
-                res[res["Specific_Dataset"] == d]["Accuracy"].item()
+                res[res["Specific_Dataset"] == d][benefit_name.capitalize()].item()
             )
 
         res["Color"] = res["Specific_Dataset"].apply(lambda x: colordict[x])
@@ -225,18 +248,19 @@ def make_property_vs_benefit_plot_across_models(
         # Plot
         plt.scatter(
             x=res[property_name.capitalize()],
-            y=res["Accuracy"],
+            y=res[benefit_name.capitalize()],
             c=res["Color"],
             marker=markerdict[model],
             s=200,
         )
 
     # Calculate data correlations
-    dataset_corr = {}
-    for dataset, values_dict in dataset_info_for_corr.items():
-        if values_dict["property"]:
-            corr, p = pearsonr(values_dict["property"], values_dict["benefit"])
-            dataset_corr[dataset] = f"({corr:.2f}, {p:.2f})"
+    if calculate_dataset_corr:
+        dataset_corr = {}
+        for dataset, values_dict in dataset_info_for_corr.items():
+            if values_dict["property"]:
+                corr, p = pearsonr(values_dict["property"], values_dict["benefit"])
+                dataset_corr[dataset] = f"({corr:.2f}, {p:.2f})"
 
     m_handles = [
         Line2D(
@@ -246,27 +270,16 @@ def make_property_vs_benefit_plot_across_models(
             color="w",
             markerfacecolor="k",
             markeredgecolor="k",
-            label=f"{k} {model_corr[k]}",
+            label=f"{k} {model_corr[k] if calculate_model_corr else '   '}",
             markersize=12,
         )
         for k, v in markerdict.items()
         if k in results["Model"].tolist()
     ]
 
-    easier_dataset_names = {
-        "imagenet": "Im-Val",
-        "imageneta": "Im-Adv",
-        "imagenetr": "Im-Rend",
-        "imagenetv2": "Im-V2",
-        "imagenetsketch": "I-Sketch",
-        "objectnet": "Objectnet",
-        "dollarstreet": "DS",
-        "dollarstreet-q1": "DS-q1",
-        "dollarstreet-q2": "DS-q2",
-        "dollarstreet-q3": "DS-q3",
-        "dollarstreet-q3": "DS-q3",
-    }
-
+    for k in easier_dataset_names:
+        if calculate_dataset_corr and not k in dataset_corr:
+            dataset_corr[k] = "(na, na)"
     c_handles = [
         Line2D(
             [0.01],
@@ -274,48 +287,76 @@ def make_property_vs_benefit_plot_across_models(
             marker="o",
             color="w",
             markerfacecolor=v,
-            label=f"{easier_dataset_names[k]} {dataset_corr[k]}",
+            label=f"{easier_dataset_names[k]} {dataset_corr[k] if calculate_dataset_corr else '  '}",
             markersize=12,
         )
         for k, v in colordict.items()
-        if k in res["Specific_Dataset"].tolist()
+        if k in used_datasets
     ]
-    print(sorted(res["Specific_Dataset"].tolist()))
     color_legend = plt.legend(
-        title="Dataset",
+        title=f"{'Dataset' if calculate_dataset_corr else 'Dataset'}",
         handles=c_handles,
         bbox_to_anchor=(1.0, 1),
         loc="upper left",
         title_fontproperties={"size": 15},
-        labelspacing=0.75,
+        labelspacing=0.2,
     )
+    color_legend._legend_box.align = "left"
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax = plt.gca().add_artist(color_legend)
     plt.legend(
-        title="Model (corr, p-val)",
+        title=f"{'Model (corr, p-val)' if calculate_model_corr else 'Model      '}",
         handles=m_handles,
         bbox_to_anchor=(1.0, 0.6),
         loc="upper left",
         title_fontproperties={"size": 15},
         labelspacing=0.75,
     )
-
-    if threshold != None:
+    # Set X label
+    if xlabel:
+        plt.xlabel(xlabel, fontdict={"size": 15})
+    elif property_threshold != None:
         plt.xlabel(
-            f"{property_name.capitalize()} at Threshold = {threshold}",
+            f"{property_name.capitalize()} at Threshold = {property_threshold}",
             fontdict={"size": 15},
-        )
-        plt.title(
-            f"{property_name.capitalize()} v.s Accuracy, (T={threshold})",
-            fontdict={"size": 20},
         )
     else:
         plt.xlabel(f"{property_name.capitalize()}", fontdict={"size": 15})
-        plt.title(
-            f"{property_name.capitalize()} v.s Performance", fontdict={"size": 18}
+
+    # Set Y label
+    if ylabel:
+        plt.ylabel(ylabel, fontdict={"size": 15})
+    elif benefit_threshold != None:
+        plt.xlabel(
+            f"{benefit_name.capitalize()} at Threshold = {benefit_threshold}",
+            fontdict={"size": 15},
         )
-    plt.ylabel("Test Accuracy", fontdict={"size": 15})
+    else:
+        plt.ylabel(benefit_name.capitalize(), fontdict={"size": 15})
+
+    # Set Title
+    property_pretty_name = " ".join([x.capitalize() for x in property_name.split("_")])
+    benefit_pretty_name = " ".join([x.capitalize() for x in benefit_name.split("_")])
+    if title:
+        plt.title(f"{title}", fontdict={"size": 18})
+    elif property_threshold != None or benefit_threshold != None:
+        plt.title(
+            f"{property_pretty_name} {f'(T={property_threshold})' if property_threshold else ''} vs {benefit_pretty_name} {f'T={benefit_threshold}' if benefit_threshold else ''}",
+            fontdict={"size": 18},
+        )
+    else:
+        plt.title(
+            f"{property_pretty_name} v.s {benefit_pretty_name}",
+            fontdict={"size": 18},
+        )
+
+    # Set X-Lim
+    if xlim:
+        plt.xlim(xlim)
+    if ylim:
+        plt.ylim(ylim)
+    plt.tight_layout(pad=10)
     plt.show()
     return fig
 
