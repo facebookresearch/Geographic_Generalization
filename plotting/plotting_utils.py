@@ -815,49 +815,261 @@ def calculate_corr_and_r2(
     return model_df, dataset_df
 
 
-def generate_generalizaton_fairness_comparison():
+def generate_generalizaton_fairness_comparison_combined(
+    type: str = "Both",
+    disparity_type: str = "income",
+    country_threshold: float = 0.25,
+    exclude_clip_and_seer=False,
+    only_clip_and_seer=False,
+    correlation_type="pearson",
+    normalized=False,
+):
+    if exclude_clip_and_seer and only_clip_and_seer:
+        raise Exception(
+            "both parameters exclude_clip_and_seer and only_clip_and_seer are set to True, which is constradictory. Please set one of these to False."
+        )
+    if disparity_type not in ["income", "region", "country"]:
+        raise Exception(
+            "disparity_type parameter only includes the options: 'income', 'region', and 'country'"
+        )
+    if correlation_type not in ["pearson", "spearman"]:
+        raise Exception(
+            "correlation_type parameter only includes the options: 'pearson', 'spearman'"
+        )
+
+    COLORDICT = {
+        "imagenet": "red",
+        "imagenetv2": "brown",
+        "dollarstreet": "blue",
+        "dollarstreet-q1": "#0d7add",
+        "dollarstreet-q2": "#55a1e7",
+        "dollarstreet-q3": "#b6d7f4",
+        "dollarstreet-q4": "#21f0ea",
+        "dollarstreet-africa": "#21f0ea",
+        "dollarstreet-europe": "#1ac0bb",
+        "dollarstreet-the americas": "#17a8a3",
+        "dollarstreet-asia": "#0d605d",
+        "imagenetr": "pink",
+        "imagenetsketch": "orange",
+        "objectnet": "green",
+        "imageneta": "purple",
+    }
     filtered = pd.read_csv(
-        "/checkpoint/meganrichards/logs/interplay_project/new_eval_fixes_03-12/filtered_results_3-16_with_ece.csv",
+        "/checkpoint/meganrichards/logs/interplay_project/fairness_03-20/measurements_with_fairness_and_gaps_and_percentiles.csv",
         index_col=0,
     )
-    filtered = filtered[
-        ~filtered["Model"].isin(["beit-base", "beit-large", "clip"])
-    ]  #'clip-b32', 'clip-b16'])]
+    filtered = filtered[~filtered["Model"].isin(["beit-base", "beit-large", "clip"])]
+    if exclude_clip_and_seer:
+        models_to_exclude = ["seer320", "seer640", "seer1280", "clip-b16", "clip-b32"]
+        filtered = filtered[~filtered["Model"].isin(models_to_exclude)]
+    elif only_clip_and_seer:
+        models_to_include = ["seer320", "seer640", "seer1280", "clip-b16", "clip-b32"]
+        filtered = filtered[filtered["Model"].isin(models_to_include)]
 
-    filtered["dollarstreetgap_test_accuracy"] = (
-        filtered["dollarstreet-q1_test_accuracy"]
-        - filtered["dollarstreet-q4_test_accuracy"]
-    )
-    filtered = filtered[
-        [x for x in filtered.columns.values if "test_accuracy" in x and "-" not in x]
-    ]
+    if disparity_type == "income":
+        benefit2_col = "dollarstreet-gap_income"
+        benefit2_plot_name = "Income Disparity"
+        normalizing_col = "dollarstreet-q1_test_accuracy"
 
+    elif disparity_type == "region":
+        benefit2_col = "dollarstreet-gap_region"
+        benefit2_plot_name = "Region Disparity"
+        normalizing_col = "dollarstreet-europe_test_accuracy"
+
+    elif disparity_type == "country":
+        benefit2_col = f"dollarstreet-gap_country-{country_threshold}"
+        benefit2_plot_name = (
+            f"Country Disparity (percentile = {int(100*country_threshold)}%)"
+        )
+        normalizing_col = f"dollarstreet-country-top-{country_threshold}"
+
+    if type == "OOD":
+        acc_cols = [
+            "objectnet_test_accuracy",
+            "imagenetr_test_accuracy",
+            "imagenetsketch_test_accuracy",
+            "imageneta_test_accuracy",
+            "dollarstreet_test_accuracy",
+        ]
+    elif type == "ID":
+        acc_cols = ["imagenet_test_accuracy", "imagenetv2_test_accuracy"]
+    else:
+        acc_cols = [
+            "imagenet_test_accuracy",
+            "imagenetv2_test_accuracy",
+            "objectnet_test_accuracy",
+            "imagenetr_test_accuracy",
+            "imagenetsketch_test_accuracy",
+            "imageneta_test_accuracy",
+            "dollarstreet_test_accuracy",
+        ]
+
+    if normalized:
+        cols_to_use = acc_cols + [benefit2_col] + [normalizing_col]
+    else:
+        cols_to_use = acc_cols + [benefit2_col]
+
+    filtered = filtered[cols_to_use]
+
+    fig, ax = plt.subplots(figsize=(14, 8))
     for benefit1_col in filtered.columns.values:
-        for benefit2_col in ["dollarstreetgap_test_accuracy"]:
-            if benefit1_col != benefit2_col:
-                x = filtered[benefit1_col]
-                y = filtered[benefit2_col]
+        if benefit1_col != benefit2_col and benefit1_col != normalizing_col:
+            x = filtered[benefit1_col]
+            y = filtered[benefit2_col]
+            if normalized:
+                y = y / filtered[normalizing_col]
+
+            if correlation_type == "pearson":
                 corr, p = stats.pearsonr(x, y)
-                corr_str = f"(corr={corr:.2f}, p={p:.3f})"
+            elif correlation_type == "spearman":
+                corr, p = stats.spearmanr(x, y)
+            corr_str = f"cor={corr:.2f}, (p={p:.3f})"
 
-                benefit1_plot_name = (
-                    benefit1_col.split("_test_accuracy")[0].capitalize() + " Acc."
-                )
-                benefit2_plot_name = "Income Disparity"
+            dataset_name = benefit1_col.split("_test_accuracy")[0].capitalize()
 
-                reg = stats.linregress(x, y)
+            reg = stats.linregress(x, y)
 
-                plt.figure()
-                plt.scatter(x=x, y=y)
-                plt.axline(
-                    xy1=(0, reg.intercept),
-                    slope=reg.slope,
-                    color="red",
-                    label=f"m = {reg.slope:.2f}, r2 = {reg.rvalue**2:.2f}",
-                )
-                plt.xlabel(f"{benefit1_plot_name}")
-                plt.ylabel(f"{benefit2_plot_name}")
-                plt.legend()
-                plt.xlim((min(x) - 0.1, max(x) + 0.1))
-                plt.title(f"{benefit1_plot_name} v.s. {benefit2_plot_name} {corr_str}")
-                plt.show()
+            plt.scatter(x=x, y=y, color=COLORDICT[dataset_name.lower()])
+            plt.axline(
+                xy1=(0, reg.intercept),
+                slope=reg.slope,
+                color=COLORDICT[dataset_name.lower()],
+                label=f"{dataset_name} | m={reg.slope:.2f}, (r2={reg.rvalue**2:.2f}) | {corr_str}",
+            )
+
+    easier_dataset_names = {
+        "imagenet": "Val",
+        "imageneta": "Adv",
+        "imagenetr": "Rend",
+        "imagenetv2": "V2",
+        "imagenetsketch": "Sk",
+        "objectnet": "Obj",
+        "dollarstreet": "DS",
+        "dollarstreet-q1": "DS-q1",
+        "dollarstreet-q2": "DS-q2",
+        "dollarstreet-q3": "DS-q3",
+        "dollarstreet-q4": "DS-q4",
+    }
+
+    plt.xlabel(f"{'OOD Accuracy' if type == 'OOD'else 'ID Accuracy'}")
+    plt.ylabel(benefit2_plot_name)
+    plt.legend(title=f"Dataset, {correlation_type.capitalize()} Correlation")
+    exclude_str = " - Excluding CLIP/SEER" if exclude_clip_and_seer else ""
+    include_str = " - Only CLIP/SEER" if only_clip_and_seer else ""
+
+    plt.title(
+        f"{'OOD Accuracy' if type == 'OOD'else 'ID Accuracy'} v.s. {'Normalized' if normalized else ''} {benefit2_plot_name}{exclude_str}{include_str} {'- All Models' if not (exclude_str or include_str) else ''}"
+    )
+    plt.show()
+
+
+def calculate_geography_income_gap_comparsion(geography_type="country"):
+    filtered = pd.read_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/fairness_03-20/measurements_with_fairness_and_gaps.csv",
+        index_col=0,
+    )
+
+    region = filtered["dollarstreet-gap_region"]
+    country = filtered["dollarstreet-gap_country-0.25"]
+    income = filtered["dollarstreet-gap_income"]
+
+    fig, ax = plt.subplots(figsize=(14, 8))
+    if geography_type == "region":
+        x = region
+    else:
+        x = country
+
+    y = income
+    plt.scatter(x=x, y=y)
+    reg = stats.linregress(x, y)
+    corr, p = stats.pearsonr(x, y)
+    corr_str = f"cor={corr:.2f}, (p={p:.3f})"
+
+    plt.axline(
+        xy1=(0, reg.intercept),
+        slope=reg.slope,
+        label=f"m={reg.slope:.2f}, (r2={reg.rvalue**2:.2f}) | {corr_str}",
+    )
+    plt.xlim(min(x) - 0.05, max(x) + 0.05)
+    plt.ylim(min(y) - 0.05, max(y) + 0.05)
+    plt.xlabel(f"Performance Gap By {geography_type.capitalize()}")
+    plt.ylabel("Performance Gap by Income Quartile")
+    plt.title(f"Performance Gap Comparison - {geography_type.capitalize()} vs Income")
+    plt.legend()
+    plt.show()
+
+
+def make_task_improvement_plots(type="income", compare_gap_normalizing=False):
+    filtered = pd.read_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/fairness_03-20/measurements_with_fairness_and_gaps_and_percentiles.csv",
+        index_col=0,
+    )
+    filtered = filtered[~filtered["Model"].isin(["beit-base", "beit-large", "clip"])]
+
+    for dataset_name in [
+        "imagenet",
+        "imagenetv2",
+        "dollarstreet",
+        "imageneta",
+        "imagenetr",
+        "imagenetsketch",
+        "objectnet",
+    ]:
+        x = filtered[f"{dataset_name}_test_accuracy"]
+        if type == "income":
+            y1 = filtered["dollarstreet-q1_test_accuracy"]
+            y2 = filtered["dollarstreet-q4_test_accuracy"]
+        else:
+            y1 = filtered["dollarstreet-europe_test_accuracy"]
+            y2 = filtered["dollarstreet-africa_test_accuracy"]
+
+        if compare_gap_normalizing:
+            gap = y1 - y2
+            gap_normalized = (y1 - y2) / y1
+            y1 = gap
+            y2 = gap_normalized
+
+        corr1, p1 = stats.pearsonr(x, y1)
+        corr1_str = f"cor={corr1:.2f}, (p={p1:.3f})"
+
+        corr2, p2 = stats.pearsonr(x, y2)
+        corr2_str = f"cor={corr2:.2f}, (p={p2:.3f})"
+
+        reg1 = stats.linregress(x, y1)
+        reg2 = stats.linregress(x, y2)
+
+        if type == "income":
+            line1_label = "Q1"
+            line2_label = "Q4"
+        elif type == "region":
+            line1_label = "Europe"
+            line2_label = "Africa"
+        if compare_gap_normalizing:
+            line1_label = "Gap            "
+            line2_label = "Gap - Norm"
+
+        plt.scatter(x=x, y=y1, color="blue")
+        plt.axline(
+            xy1=(0, reg1.intercept),
+            slope=reg1.slope,
+            color="blue",
+            label=f"{line1_label}| m={reg1.slope:.2f}, (r2={reg1.rvalue**2:.2f}) | {corr1_str}",
+        )
+        plt.scatter(x=x, y=y2, color="orange")
+        plt.axline(
+            xy1=(0, reg2.intercept),
+            slope=reg2.slope,
+            color="orange",
+            label=f"{line2_label}| m={reg2.slope:.2f}, (r2={reg2.rvalue**2:.2f}) | {corr2_str}",
+        )
+        plt.legend(loc="lower right")
+        plt.ylim(0, 1)
+        if compare_gap_normalizing:
+            plt.title(
+                f"{dataset_name.capitalize()} Acc vs DollarStreet Gaps (Regular and Normalized)"
+            )
+        else:
+            plt.title(
+                f"{dataset_name.capitalize()} Acc vs DollarStreet {type.capitalize()} Subset Acc"
+            )
+        plt.show()
