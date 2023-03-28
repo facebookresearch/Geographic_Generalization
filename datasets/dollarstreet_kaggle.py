@@ -11,7 +11,7 @@ from datasets.image_datamodule import imagenet_normalization
 class DollarstreetDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_groups.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/",
         augmentations=imagenet_normalization,
     ):

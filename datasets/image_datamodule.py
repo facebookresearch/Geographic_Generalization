@@ -97,13 +97,12 @@ class ImageDataModule(pl.LightningDataModule):
         preprocessing = transform_lib.Compose(
             [
                 transform_lib.Resize(
-                    int(248),
+                    self.image_size + 32,
                     interpolation=InterpolationMode.BICUBIC,
                 ),
                 transform_lib.CenterCrop(self.image_size),
                 transform_lib.ToTensor(),
-                transform_lib.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-                # imagenet_normalization(),
+                imagenet_normalization(),
             ]
         )
         print("using val transform\n", preprocessing)
