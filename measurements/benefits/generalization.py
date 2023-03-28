@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from models.classifier_model import ClassifierModule
 from measurements.measurement_utils import Measurement
 import types
+from typing import Dict
 
 
 class ClassificationAccuracyEvaluation(Measurement):
@@ -33,7 +34,7 @@ class ClassificationAccuracyEvaluation(Measurement):
 
     def measure(
         self,
-    ) -> dict[str:float]:
+    ) -> Dict[str:float]:
         # 1) Make a dict to store measurements
         results_dict = {}
 

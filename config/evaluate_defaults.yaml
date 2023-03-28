@@ -3,8 +3,8 @@ defaults:
   - base: base
   - mode: cluster_one_gpu
   - dataset_library: all
-  - model: clipb16
+  - model: resnet50
   - measurement_library: all
-  - measurement_group: all
+  - measurement_group: base
 
-experiment_identifier: new_eval_fixes
+experiment_identifier: fairness

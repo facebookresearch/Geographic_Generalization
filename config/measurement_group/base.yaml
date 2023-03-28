@@ -1,3 +1,4 @@
 # @package _global_
 measurement_group_name: base
-measurements: [validation_imagenet]
+measurements: [fairness_dollarstreet]
+#[nll_imagenet, nll_imagenetv2, nll_imagenetr, nll_imageneta, nll_imagenetsketch, nll_objectnet, ece_imagenet, ece_imagenetv2, ece_imagenetr, ece_imageneta, ece_imagenetsketch, ece_objectnet]

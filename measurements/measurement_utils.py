@@ -7,7 +7,6 @@ import pytorch_lightning as pl
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 import os
 import pandas as pd
-from typing import List
 
 
 class Measurement(ABC):
@@ -34,7 +33,7 @@ class Measurement(ABC):
 
     def __init__(
         self,
-        datamodule_names: List[str],
+        datamodule_names: list[str],
         model: ClassifierModule,
         experiment_config: DictConfig,
     ):
