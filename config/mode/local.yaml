@@ -8,4 +8,4 @@ trainer:
   max_epochs: 10
   strategy: null
 
-save_detailed_results: 
+save_detailed_results: True
