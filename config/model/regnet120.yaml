@@ -1,0 +1,6 @@
+# @package _global_
+model_name: regnet120
+
+model: 
+  _target_: models.regnet.regnet.RegNet120ClassifierModule
+

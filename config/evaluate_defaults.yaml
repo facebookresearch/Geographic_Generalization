@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
   - base: base
-  - mode: local
+  - mode: cluster_one_gpu
   - dataset_library: all
-  - model: vit
+  - model: resnet18
   - measurement_library: all
-  - measurement_group: base
+  - measurement_group: generalization_fairness
 
-experiment_identifier: a
+experiment_identifier: more_models

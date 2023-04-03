@@ -1,0 +1,6 @@
+
+# @package _global_
+model_name: tinynet-c
+
+model: 
+  _target_: models.tinynet.tinynet.TinyNetCClassifierModule

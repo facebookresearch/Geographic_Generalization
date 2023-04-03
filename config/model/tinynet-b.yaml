@@ -1,0 +1,6 @@
+
+# @package _global_
+model_name: tinynet-b
+
+model: 
+  _target_: models.tinynet.tinynet.TinyNetBClassifierModule
