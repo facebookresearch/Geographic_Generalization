@@ -42,7 +42,6 @@ class DollarStreetPerformance(Measurement):
     def measure(
         self,
     ) -> dict[str:float]:
-
         results_dict = {}
 
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
@@ -79,7 +78,6 @@ class DollarStreetPerformance(Measurement):
 
         # Save extra results to CSVs
         if self.save_detailed_results == "True":
-
             acc_by_income = self.convert_float_dict_to_list_dict(acc_by_income)
             acc_by_region = self.convert_float_dict_to_list_dict(acc_by_region)
 
@@ -103,7 +101,7 @@ class DollarStreetPerformance(Measurement):
         def new_test_step(self, batch, batch_idx):
             x, y, identifier = batch
 
-            y_hat = self(x)  # [:, mask]
+            y_hat = self(x)
 
             confidences5, indices5 = torch.nn.functional.softmax(y_hat, dim=-1).topk(5)
             confidences1, indices1 = torch.nn.functional.softmax(y_hat, dim=-1).topk(1)
@@ -166,7 +164,6 @@ class GeodePerformance(Measurement):
     def measure(
         self,
     ) -> dict[str:float]:
-
         results_dict = {}
 
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
@@ -197,7 +194,6 @@ class GeodePerformance(Measurement):
 
         # Save extra results to CSVs
         if self.save_detailed_results:
-
             # acc_by_region = self.convert_float_dict_to_list_dict(acc_by_region)
 
             # self.save_extra_results_to_csv(
