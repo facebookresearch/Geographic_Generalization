@@ -66,13 +66,13 @@ class TestPreTrainedModels:
     batch_size = 8
     models = [
         # MLPMixerClassifierModule(),
-        # ResNet18ClassifierModule(),
+        ResNet18ClassifierModule(),
         # ResNet50ClassifierModule(),
         # ResNet101ClassifierModule(),
         # BeitClassifierModule(),
-        # VitClassifierModule(),
+        VitClassifierModule(),
         # VitLargeClassifierModule(),
-        # ConvNextlassifierModule(),
+        ConvNextSmallClassifierModule(),
         # SimCLRClassifierModule(),
         # CLIPOPENAI400MClassifierModule(),  # only testing 1 CLIP and 1 SEER because they break the testing environment otherwise
         # CLIPLAION400MClassifierModule(),
@@ -82,10 +82,10 @@ class TestPreTrainedModels:
         # Seer640ClassifierModule(),
         # Seer1280ClassifierModule(),
         RegNet2ClassifierModule(),
-        ConvNextSmallClassifierModule(),
-        RexNet100ClassifierModule(),
+        # ConvNextSmallClassifierModule(),
+        # RexNet100ClassifierModule(),
         TinyNetAClassifierModule(),
-        Vgg11ClassifierModule(),
+        # Vgg11ClassifierModule(),
     ]
 
     @pytest.mark.parametrize("model", models)

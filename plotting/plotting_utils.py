@@ -52,7 +52,6 @@ plt.rc("font", **font)
 def make_performance_comparison_plots_across_models(
     results, filter_str="_test_accuracy", anti_filter_str="-"
 ):
-
     results = results.sort_values(by="imagenet_test_accuracy", ascending=False)
 
     generalization_cols = [
@@ -198,6 +197,7 @@ def make_property_vs_benefit_plot_across_models(
             .rename(columns={0: property_name.capitalize()})
             .reset_index()
         )
+        print(property_df)
 
         # Get benefits data
         benefits_vals = row[benefit_cols].tolist()
@@ -219,6 +219,7 @@ def make_property_vs_benefit_plot_across_models(
             left_on="index",
             right_on="index",
         ).dropna()
+        print(res)
 
         # Make dataset column for colors
         res["Base_Dataset"] = res["index"].apply(
@@ -484,7 +485,6 @@ def make_experiment_plots(results, log_dir=""):
 
     if included_properties != [] and included_benefits != []:
         for property_name in included_properties:
-
             # Make property-benefit plots at different thresholds
             if property_name in properties_with_thresholds:
                 thresholds = [
@@ -493,6 +493,7 @@ def make_experiment_plots(results, log_dir=""):
                     if f"{property_name}" in x
                 ]
                 thresholds = list(set(thresholds))
+                print(thresholds)
 
                 for threshold in thresholds:
                     plots[
@@ -500,11 +501,12 @@ def make_experiment_plots(results, log_dir=""):
                     ] = make_property_vs_benefit_plot_across_models(
                         results=results,
                         property_name=property_name,
-                        threshold=threshold,
-                        filter_str=f"_{property_name}_{threshold}",
+                        benefit_name="test_accuracy",
+                        property_threshold=threshold,
                         select_datasets=False,
                         select_models=False,
                     )
+
                     # If dollarstreet is included and we measured this property on dollarstreet, graph dollarstreet subsets in seperate graph
                     if any(
                         "dollarstreet" in string for string in results.columns.values
