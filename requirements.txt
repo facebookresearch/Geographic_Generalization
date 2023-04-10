@@ -31,13 +31,11 @@ cryptography==39.0.1
 cupy==11.6.0
 cycler==0.10.0
 cymem==2.0.6
-dataclasses==0.8
+dataclasses==0.6
 debugpy==1.4.1
 decorator==5.0.9
 defusedxml==0.7.1
 docker-pycreds==0.4.0
-en-core-web-lg==3.3.0
-en-core-web-sm==3.3.0
 entrypoints==0.3
 fastrlock==0.8
 filelock==3.6.0
