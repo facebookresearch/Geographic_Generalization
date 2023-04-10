@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from plotting_utils import make_experiment_plots
+from plotting.plotting_utils import make_experiment_plots
 
 
 @pytest.mark.webtest
