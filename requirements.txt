@@ -28,7 +28,6 @@ commonmark==0.9.1
 configparser==5.0.2
 contourpy==1.0.5
 cryptography==39.0.1
-cupy==11.6.0
 cycler==0.10.0
 cymem==2.0.6
 dataclasses==0.6
