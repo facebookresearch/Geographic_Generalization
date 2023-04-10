@@ -61,7 +61,6 @@ idna==3.2
 importlib-metadata==4.11.3
 importlib-resources==5.2.0
 iniconfig==1.1.1
-interplay-project==0.0.0
 iopath==0.1.9
 ipykernel==6.1.0
 ipython==7.26.0
