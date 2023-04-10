@@ -39,7 +39,7 @@ def combine_model_results_from_wandb(
     for run in runs:
 
         results = run.summary._json_dict
-        if "Experiment" in results and results["Experiment"].isin(experiment_name):
+        if "Experiment" in results and results["Experiment"] in experiment_name:
             results["name"] = run.name
             results_df = pd.DataFrame(results, index=[1])
             results_list.append(results_df)
@@ -87,7 +87,7 @@ def calculate_percentile_gaps(results, percentiles, model_name):
     gap_dict = {}
     for percentile in percentiles:
         gap, top_avg, bottom_avg = calculate_gap(means, percentile)
-        gap_dict[f"dollarstreet-gap-country-{percentile}"] = [gap]
+        gap_dict[f"dollarstreet-gap_country-{percentile}"] = [gap]
         gap_dict[f"dollarstreet-country-top-{percentile}"] = [top_avg]
         gap_dict[f"dollarstreet-country-bottom-{percentile}"] = [bottom_avg]
 
@@ -103,35 +103,37 @@ def calculate_country_percentile_gaps(
     metadata = pd.read_csv(
         "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups.csv"
     )[["id", "country.name"]]
-    res = pd.read_csv(
-        "/checkpoint/meganrichards/logs/interplay_project/new_eval_fixes_03-12/resnet101/3/DollarStreetPerformance/dollarstreet_results.csv",
-        index_col=0,
-    )[["id", "accurate_top5"]]
 
     all_dfs = []
     for m in os.listdir(base):
         model_dir = os.path.join(base, m)
         model_name = m
         if os.path.isdir(model_dir):
-            num_folder = [
-                x
-                for x in os.listdir(model_dir)
-                if x not in ["measurements.csv", "plots", ".submitit", "multirun.yaml"]
-            ][0]
-            res = pd.read_csv(
-                os.path.join(
-                    model_dir,
-                    num_folder,
-                    "DollarStreetPerformance",
-                    "dollarstreet_results.csv",
-                ),
-                index_col=0,
-            )
-            res_with_countries = pd.merge(metadata, res, how="right", on="id")
-            gap_df = calculate_percentile_gaps(
-                res_with_countries, percentiles=[0.05, 0.1, 0.25], model_name=model_name
-            )
-            all_dfs.append(gap_df)
+            try:
+                num_folder = [
+                    x
+                    for x in os.listdir(model_dir)
+                    if x
+                    not in ["measurements.csv", "plots", ".submitit", "multirun.yaml"]
+                ][0]
+                res = pd.read_csv(
+                    os.path.join(
+                        model_dir,
+                        num_folder,
+                        "DollarStreetPerformance",
+                        "dollarstreet_results.csv",
+                    ),
+                    index_col=0,
+                )
+                res_with_countries = pd.merge(metadata, res, how="right", on="id")
+                gap_df = calculate_percentile_gaps(
+                    res_with_countries,
+                    percentiles=[0.05, 0.1, 0.25],
+                    model_name=model_name,
+                )
+                all_dfs.append(gap_df)
+            except Exception as e:
+                print(e)
 
     combined = pd.concat(all_dfs)
     return combined

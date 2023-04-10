@@ -823,6 +823,7 @@ def generate_generalizaton_fairness_comparison_combined(
     only_clip_and_seer=False,
     correlation_type="pearson",
     normalized=False,
+    df=pd.DataFrame(),
 ):
     if exclude_clip_and_seer and only_clip_and_seer:
         raise Exception(
@@ -854,10 +855,14 @@ def generate_generalizaton_fairness_comparison_combined(
         "objectnet": "green",
         "imageneta": "purple",
     }
-    filtered = pd.read_csv(
-        "/checkpoint/meganrichards/logs/interplay_project/fairness_03-20/measurements_with_fairness_and_gaps_and_percentiles.csv",
-        index_col=0,
-    )
+
+    if len(df) > 0:
+        filtered = df.copy()
+    else:
+        filtered = pd.read_csv(
+            "/checkpoint/meganrichards/logs/interplay_project/fairness_03-20/measurements_with_fairness_and_gaps_and_percentiles.csv",
+            index_col=0,
+        )
     filtered = filtered[~filtered["Model"].isin(["beit-base", "beit-large", "clip"])]
     if exclude_clip_and_seer:
         models_to_exclude = ["seer320", "seer640", "seer1280", "clip-b16", "clip-b32"]
@@ -958,7 +963,7 @@ def generate_generalizaton_fairness_comparison_combined(
     include_str = " - Only CLIP/SEER" if only_clip_and_seer else ""
 
     plt.title(
-        f"{'OOD Accuracy' if type == 'OOD'else 'ID Accuracy'} v.s. {'Normalized' if normalized else ''} {benefit2_plot_name}{exclude_str}{include_str} {'- All Models' if not (exclude_str or include_str) else ''}"
+        f"{'OOD Accuracy' if type == 'OOD'else 'Accuracy'} v.s. {'Normalized' if normalized else ''} {benefit2_plot_name}{exclude_str}{include_str} {'- All Models' if not (exclude_str or include_str) else ''}"
     )
     plt.show()
 
@@ -999,11 +1004,17 @@ def calculate_geography_income_gap_comparsion(geography_type="country"):
     plt.show()
 
 
-def make_task_improvement_plots(type="income", compare_gap_normalizing=False):
-    filtered = pd.read_csv(
-        "/checkpoint/meganrichards/logs/interplay_project/fairness_03-20/measurements_with_fairness_and_gaps_and_percentiles.csv",
-        index_col=0,
-    )
+def make_task_improvement_plots(
+    type="income", compare_gap_normalizing=False, df=pd.DataFrame()
+):
+    if len(df) > 0:
+        filtered = df.copy()
+    else:
+        filtered = pd.read_csv(
+            "/checkpoint/meganrichards/logs/interplay_project/fairness_03-20/measurements_with_fairness_and_gaps_and_percentiles.csv",
+            index_col=0,
+        )
+
     filtered = filtered[~filtered["Model"].isin(["beit-base", "beit-large", "clip"])]
 
     for dataset_name in [
