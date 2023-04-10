@@ -1,0 +1,6 @@
+# @package _global_
+model_name: regnet8
+
+model: 
+  _target_: models.regnet.regnet.RegNet8ClassifierModule
+

@@ -1,1 +1,2 @@
-python evaluate.py -m model=resnet18,resnet50,resnet101,resnet152,vit,mlpmixer\
+python evaluate.py -m model=clip-b16,clip-l14,clip-b32,convnext-small,mlpmixer,seer10b,seer1280,seer320,seer640,simclr,vitlarge,vit,resnet101,resnet152,resnet18,resnet34,resnet50,beit-base,beit-large,eva-clip,tinynet-a,tinynet-b,tinynet-e,tinynet-d,tinynet-c,vgg-11,vgg-13,vgg-19,vgg-16,rexnet100,rexnet130,rexnet150,rexnet200,regnet2,regnet4,regnet16,regnet8,regnet6,regnet32,regnet,regnet64,regnet120,regnet320,convnext-base,convnext-large\
+

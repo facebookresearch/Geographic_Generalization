@@ -3,8 +3,8 @@ defaults:
   - base: base
   - mode: cluster_one_gpu
   - dataset_library: all
-  - model: resnet18 
+  - model: resnet18
   - measurement_library: all
-  - measurement_group: base
+  - measurement_group: generalization_fairness
 
-experiment_identifier: test
+experiment_identifier: more_models

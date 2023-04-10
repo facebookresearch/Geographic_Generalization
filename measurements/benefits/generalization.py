@@ -38,6 +38,7 @@ class ClassificationAccuracyEvaluation(Measurement):
         results_dict = {}
 
         for data_module_name, datamodule in self.datamodules.items():
+            print(data_module_name)
 
             # 2) Access datamodules needed - self.datamodules is a dict mapping from datamodule names (str) to datamodules. E.g. {'imagenet': ImageNetDatamodule object}
             datamodule_name, datamodule = next(iter(self.datamodules.items()))
@@ -46,7 +47,9 @@ class ClassificationAccuracyEvaluation(Measurement):
             new_test_step = self.make_new_test_step(
                 datamodule_name=datamodule_name, mask=datamodule.mask
             )
+
             self.model.test_step = types.MethodType(new_test_step, self.model)
+            print("made new test step")
 
             # Call validate / test function
             results = self.trainer.test(model=self.model, datamodule=datamodule)
@@ -71,9 +74,9 @@ class ClassificationAccuracyEvaluation(Measurement):
         def new_test_step(self, batch, batch_idx):
             x, y = batch
             if mask is not None:
-                y_hat = self.model(x)[:, mask]
+                y_hat = self(x)[:, mask]
             else:
-                y_hat = self.model(x)
+                y_hat = self(x)
             # If you make a torchmetrics metric outside of the model construction, it doesn't get automatically moved to a device
 
             result = self.test_accuracy(F.softmax(y_hat, dim=-1), y)

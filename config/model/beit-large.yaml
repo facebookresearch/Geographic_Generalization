@@ -1,0 +1,5 @@
+# @package _global_
+model_name: beit-large
+
+model: 
+  _target_: models.beit.beit.BeitLargeClassifierModule

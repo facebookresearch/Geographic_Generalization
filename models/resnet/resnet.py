@@ -1,7 +1,6 @@
 import torch.nn.functional as F
 from models.classifier_model import ClassifierModule
-from torchvision.models import resnet50
-import timm
+import torchvision
 
 
 class ResNet18ClassifierModule(ClassifierModule):

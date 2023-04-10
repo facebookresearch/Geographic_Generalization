@@ -158,6 +158,12 @@ fairness_dollarstreet:
   model: 
   experiment_config:
 
+fairness_geode: 
+  _target_: measurements.benefits.fairness.GeodePerformance
+  datamodule_names: [geode]
+  model: 
+  experiment_config:
+
 ## -- Calibration Measures -- ##
 
 nll_dummy:
@@ -263,4 +269,3 @@ ece_dollarstreet:
   model:
   experiment_config:
   n_bins: 15
-

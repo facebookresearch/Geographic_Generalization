@@ -16,7 +16,7 @@ from models.classifier_model import ClassifierModule
 import pandas as pd
 from pytorch_lightning.loggers import WandbLogger
 import copy
-from plotting_utils import make_experiment_plots
+from plotting.plotting_utils import make_experiment_plots
 
 log = logging.getLogger(__name__)
 git_hash = get_git_hash()
@@ -29,6 +29,7 @@ def main(config: DictConfig) -> None:
     pl.seed_everything(config.seed)
     print_config(config)
     wandb_logger = setup_wandb(config, log, git_hash)
+    wandb.log({"Experiment": config.experiment_identifier})
 
     # Check config
     check_config_measurements(config)

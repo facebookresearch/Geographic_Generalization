@@ -6,6 +6,7 @@ from datasets.imagenet_adversarial import ImageNetAdversarialDataModule
 from datasets.objectnet import ObjectNetDataModule
 from datasets.imagenet_sketch import ImageNetSketchDataModule
 from datasets.imagenet_1k import ImageNet1kDataModule
+from datasets.geode import GeodeDataModule
 
 from datasets.dollarstreet import DollarStreetDataModule
 from pathlib import Path
@@ -89,6 +90,17 @@ class TestDollarStreet:
         assert Path(dm.data_dir, "test").exists()
         test_loader = dm.test_dataloader()
         x, y, url = next(iter(test_loader))
+
+        assert x.shape == (8, 3, 224, 224)
+        assert len(y) == 8
+
+
+class TestGeode:
+    def test_geode(self):
+        dm = GeodeDataModule(batch_size=8)
+        assert Path(dm.data_dir, "test").exists()
+        test_loader = dm.test_dataloader()
+        x, y, id = next(iter(test_loader))
 
         assert x.shape == (8, 3, 224, 224)
         assert len(y) == 8
