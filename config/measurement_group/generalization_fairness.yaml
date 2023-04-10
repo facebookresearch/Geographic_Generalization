@@ -2,6 +2,6 @@
 measurement_group_name: generalization_fairness
 
 measurements: [
-  fairness_dollarstreet,
-  validation_imagenet, generalization_imagenetv2, generalization_imagenetr, generalization_imageneta, generalization_imagenetsketch, generalization_objectnet
+  validation_imagenet, generalization_imagenetv2, generalization_imagenetr, generalization_imageneta, generalization_imagenetsketch, generalization_objectnet,
+  fairness_dollarstreet
   ] 
