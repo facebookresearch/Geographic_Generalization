@@ -24,6 +24,7 @@ class ClassifierModule(pl.LightningModule):
         optimizer: str = "adam",
         feature_extraction_layer_index=-2,
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
         super().__init__()
         self.timm_name = timm_name
@@ -31,34 +32,34 @@ class ClassifierModule(pl.LightningModule):
         self.optimizer = optimizer
         self.checkpoint_url = checkpoint_url
         self.feature_dim = 1000
+        self.linear_eval = linear_eval
 
-        self.model = self.load_backbone()
+        self.model = self.load_model()
         self.feature_extraction_layer_index = feature_extraction_layer_index
         (
-            self.feature_extractor,
+            self.backbone,
             self.feature_extraction_layer,
             self.model_layers,
             self.__embedding_dim,
-        ) = self.load_feature_extractor()
+        ) = self.load_backbone()
 
         self.predictions = pd.DataFrame({})
+        self.linear_classifier = torch.nn.Linear(self.__embedding_dim__, 1000)
 
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
         self.test_accuracy = torchmetrics.Accuracy()
 
-    def load_backbone(self):
+    def load_model(self):
         if self.checkpoint_url:
             model = timm.create_model(self.timm_name, pretrained=False)
             state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
             model.load_state_dict(state_dict)
         else:
             model = timm.create_model(self.timm_name, pretrained=True)
-
         return model
 
-    def load_feature_extractor(self):
-        print("using classifier model's feature extractor")
+    def load_backbone(self):
         with torch.no_grad():
             train_nodes, eval_nodes = get_graph_node_names(self.model)
             feature_extraction_layer = eval_nodes[self.feature_extraction_layer_index]
@@ -72,10 +73,16 @@ class ClassifierModule(pl.LightningModule):
         return feature_extractor, feature_extraction_layer, eval_nodes, embedding_dim
 
     def forward(self, x):
-        return self.model(x)
+        if self.linear_eval:
+            with torch.no_grad():
+                features = self.backbone(x)[self.feature_extraction_layer]
+                logits = self.linear_classifier(features)
+                return logits
+        else:
+            return self.model(x)
 
     def forward_features(self, x):
-        return self.feature_extractor(x)[self.feature_extraction_layer]
+        return self.backbone(x)[self.feature_extraction_layer]
 
     @property
     def embedding_dim(self):
@@ -120,6 +127,10 @@ class ClassifierModule(pl.LightningModule):
     def configure_optimizers(self):
         if self.optimizer == "adam":
             return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+    def on_train_epoch_start(self) -> None:
+        if self.linear_eval:
+            self.backbone.eval()
 
 
 if __name__ == "__main__":

@@ -11,13 +11,13 @@ class Seer320ClassifierModule(ClassifierModule):
         self,
         timm_name: str = "",
         checkpoint_url: str = "facebook/regnet-y-320-seer-in1k",
+        linear_eval: bool = False,
     ):
         super().__init__(
-            timm_name=timm_name,
-            checkpoint_url=checkpoint_url,
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
         )
 
-    def load_backbone(self):
+    def load_model(self):
         model = RegNetForImageClassification.from_pretrained(self.checkpoint_url)
         return model
 
@@ -36,7 +36,7 @@ class Seer320ClassifierModule(ClassifierModule):
             feat = torch.flatten(pool(output), start_dim=1, end_dim=-1)
         return feat
 
-    def load_feature_extractor(self):
+    def load_backbone(self):
         example = torch.rand((1, 3, 224, 224))
         output = self.forward_features(example)
         embedding_dim = output.shape[1]
@@ -48,8 +48,11 @@ class Seer640ClassifierModule(Seer320ClassifierModule):
         self,
         timm_name: str = "",
         checkpoint_url: str = "facebook/regnet-y-640-seer-in1k",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )
 
 
 class Seer1280ClassifierModule(Seer320ClassifierModule):
@@ -57,10 +60,10 @@ class Seer1280ClassifierModule(Seer320ClassifierModule):
         self,
         timm_name: str = "",
         checkpoint_url: str = "facebook/regnet-y-1280-seer-in1k",
+        linear_eval: bool = False,
     ):
         super().__init__(
-            timm_name=timm_name,
-            checkpoint_url=checkpoint_url,
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
         )
 
 
@@ -69,8 +72,8 @@ class Seer10bClassifierModule(Seer320ClassifierModule):
         self,
         timm_name: str = "",
         checkpoint_url: str = "facebook/regnet-y-10b-seer-in1k",
+        linear_eval: bool = False,
     ):
         super().__init__(
-            timm_name=timm_name,
-            checkpoint_url=checkpoint_url,
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
         )

@@ -19,20 +19,21 @@ class CLIPClassifierModule(ClassifierModule):
         timm_name: str = "",
         feature_extraction_layer_index=-2,
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
         super().__init__(
             timm_name=timm_name,
             feature_extraction_layer_index=feature_extraction_layer_index,
             checkpoint_url=checkpoint_url,
+            linear_eval=linear_eval,
         )
 
     # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
     CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in IMAGENET_CLASSES]
     text_tokens = tokenizer.tokenize(CLASS_NAME_PROMPTS)
 
-    def load_backbone(self):
+    def load_model(self):
         model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-16")
-        print(preprocess)
         self.preprocess = preprocess
         return model
 
@@ -59,7 +60,7 @@ class CLIPClassifierModule(ClassifierModule):
             outputs = self.model(**all_inputs)
         return outputs[self.feature_extraction_layer]
 
-    def load_feature_extractor(self):
+    def load_backbone(self):
         example = torch.rand((1, 3, 224, 224))
         output = self.forward_features(example)
         embedding_dim = output.shape[1]
@@ -74,17 +75,19 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
         timm_name: str = "",
         feature_extraction_layer_index=-2,
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
         super().__init__(
             timm_name=timm_name,
             feature_extraction_layer_index=feature_extraction_layer_index,
             checkpoint_url=checkpoint_url,
+            linear_eval=linear_eval,
         )
 
     # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
     CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in IMAGENET_CLASSES]
 
-    def load_backbone(self):
+    def load_model(self):
         model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
@@ -113,7 +116,7 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
             outputs = self.model(**all_inputs)
         return outputs[self.feature_extraction_layer]
 
-    def load_feature_extractor(self):
+    def load_backbone(self):
         example = torch.rand((1, 3, 224, 224))
         output = self.forward_features(example)
         embedding_dim = output.shape[1]
@@ -123,7 +126,7 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
 class CLIPB32ClassifierModule(CLIPOPENAI400MClassifierModule):
     """Vit-B32, pretrained on LAION-400M. Based on models trained from https://github.com/mlfoundations/open_clip"""
 
-    def load_backbone(self):
+    def load_model(self):
         model, _, self.preprocess = open_clip.create_model_and_transforms(
             "ViT-B-32-quickgelu", pretrained="laion400m_e32"
         )
@@ -151,7 +154,7 @@ class CLIPB32ClassifierModule(CLIPOPENAI400MClassifierModule):
             image_features = self.model.encode_image(x).float()
             return image_features
 
-    def load_feature_extractor(self):
+    def load_backbone(self):
         example = torch.rand((1, 3, 224, 224))
         output = self.forward_features(example)
         embedding_dim = output.shape[1]
@@ -161,7 +164,7 @@ class CLIPB32ClassifierModule(CLIPOPENAI400MClassifierModule):
 class CLIPB16ClassifierModule(CLIPB32ClassifierModule):
     """Vit-B16 Encoder CLIP, based on models trained from https://github.com/mlfoundations/open_clip"""
 
-    def load_backbone(self):
+    def load_model(self):
         model, _, self.preprocess = open_clip.create_model_and_transforms(
             "ViT-B-16",
             pretrained="laion400m_e32",
@@ -173,7 +176,7 @@ class CLIPB16ClassifierModule(CLIPB32ClassifierModule):
 class CLIPL14ClassifierModule(CLIPB32ClassifierModule):
     """Vit-L14 Encoder CLIP, based on models trained from https://github.com/mlfoundations/open_clip"""
 
-    def load_backbone(self):
+    def load_model(self):
         model, _, self.preprocess = open_clip.create_model_and_transforms(
             "ViT-L-14",
             pretrained="laion400m_e32",
