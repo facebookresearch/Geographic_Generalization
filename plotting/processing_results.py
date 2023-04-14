@@ -37,7 +37,6 @@ def combine_model_results_from_wandb(
 
     results_list = []
     for run in runs:
-
         results = run.summary._json_dict
         if "Experiment" in results and results["Experiment"] in experiment_name:
             results["name"] = run.name
@@ -99,7 +98,6 @@ def calculate_percentile_gaps(results, percentiles, model_name):
 def calculate_country_percentile_gaps(
     base="/checkpoint/meganrichards/logs/interplay_project/new_eval_fixes_03-12/",
 ):
-
     metadata = pd.read_csv(
         "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups.csv"
     )[["id", "country.name"]]
@@ -137,3 +135,296 @@ def calculate_country_percentile_gaps(
 
     combined = pd.concat(all_dfs)
     return combined
+
+
+import pandas as pd
+import os
+
+
+def calculate_geode_averages(df, model_name):
+    region_acc = df.groupby("region")["accurate_top5"].mean().to_dict()
+
+    gap_dict = {}
+
+    for region_name, region_accuracy in region_acc.items():
+        gap_dict[f"geode-{region_name.lower()}_test_accuracy"] = [region_accuracy]
+
+    gap_dict[f"geode-gap_region"] = [region_acc["Europe"] - region_acc["Africa"]]
+    gap_dict[f"geode-worst"] = [min(region_acc.values())]
+    gap_dict[f"geode-best"] = [max(region_acc.values())]
+
+    gap_dict["Model"] = [model_name]
+    gap_df = pd.DataFrame.from_dict(gap_dict, orient="columns")
+    return gap_df
+
+
+def calculate_geode_region_acc_and_gaps(
+    base="/checkpoint/meganrichards/logs/interplay_project/geode_eval_04-10/",
+):
+    metadata = pd.read_csv("/checkpoint/meganrichards/datasets/geode/metadata_1k.csv")
+
+    all_dfs = []
+    for m in os.listdir(base):
+        model_dir = os.path.join(base, m)
+        model_name = m
+        if os.path.isdir(model_dir):
+            try:
+                num_folder = [
+                    x
+                    for x in os.listdir(model_dir)
+                    if x
+                    not in ["measurements.csv", "plots", ".submitit", "multirun.yaml"]
+                ][0]
+                res = pd.read_csv(
+                    os.path.join(
+                        model_dir,
+                        num_folder,
+                        "GeodePerformance",
+                        "geode_predictions.csv",
+                    ),
+                    index_col=0,
+                ).reset_index()
+                res_with_regions = pd.merge(
+                    metadata, res, how="right", left_on="Unnamed: 0", right_on="index"
+                )
+
+                gap_df = calculate_geode_averages(
+                    res_with_regions,
+                    model_name=model_name,
+                )
+                all_dfs.append(gap_df)
+
+            except Exception as e:
+                print(e)
+
+    combined = pd.concat(all_dfs)
+    # combined.to_csv("/checkpoint/meganrichards/logs/interplay_project/geode_eval_04-10/geode_eval_combined.csv")
+    return combined
+
+
+def recalculate_geode_accuracy_with_new_labels():
+    preds = (
+        pd.read_csv(
+            "/checkpoint/meganrichards/logs/interplay_project/geode_eval_04-10/resnet101/18/GeodePerformance/geode_predictions.csv"
+        )
+        .drop(columns=["id"])
+        .reset_index()
+        .rename(columns={"index": "id"})
+    )
+    metadata = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/geode/metadata_1k_test_new_labels.csv"
+    )
+    metadata["id"] = metadata.index
+    combined = pd.merge(preds, metadata, how="left", on="id")
+    from ast import literal_eval
+
+    combined["predictions"] = combined["predictions"].apply(literal_eval)
+    combined["new_1k_index"] = combined["new_1k_index"].apply(literal_eval)
+
+    def calculate_acc5(x):
+        # return (x['object_index']) in x['predictions']
+        acc5 = len(set(x["predictions"]) & set(x["new_1k_index"])) > 0
+        return acc5
+
+    def calculate_acc1(x):
+        # return (x['object_index']) in x['predictions']
+        acc5 = len(set([x["predictions"][0]]) & set(x["new_1k_index"])) > 0
+        return acc5
+
+    combined["accurate_top5"] = combined.apply(calculate_acc5, axis=1)
+    combined["accurate_top1"] = combined.apply(calculate_acc1, axis=1)
+    # #combined[~combined['object'].isin(['waste_container', 'stall', 'streetlight_lantern'])]
+    return combined
+
+
+def remapping_geode():
+    GEODE_CLASSES_TO_IMAGENET_CLASSES = {
+        "bag": ["backpack", "purse", "punching bag", "sleeping bag", "plastic bag"],
+        "hand soap": ["soap dispenser", "lotion"],
+        "dustbin": ["bucket"],
+        "toothbrush": [],
+        "toothpaste toothpowder": [],
+        "hairbrush comb": ["hair clip"],
+        "chair": ["barber chair", "folding chair", "rocking chair", "couch"],
+        "hat": ["cowboy hat", "swimming cap", "football helmet"],
+        "light fixture": ["table lamp"],
+        "light switch": ["electrical switch"],
+        "plate of food": ["meatloaf", "soup bowl", "plate"],
+        "spices": [],
+        "stove": ["Dutch oven", "stove"],
+        "cooking pot": ["frying pan", "hot pot", "Crock Pot"],
+        "cleaning equipment": ["vacuum cleaner", "washing machine"],
+        "lighter": ["lighter"],
+        "medicine": ["pill bottle", "medicine cabinet"],
+        "candle": ["candle"],
+        "toy": ["teddy bear"],
+        "jug": ["water jug", "whiskey jug", "water bottle"],
+        "streetlight lantern": ["lighthouse", "torch"],
+        "front door": ["sliding door"],
+        "tree": [],
+        "house": ["cliff dwelling", "mobile home", "barn", "home theater"],
+        "backyard": ["patio"],
+        "truck": ["garbage truck", "semi-trailer truck", "tow truck"],
+        "waste container": ["plastic bag"],
+        "car": [
+            "garbage truck",
+            "recreational vehicle",
+            "semi-trailer truck",
+            "tow truck",
+            "sports car",
+            "railroad car",
+        ],
+        "fence": ["chain-link fence", "picket fence", "split-rail fence"],
+        "road sign": ["traffic or street sign"],
+        "dog": [
+            "Bernese Mountain Dog",
+            "Sealyham Terrier",
+            "Toy Poodle",
+            "toy terrier",
+            "African wild dog",
+            "husky",
+            "Maltese",
+            "Beagle",
+            "Labrador Retriever",
+            "Cairn Terrier",
+        ],
+        "wheelbarrow": ["wheelbarrow"],
+        "religious building": ["mosque", "church"],
+        "stall": ["toilet seat"],
+        "boat": ["motorboat", "canoe"],
+        "monument": ["triumphal arch", "obelisk", "stupa"],
+        "flag": ["flagpole"],
+        "bus": ["minibus", "school bus"],
+        "storefront": ["traffic or street sign", "grocery store"],
+        "bicycle": ["tricycle", "mountain bike"],
+    }
+
+    metadata = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/geode/metadata_1k_test.csv"
+    )  # .reset_index().rename(columns = {'index': 'id'})
+    metadata["id"] = metadata.index
+    new_id_map = {}
+    for k, v in GEODE_CLASSES_TO_IMAGENET_CLASSES.items():
+        index_list = []
+        for v_i in v:
+            index_list.append(IMAGENET_CLASSES.index(v_i))
+        new_id_map[k] = index_list
+
+    def use_new_id_map(x):
+        return new_id_map[x.replace("_", " ")]
+
+    metadata["new_1k_index"] = metadata["object"].apply(use_new_id_map)
+    return metadata
+
+
+import os
+import pandas as pd
+from ast import literal_eval
+
+
+def calculate_acc5(x):
+    # return (x['object_index']) in x['predictions']
+    acc5 = len(set(x["predictions"]) & set(x["new_1k_index"])) > 0
+    return acc5
+
+
+def calculate_acc1(x):
+    # return (x['object_index']) in x['predictions']
+    acc5 = len(set([x["predictions"][0]]) & set(x["new_1k_index"])) > 0
+    return acc5
+
+
+def recalculate_geode_group_accuracies(c, model_name=""):
+    reg = c.groupby("region")["accurate_top1"].mean()
+
+    gap_dict = {}
+    gap_dict["Model"] = [model_name]
+    for k, v in reg.items():
+        gap_dict[f"geode-{k.lower()}_test_accuracy"] = [v]
+    gap_dict["geode_test_accuracy"] = [c["accurate_top1"].mean()]
+    gap_dict["geode-gap_europe_africa"] = [
+        reg.to_dict()["Europe"] - reg.to_dict()["Africa"]
+    ]
+    gap_dict["geode-gap_americas_africa"] = [
+        reg.to_dict()["Americas"] - reg.to_dict()["Africa"]
+    ]
+    gap_dict["geode-worst_region_test_accuracy"] = [reg.min()]
+    gap_dict["geode-best_region_test_accuracy"] = [reg.max()]
+    gap_dict["geode-gap_best_worst"] = [reg.max() - reg.min()]
+
+    gap_df = pd.DataFrame.from_dict(gap_dict, orient="columns")
+
+    return gap_df
+
+
+def process_geode_results():
+    base = "/checkpoint/meganrichards/logs/interplay_project/geode_eval_04-10/"
+    metadata = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/geode/metadata_1k_test_new_labels.csv"
+    )  # .reset_index().rename(columns = {'index': 'id'})
+    metadata["id"] = metadata.index
+    all_dfs = []
+    for model in os.listdir(base):
+        model_dir = os.path.join(base, model)
+        if os.path.isdir(model_dir):
+            try:
+                num_folder = [
+                    x
+                    for x in os.listdir(model_dir)
+                    if x
+                    not in ["measurements.csv", "plots", ".submitit", "multirun.yaml"]
+                ][0]
+                preds = (
+                    pd.read_csv(
+                        os.path.join(
+                            model_dir,
+                            num_folder,
+                            "GeodePerformance",
+                            "geode_predictions.csv",
+                        )
+                    )
+                    .drop(columns=["id"])
+                    .reset_index()
+                    .rename(columns={"index": "id"})
+                )
+
+                combined = pd.merge(preds, metadata, how="left", on="id")
+                combined["predictions"] = combined["predictions"].apply(literal_eval)
+                combined["new_1k_index"] = combined["new_1k_index"].apply(literal_eval)
+
+                combined["accurate_top5"] = combined.apply(calculate_acc5, axis=1)
+                combined["accurate_top1"] = combined.apply(calculate_acc1, axis=1)
+                df = recalculate_geode_group_accuracies(combined, model)
+                all_dfs.append(df)
+
+            except Exception as e:
+                print(e)
+
+    l = pd.concat(
+        all_dfs
+    )  # .to_csv("/checkpoint/meganrichards/logs/interplay_project/geode_eval_04-10/geode_eval_combined.csv")
+    return l
+
+
+from plotting.plotting_utils import generate_generalizaton_fairness_comparison_combined
+import pandas as pd
+
+
+def make_geode_gap_plot():
+    geode_gaps = pd.read_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/geode_eval_04-10/geode_eval_combined_corrected.csv",
+        index_col=0,
+    )
+    rest = pd.read_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/more_models_04-03/combined_with_og_set.csv",
+        index_col=0,
+    )
+    combined = pd.merge(geode_gaps, rest, how="inner", on="Model")
+    combined.to_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/geode_eval_04-10/all_results_with_geode_corrected.csv"
+    )
+    combined = combined.rename(columns={"geode-gap_best_worst": "geode-gap_region"})
+    generate_generalizaton_fairness_comparison_combined(
+        disparity_type="region", fairness_dataset="geode", df=combined
+    )
+    return

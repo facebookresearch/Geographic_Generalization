@@ -169,7 +169,9 @@ class GeodePerformance(Measurement):
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
 
         new_test_step = self.make_new_test_step(
-            datamodule_name=datamodule_name, mask=datamodule.mask
+            datamodule_name=datamodule_name,
+            mask=datamodule.mask,
+            label_col=datamodule.label_col,
         )
 
         self.model.test_step = types.MethodType(new_test_step, self.model)
@@ -208,7 +210,14 @@ class GeodePerformance(Measurement):
 
         return results_dict
 
-    def make_new_test_step(self, datamodule_name, mask):
+    def make_new_test_step(
+        self,
+        datamodule_name,
+        mask,
+        label_col,
+    ):
+        print(label_col)
+
         def new_test_step(self, batch, batch_idx):
             x, y, identifier = batch
 
@@ -221,9 +230,15 @@ class GeodePerformance(Measurement):
             acc1s = []
 
             for i in range(len(y)):
-                y_int = [int(x) for x in y[i].split(",")]
-                acc5 = len(set(y_int) & set(indices5[i].tolist())) > 0
-                acc1 = len(set(y_int) & set(indices1[i].tolist())) > 0
+                if "1k" in label_col:
+                    y_int = [int(x) for x in y[i].split(",")]
+                    acc5 = len(set(y_int) & set(indices5[i].tolist())) > 0
+                    acc1 = len(set(y_int) & set(indices1[i].tolist())) > 0
+                else:
+                    y_int = [int(y[i].item())]
+                    acc5 = len(set(y_int) & set(indices5[i].tolist())) > 0
+                    acc1 = len(set(y_int) & set(indices1[i].tolist())) > 0
+
                 acc5s.append(acc5)
                 acc1s.append(acc1)
 
@@ -235,7 +250,7 @@ class GeodePerformance(Measurement):
                     "output": y_hat.cpu().tolist(),
                     "predictions": indices5.cpu().tolist(),
                     "confidences": confidences5.cpu().tolist(),
-                    "label": list(y),
+                    "label": list(y.cpu()),
                     "accurate_top1": acc1s,
                     "accurate_top5": acc5s,
                 }

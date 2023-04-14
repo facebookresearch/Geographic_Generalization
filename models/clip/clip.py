@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import open_clip
 from open_clip import tokenizer
 from datasets.imagenet_classes import IMAGENET_CLASSES
+from datasets.geode import GEODE_CLASSES_TO_IMAGENET_CLASSES
 from models.classifier_model import ClassifierModule
 
 
@@ -20,17 +21,24 @@ class CLIPClassifierModule(ClassifierModule):
         feature_extraction_layer_index=-2,
         checkpoint_url: str = "",
         linear_eval: bool = False,
+        dataset_to_use_for_classes: str = "Imagenet",
     ):
+        if dataset_to_use_for_classes == "Imagenet":
+            self.class_list = IMAGENET_CLASSES
+            print("Using 1K labels for CLIP")
+        elif dataset_to_use_for_classes == "Geode":
+            self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
+            print("Using Geode labels for CLIP")
+
+        # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
+        self.CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in self.class_list]
+        self.text_tokens = tokenizer.tokenize(self.CLASS_NAME_PROMPTS)
         super().__init__(
             timm_name=timm_name,
             feature_extraction_layer_index=feature_extraction_layer_index,
             checkpoint_url=checkpoint_url,
             linear_eval=linear_eval,
         )
-
-    # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
-    CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in IMAGENET_CLASSES]
-    text_tokens = tokenizer.tokenize(CLASS_NAME_PROMPTS)
 
     def load_model(self):
         model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-16")
@@ -76,16 +84,23 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
         feature_extraction_layer_index=-2,
         checkpoint_url: str = "",
         linear_eval: bool = False,
+        dataset_to_use_for_classes: str = "Imagenet",
     ):
+        if dataset_to_use_for_classes == "Imagenet":
+            self.class_list = IMAGENET_CLASSES
+            print("Using Imagenet labels for CLIP")
+        elif dataset_to_use_for_classes == "Geode":
+            self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
+            print("Using Geode labels for CLIP")
+
+        # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
+        self.CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in self.class_list]
         super().__init__(
             timm_name=timm_name,
             feature_extraction_layer_index=feature_extraction_layer_index,
             checkpoint_url=checkpoint_url,
             linear_eval=linear_eval,
         )
-
-    # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
-    CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in IMAGENET_CLASSES]
 
     def load_model(self):
         model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")

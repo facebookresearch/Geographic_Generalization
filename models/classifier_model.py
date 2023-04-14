@@ -44,7 +44,7 @@ class ClassifierModule(pl.LightningModule):
         ) = self.load_backbone()
 
         self.predictions = pd.DataFrame({})
-        self.linear_classifier = torch.nn.Linear(self.__embedding_dim__, 1000)
+        self.linear_classifier = torch.nn.Linear(self.embedding_dim, 1000)
 
         self.train_accuracy = torchmetrics.Accuracy()
         self.val_accuracy = torchmetrics.Accuracy()
@@ -88,13 +88,23 @@ class ClassifierModule(pl.LightningModule):
     def embedding_dim(self):
         return self.__embedding_dim
 
+    def convert_multilabel_to_single_label(self, y_i):
+        split = y_i.split(",")
+        if len(split) == 1:
+            return int(split[0])
+        else:
+            return int(split[1])
+
     def shared_step(self, batch: Tensor, stage: str = "train"):
         # The model expects an image tensor of shape (B, C, H, W)
-        x, y = batch
+        x, y, _ = batch
         y_hat = self.model(x)
-        loss = F.cross_entropy(y_hat, y)
+        y_tensor = torch.LongTensor(
+            [self.convert_multilabel_to_single_label(y_i) for y_i in y]
+        )
+        loss = F.cross_entropy(y_hat, y_tensor)
         accuracy_metric = getattr(self, f"{stage}_accuracy")
-        accuracy_metric(F.softmax(y_hat, dim=-1), y)
+        accuracy_metric(F.softmax(y_hat, dim=-1), y_tensor)
         self.log(f"{stage}_loss", loss, sync_dist=True)
         self.log(
             f"{stage}_accuracy",
