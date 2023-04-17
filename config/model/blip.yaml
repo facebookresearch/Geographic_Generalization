@@ -1,0 +1,6 @@
+# @package _global_
+model_name: blip
+
+model: 
+  _target_: models.blip.blip.BLIPClassifierModule
+  dataset_to_use_for_classes: ImageNet
