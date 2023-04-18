@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import wandb
+from datasets.imagenet_classes import IMAGENET_CLASSES
 
 
 def combine_model_results_from_file(
@@ -44,9 +45,16 @@ def combine_model_results_from_wandb(
             results_list.append(results_df)
 
     combined = pd.concat(results_list)
-    combined["Model"] = combined["name"].apply(
-        lambda x: x.split(f"{experiment_name}_")[1].split("_")[0]
-    )
+    model_names = []
+
+    for n in combined["name"]:
+        if len(n.split(f"{experiment_name}_")) > 1:
+            model_names.append(n.split(f"{experiment_name}_")[1].split("_")[0])
+        else:
+            model_names.append(n.split(f"{experiment_name}_")[0].split("_")[0])
+
+    combined["Model"] = model_names
+
     combined = combined[
         [
             x
