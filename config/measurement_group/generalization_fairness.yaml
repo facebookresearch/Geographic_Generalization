@@ -3,5 +3,6 @@ measurement_group_name: generalization_fairness
 
 measurements: [
   validation_imagenet, generalization_imagenetv2, generalization_imagenetr, generalization_imageneta, generalization_imagenetsketch, generalization_objectnet,
-  fairness_dollarstreet
+  fairness_dollarstreet, 
+  fairness_geode
   ] 

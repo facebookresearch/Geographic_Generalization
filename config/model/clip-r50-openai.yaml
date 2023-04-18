@@ -1,6 +1,6 @@
 # @package _global_
-model_name: blip
+model_name: clip-r50-openai
 
 model: 
-  _target_: models.blip.blip.BLIPClassifierModule
+  _target_: models.clip.clip.CLIPResnet50OpenAIClassifierModule
   dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

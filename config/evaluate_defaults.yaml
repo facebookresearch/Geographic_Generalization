@@ -3,8 +3,9 @@ defaults:
   - base: base
   - mode: cluster_one_gpu
   - dataset_library: all
-  - model: resnet18
+  - model: clip-coca-vit14
   - measurement_library: all
-  - measurement_group: generalization_fairness
+  - measurement_group: base
 
-experiment_identifier: more_models
+experiment_identifier: test
+dataset_to_use_for_class_prompts: Imagenet

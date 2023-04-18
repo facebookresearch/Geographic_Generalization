@@ -1,0 +1,6 @@
+# @package _global_
+model_name: clip-convnext-laion2b-a
+
+model: 
+  _target_: models.clip.clip.CLIPConvNextLaion2BAClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

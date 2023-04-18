@@ -1,7 +1,0 @@
-# @package _global_
-model_name: clip-b32
-
-model: 
-  _target_: models.clip.clip.CLIPB32ClassifierModule
-
-
