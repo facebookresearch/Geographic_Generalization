@@ -9,6 +9,7 @@ import open_clip
 from open_clip import tokenizer
 from datasets.imagenet_classes import IMAGENET_CLASSES
 from datasets.geode import GEODE_CLASSES_TO_IMAGENET_CLASSES
+from datasets.dollarstreet_kaggle import MAPPING
 from models.classifier_model import ClassifierModule
 
 
@@ -29,6 +30,13 @@ class OpenCLIPBaseClassifierModule(ClassifierModule):
         elif dataset_to_use_for_classes == "Geode":
             self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
             print("Using Geode labels for CLIP")
+        elif dataset_to_use_for_classes == "DollarStreet":
+            self.class_list = list(MAPPING.keys())
+            print("Using DollarStreet labels for CLIP")
+        else:
+            raise Exception(
+                "CLIP models can use datasets: 'Imagenet', 'Geode', or 'DollarStreet' for the parameter dataset_to_use_for_classes"
+            )
 
         # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
         self.CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in self.class_list]

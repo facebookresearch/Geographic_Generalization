@@ -1,6 +1,0 @@
-# @package _global_
-model_name: clip-convnextxlarge-laion2b-aug
-
-model: 
-  _target_: models.clip.clip.CLIPConvNextXLargeLaion2BAugClassifierModule
-  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

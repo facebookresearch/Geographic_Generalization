@@ -11,7 +11,7 @@ import pandas as pd
 from ast import literal_eval
 from datasets.image_datamodule import ImageDataModule
 import numpy as np
-from datasets.image_datamodule import imagenet_normalization
+from datasets.image_datamodule import IMAGENET_NORMALIZATION
 from torchvision import transforms as transform_lib
 
 GEODE_CLASSES_TO_IMAGENET_CLASSES = {
@@ -222,168 +222,168 @@ NEW_GEODE_CLASSES_TO_IMAGENET_INDICIES = {
 }
 
 
-def calculate_geode_top_classes_and_indices(n):
-    nlp = spacy.load("en_core_web_lg")
+# def calculate_geode_top_classes_and_indices(n):
+#     nlp = spacy.load("en_core_web_lg")
 
-    imagenet_classes = (
-        pd.read_csv("/datasets01/imagenet_full_size/061417/labels.txt", header=None)
-        .rename(columns={0: "Synset_ID", 1: "Class_Name"})["Class_Name"]
-        .unique()
-        .tolist()
-    )
-    geode_classes = [
-        " ".join(x.split("_"))
-        for x in pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")[
-            "object"
-        ]
-        .unique()
-        .tolist()
-    ]
+#     imagenet_classes = (
+#         pd.read_csv("/datasets01/imagenet_full_size/061417/labels.txt", header=None)
+#         .rename(columns={0: "Synset_ID", 1: "Class_Name"})["Class_Name"]
+#         .unique()
+#         .tolist()
+#     )
+#     geode_classes = [
+#         " ".join(x.split("_"))
+#         for x in pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")[
+#             "object"
+#         ]
+#         .unique()
+#         .tolist()
+#     ]
 
-    top_indices = {}
-    top_classes = {}
-    for geode_class in geode_classes:
-        g = nlp(geode_class)
-        sim_scores = []
-        for imagenet_class in imagenet_classes:
-            i = nlp(imagenet_class)
-            sim = i.similarity(g)
-            sim_scores.append(sim)
-        top_ind = sorted(range(len(sim_scores)), key=lambda i: sim_scores[i])[-n:]
-        top_indices[geode_class] = top_ind
-        top_classes[geode_class] = [imagenet_classes[i] for i in top_ind]
+#     top_indices = {}
+#     top_classes = {}
+#     for geode_class in geode_classes:
+#         g = nlp(geode_class)
+#         sim_scores = []
+#         for imagenet_class in imagenet_classes:
+#             i = nlp(imagenet_class)
+#             sim = i.similarity(g)
+#             sim_scores.append(sim)
+#         top_ind = sorted(range(len(sim_scores)), key=lambda i: sim_scores[i])[-n:]
+#         top_indices[geode_class] = top_ind
+#         top_classes[geode_class] = [imagenet_classes[i] for i in top_ind]
 
-    top_indexes = {}
-    for k, v in top_classes.items():
-        inds = []
-        for v_i in v:
-            inds.append(imagenet_classes.index(v_i))
-        top_indexes[k] = inds
+#     top_indexes = {}
+#     for k, v in top_classes.items():
+#         inds = []
+#         for v_i in v:
+#             inds.append(imagenet_classes.index(v_i))
+#         top_indexes[k] = inds
 
-    return top_classes, top_indexes
-
-
-def get_country_to_region():
-    return {
-        "Angola": 0,
-        "Botswana": 0,
-        "Cameroon": 0,
-        "Egypt": 0,
-        "Ghana": 0,
-        "Nigeria": 0,
-        "South_Africa": 0,
-        "Argentina": 1,
-        "Brazil": 1,
-        "Colombia": 1,
-        "Mexico": 1,
-        "Uruguay": 1,
-        "Venezuela": 1,
-        "China": 2,
-        "Hong_Kong": 2,
-        "Japan": 2,
-        "South_Korea": 2,
-        "Taiwan": 2,
-        "Bulgaria": 3,
-        "France": 3,
-        "Greece": 3,
-        "Italy": 3,
-        "Poland": 3,
-        "Romania": 3,
-        "Switzerland": 3,
-        "United_Kingdom": 3,
-        "Cyprus": 3,
-        "Germany": 3,
-        "Ireland": 3,
-        "Netherlands": 3,
-        "Portugal": 3,
-        "Spain": 3,
-        "Ukraine": 3,
-        "Indonesia": 4,
-        "Malaysia": 4,
-        "Philippines": 4,
-        "Singapore": 4,
-        "Thailand": 4,
-        "Jordan": 5,
-        "Saudi_Arabia": 5,
-        "Turkey": 5,
-        "United_Arab_Emirates": 5,
-        "Yemen": 5,
-    }
+#     return top_classes, top_indexes
 
 
-def get_reg_to_number():
-    return {
-        "Africa": 0,
-        "Americas": 1,
-        "EastAsia": 2,
-        "Europe": 3,
-        "SouthEastAsia": 4,
-        "WestAsia": 5,
-    }
+# def get_country_to_region():
+#     return {
+#         "Angola": 0,
+#         "Botswana": 0,
+#         "Cameroon": 0,
+#         "Egypt": 0,
+#         "Ghana": 0,
+#         "Nigeria": 0,
+#         "South_Africa": 0,
+#         "Argentina": 1,
+#         "Brazil": 1,
+#         "Colombia": 1,
+#         "Mexico": 1,
+#         "Uruguay": 1,
+#         "Venezuela": 1,
+#         "China": 2,
+#         "Hong_Kong": 2,
+#         "Japan": 2,
+#         "South_Korea": 2,
+#         "Taiwan": 2,
+#         "Bulgaria": 3,
+#         "France": 3,
+#         "Greece": 3,
+#         "Italy": 3,
+#         "Poland": 3,
+#         "Romania": 3,
+#         "Switzerland": 3,
+#         "United_Kingdom": 3,
+#         "Cyprus": 3,
+#         "Germany": 3,
+#         "Ireland": 3,
+#         "Netherlands": 3,
+#         "Portugal": 3,
+#         "Spain": 3,
+#         "Ukraine": 3,
+#         "Indonesia": 4,
+#         "Malaysia": 4,
+#         "Philippines": 4,
+#         "Singapore": 4,
+#         "Thailand": 4,
+#         "Jordan": 5,
+#         "Saudi_Arabia": 5,
+#         "Turkey": 5,
+#         "United_Arab_Emirates": 5,
+#         "Yemen": 5,
+#     }
 
 
-def prep_geode_pickle():
-    master_csv = pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")
+# def get_reg_to_number():
+#     return {
+#         "Africa": 0,
+#         "Americas": 1,
+#         "EastAsia": 2,
+#         "Europe": 3,
+#         "SouthEastAsia": 4,
+#         "WestAsia": 5,
+#     }
 
-    image_names = []
-    obj = []
-    reg = []
 
-    country_to_region = get_country_to_region()  # maps country:number
-    region_to_number = get_reg_to_number()  # maps region name:region number
-    number_to_region = {
-        v: k for (k, v) in region_to_number.items()
-    }  # changes map to number: region
+# def prep_geode_pickle():
+#     master_csv = pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")
 
-    all_obj_names = sorted(
-        list(master_csv["object"].unique())
-    )  # gets the 38 categories in alpha order
-    print(all_obj_names)
+#     image_names = []
+#     obj = []
+#     reg = []
 
-    for idx in master_csv.index:
-        fname = master_csv["file_path"][
-            idx
-        ]  # master_csv['file_name'][idx] # country_category_#.jpg
-        oname = master_csv["object"][
-            idx
-        ]  # master_csv['script_name'][idx] # object category of the image
-        cname = master_csv["ip_country"][idx].replace(" ", "_")  # country of the image
-        image_names.append(
-            ".../{}/{}/{}".format(
-                number_to_region[country_to_region[cname]], cname, fname
-            )
-        )
-        obj.append(
-            all_obj_names.index(oname)
-        )  # number label corresponding to the object classification
-        reg.append(country_to_region[cname])  # appends region number of image
+#     country_to_region = get_country_to_region()  # maps country:number
+#     region_to_number = get_reg_to_number()  # maps region name:region number
+#     number_to_region = {
+#         v: k for (k, v) in region_to_number.items()
+#     }  # changes map to number: region
 
-        if idx % 1000 == 0:
-            print(idx)
+#     all_obj_names = sorted(
+#         list(master_csv["object"].unique())
+#     )  # gets the 38 categories in alpha order
+#     print(all_obj_names)
 
-    (
-        train_names,
-        valtest_names,
-        train_obj,
-        valtest_obj,
-        train_reg,
-        valtest_reg,
-    ) = train_test_split(image_names, obj, reg, random_state=42, test_size=0.4)
-    val_names, test_names, val_obj, test_obj, val_reg, test_reg = train_test_split(
-        valtest_names, valtest_obj, valtest_reg, random_state=42, test_size=0.5
-    )
+#     for idx in master_csv.index:
+#         fname = master_csv["file_path"][
+#             idx
+#         ]  # master_csv['file_name'][idx] # country_category_#.jpg
+#         oname = master_csv["object"][
+#             idx
+#         ]  # master_csv['script_name'][idx] # object category of the image
+#         cname = master_csv["ip_country"][idx].replace(" ", "_")  # country of the image
+#         image_names.append(
+#             ".../{}/{}/{}".format(
+#                 number_to_region[country_to_region[cname]], cname, fname
+#             )
+#         )
+#         obj.append(
+#             all_obj_names.index(oname)
+#         )  # number label corresponding to the object classification
+#         reg.append(country_to_region[cname])  # appends region number of image
 
-    with open(
-        "/checkpoint/meganrichards/datasets/geode/geode_prep.pkl", "wb+"
-    ) as handle:
-        pickle.dump(
-            {
-                "train": [train_names, train_obj, train_reg],
-                "val": [val_names, val_obj, val_reg],
-                "test": [test_names, test_obj, test_reg],
-            },
-            handle,
-        )
+#         if idx % 1000 == 0:
+#             print(idx)
+
+#     (
+#         train_names,
+#         valtest_names,
+#         train_obj,
+#         valtest_obj,
+#         train_reg,
+#         valtest_reg,
+#     ) = train_test_split(image_names, obj, reg, random_state=42, test_size=0.4)
+#     val_names, test_names, val_obj, test_obj, val_reg, test_reg = train_test_split(
+#         valtest_names, valtest_obj, valtest_reg, random_state=42, test_size=0.5
+#     )
+
+#     with open(
+#         "/checkpoint/meganrichards/datasets/geode/geode_prep.pkl", "wb+"
+#     ) as handle:
+#         pickle.dump(
+#             {
+#                 "train": [train_names, train_obj, train_reg],
+#                 "val": [val_names, val_obj, val_reg],
+#                 "test": [test_names, test_obj, test_reg],
+#             },
+#             handle,
+#         )
 
 
 def add_label_index(obj):
@@ -413,24 +413,24 @@ def add_imagenet_labels_to_geode_metadata_csv():
 class GeodeDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_1k_test.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_1k_test_new_labels.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/geode/images/",
         augmentations=transform_lib.Compose(
             [
                 transform_lib.RandomResizedCrop(256),
                 transform_lib.ToTensor(),
-                imagenet_normalization(),
+                IMAGENET_NORMALIZATION,
             ]
         ),
         indices=[],
-        label_col="1k_index",
+        label_col="new_1k_index",
     ):
         self.file = pd.read_csv(file_path, index_col=0).reset_index()
         if indices:
             self.file = self.file.iloc[indices]
 
         self.label_col = label_col
-        if label_col == "1k_index":
+        if label_col == "new_1k_index":
             self.file[label_col] = self.file[label_col].apply(literal_eval)
             print("Using 1k mapping for GeoDE")
         else:
@@ -444,7 +444,7 @@ class GeodeDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.file.iloc[idx]
-        if self.label_col == "1k_index":
+        if self.label_col == "new_1k_index":
             label = ",".join(str(x) for x in row[self.label_col])
         else:
             label = row[self.label_col]
@@ -470,9 +470,9 @@ class GeodeDataModule(ImageDataModule):
         num_workers=8,
         image_size=224,
         indices=[],
-        label_col="1k_index",
+        label_col="new_1k_index",
     ):
-        """Dollarstreet Dataset
+        """Geode Dataset
 
         Args:
             batch_size (int, optional): _description_. Defaults to 32.

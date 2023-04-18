@@ -5,25 +5,28 @@ from torch.utils.data import Dataset
 from ast import literal_eval
 from datasets.image_datamodule import ImageDataModule
 import numpy as np
-from datasets.image_datamodule import imagenet_normalization
+from datasets.image_datamodule import IMAGENET_NORMALIZATION
 
 
 class DollarstreetDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups_with_indices.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/",
-        augmentations=imagenet_normalization,
+        augmentations=IMAGENET_NORMALIZATION,
+        label_col="imagenet_sysnet_id",  # topic_indicies
     ):
         self.file = pd.read_csv(file_path, index_col=0).reset_index()
+        self.label_col = label_col
+        self.file[label_col] = self.file[label_col].apply(literal_eval)
 
-        self.file["imagenet_sysnet_id"] = self.file["imagenet_sysnet_id"].apply(
-            literal_eval
-        )
+        if "imagenet" in label_col:
+            print("Using 1k mapping for DollarStreet")
+        else:
+            print("Using DollarStreet original labels")
 
         self.data_dir = data_dir
         self.augmentations = augmentations
-        print("making dataset")
         print(augmentations)
 
     def __len__(self):
@@ -31,7 +34,7 @@ class DollarstreetDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.file.iloc[idx]
-        label = ",".join(str(x) for x in row["imagenet_sysnet_id"])
+        label = ",".join(str(x) for x in row[self.label_col])
         image_name = row["imageRelPath"]
         image_path = os.path.join(self.data_dir, image_name)
         identifier = row["id"]
@@ -53,6 +56,7 @@ class DollarStreetDataModule(ImageDataModule):
         batch_size: int = 32,
         num_workers=8,
         image_size=224,
+        label_col="imagenet_synset_id",
     ):
         """Dollarstreet Dataset
 
@@ -65,9 +69,10 @@ class DollarStreetDataModule(ImageDataModule):
             image_size=image_size,
             num_workers=num_workers,
         )
+        self.label_col = label_col
 
     def _get_dataset(self, path, augmentations):
-        ds = DollarstreetDataset(augmentations=augmentations)
+        ds = DollarstreetDataset(label_col=self.label_col, augmentations=augmentations)
         self.file = ds.file
         return ds
 
