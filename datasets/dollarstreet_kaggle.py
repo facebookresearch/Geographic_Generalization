@@ -6,6 +6,7 @@ from ast import literal_eval
 from datasets.image_datamodule import ImageDataModule
 import numpy as np
 from datasets.image_datamodule import IMAGENET_NORMALIZATION
+from torchvision import transforms as transform_lib
 
 
 class DollarstreetDataset(Dataset):
@@ -13,7 +14,14 @@ class DollarstreetDataset(Dataset):
         self,
         file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups_with_indices.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/",
-        augmentations=IMAGENET_NORMALIZATION,
+        augmentations=transform_lib.Compose(
+            [
+                transform_lib.Resize(256),
+                transform_lib.CenterCrop(224),
+                transform_lib.ToTensor(),
+                IMAGENET_NORMALIZATION,
+            ]
+        ),
         label_col="imagenet_sysnet_id",  # topic_indicies
     ):
         self.file = pd.read_csv(file_path, index_col=0).reset_index()

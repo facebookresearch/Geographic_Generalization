@@ -417,7 +417,8 @@ class GeodeDataset(Dataset):
         data_dir: str = "/checkpoint/meganrichards/datasets/geode/images/",
         augmentations=transform_lib.Compose(
             [
-                transform_lib.RandomResizedCrop(256),
+                transform_lib.Resize(256),
+                transform_lib.CenterCrop(224),
                 transform_lib.ToTensor(),
                 IMAGENET_NORMALIZATION,
             ]
