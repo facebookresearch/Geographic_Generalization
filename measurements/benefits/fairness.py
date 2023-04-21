@@ -20,17 +20,19 @@ class DollarStreetPerformance(Measurement):
             experiment_config=experiment_config,
         )
 
-    def calculate_disparities(self):
-        accuracies = self.model.predictions[["id", "accurate_top5"]]
-        incomes_and_regions = self.datamodules["dollarstreet"].file[
+    def calculate_disparities(self, datamodule_name="dollarstreet", n=5):
+        accuracies = self.model.predictions[["id", f"accurate_top{n}"]]
+        incomes_and_regions = self.datamodules[datamodule_name].file[
             ["id", "Income_Group", "region"]
         ]
         combined = pd.merge(accuracies, incomes_and_regions, on="id", how="left")
 
         avg_acc_by_income = (
-            combined.groupby("Income_Group")["accurate_top5"].mean().to_dict()
+            combined.groupby("Income_Group")[f"accurate_top{n}"].mean().to_dict()
         )
-        avg_acc_by_region = combined.groupby("region")["accurate_top5"].mean().to_dict()
+        avg_acc_by_region = (
+            combined.groupby("region")[f"accurate_top{n}"].mean().to_dict()
+        )
 
         return avg_acc_by_income, avg_acc_by_region
 
@@ -62,32 +64,57 @@ class DollarStreetPerformance(Measurement):
         )
 
         # Calculate disparities and add to results dictionary
-        acc_by_income, acc_by_region = self.calculate_disparities()
+        acc_by_income1, acc_by_region1 = self.calculate_disparities(
+            datamodule_name=datamodule_name, n=1
+        )
+        acc_by_income5, acc_by_region5 = self.calculate_disparities(
+            datamodule_name=datamodule_name, n=5
+        )
 
-        acc_by_income = {
-            f"dollarstreet-{k.lower()}_test_accuracy": v
-            for k, v in acc_by_income.items()
+        acc_by_income1 = {
+            f"dollarstreet-{k.lower()}_test_accuracy1": v
+            for k, v in acc_by_income1.items()
         }
-        acc_by_region = {
-            f"dollarstreet-{k.lower()}_test_accuracy": v
-            for k, v in acc_by_region.items()
+        acc_by_income5 = {
+            f"dollarstreet-{k.lower()}_test_accuracy1": v
+            for k, v in acc_by_income5.items()
+        }
+        acc_by_region1 = {
+            f"dollarstreet-{k.lower()}_test_accuracy1": v
+            for k, v in acc_by_region1.items()
+        }
+        acc_by_region5 = {
+            f"dollarstreet-{k.lower()}_test_accuracy5": v
+            for k, v in acc_by_region5.items()
         }
 
-        results_dict.update(acc_by_region)
-        results_dict.update(acc_by_income)
+        results_dict.update(acc_by_region1)
+        results_dict.update(acc_by_region5)
+        results_dict.update(acc_by_income1)
+        results_dict.update(acc_by_income5)
 
         # Save extra results to CSVs
         if self.save_detailed_results == "True":
-            acc_by_income = self.convert_float_dict_to_list_dict(acc_by_income)
-            acc_by_region = self.convert_float_dict_to_list_dict(acc_by_region)
+            acc_by_income1 = self.convert_float_dict_to_list_dict(acc_by_income1)
+            acc_by_region1 = self.convert_float_dict_to_list_dict(acc_by_region1)
+            acc_by_income5 = self.convert_float_dict_to_list_dict(acc_by_income5)
+            acc_by_region5 = self.convert_float_dict_to_list_dict(acc_by_region5)
 
             self.save_extra_results_to_csv(
-                extra_results=acc_by_income,
-                name=f"{datamodule_name}_accuracy_by_income",
+                extra_results=acc_by_income1,
+                name=f"{datamodule_name}_accuracy_by_income1",
             )
             self.save_extra_results_to_csv(
-                extra_results=acc_by_region,
-                name=f"{datamodule_name}_accuracy_by_region",
+                extra_results=acc_by_income5,
+                name=f"{datamodule_name}_accuracy_by_income5",
+            )
+            self.save_extra_results_to_csv(
+                extra_results=acc_by_region1,
+                name=f"{datamodule_name}_accuracy_by_region1",
+            )
+            self.save_extra_results_to_csv(
+                extra_results=acc_by_region5,
+                name=f"{datamodule_name}_accuracy_by_region5",
             )
 
             self.save_extra_results_to_csv(
@@ -115,7 +142,8 @@ class DollarStreetPerformance(Measurement):
                 acc5s.append(acc5)
                 acc1s.append(acc1)
 
-            self.log(datamodule_name + "_test_accuracy", np.mean(acc5s), on_epoch=True)
+            self.log(datamodule_name + "_test_accuracy5", np.mean(acc5s), on_epoch=True)
+            self.log(datamodule_name + "_test_accuracy1", np.mean(acc1s), on_epoch=True)
 
             self.save_predictions(
                 {
@@ -147,12 +175,19 @@ class GeodePerformance(Measurement):
             experiment_config=experiment_config,
         )
 
-    def calculate_disparities(self):
-        accuracies = self.model.predictions[["id", "accurate_top5"]]
-        incomes_and_regions = self.datamodules["geode"].file[["id", "region"]]
+    def calculate_disparities(self, datamodule_name="geode", n=1):
+        accuracies = (
+            self.model.predictions.drop(columns=["id"])
+            .reset_index()
+            .rename(columns={"index": "id"})[["id", f"accurate_top{n}"]]
+        )
+        incomes_and_regions = self.datamodules[datamodule_name].file[["id", "region"]]
+        incomes_and_regions["id"] = incomes_and_regions.index
         combined = pd.merge(accuracies, incomes_and_regions, on="id", how="left")
 
-        avg_acc_by_region = combined.groupby("region")["accurate_top5"].mean().to_dict()
+        avg_acc_by_region = (
+            combined.groupby("region")[f"accurate_top{n}"].mean().to_dict()
+        )
 
         return avg_acc_by_region
 
@@ -169,7 +204,9 @@ class GeodePerformance(Measurement):
         datamodule_name, datamodule = next(iter(self.datamodules.items()))
 
         new_test_step = self.make_new_test_step(
-            datamodule_name=datamodule_name, mask=datamodule.mask
+            datamodule_name=datamodule_name,
+            mask=datamodule.mask,
+            label_col=datamodule.label_col,
         )
 
         self.model.test_step = types.MethodType(new_test_step, self.model)
@@ -184,31 +221,51 @@ class GeodePerformance(Measurement):
         )
 
         # Calculate disparities and add to results dictionary
-        # acc_by_region = self.calculate_disparities()
+        acc_by_region5 = self.calculate_disparities(
+            datamodule_name=datamodule_name, n=5
+        )
+        acc_by_region1 = self.calculate_disparities(
+            datamodule_name=datamodule_name, n=1
+        )
 
-        # acc_by_region = {
-        #     f"geode-{k.lower()}_test_accuracy": v for k, v in acc_by_region.items()
-        # }
+        acc_by_region5 = {
+            f"geode-{k.lower()}_test_accuracy5": v for k, v in acc_by_region5.items()
+        }
+        acc_by_region1 = {
+            f"geode-{k.lower()}_test_accuracy1": v for k, v in acc_by_region1.items()
+        }
 
-        # results_dict.update(acc_by_region)
+        results_dict.update(acc_by_region5)
+        results_dict.update(acc_by_region1)
 
         # Save extra results to CSVs
-        if self.save_detailed_results:
-            # acc_by_region = self.convert_float_dict_to_list_dict(acc_by_region)
 
-            # self.save_extra_results_to_csv(
-            #     extra_results=acc_by_region,
-            #     name=f"{datamodule_name}_accuracy_by_region",
-            # )
+        print("saving detailed results")
+        acc_by_region5 = self.convert_float_dict_to_list_dict(acc_by_region5)
+        acc_by_region1 = self.convert_float_dict_to_list_dict(acc_by_region1)
 
-            self.save_extra_results_to_csv(
-                extra_results=self.model.predictions,
-                name=f"{datamodule_name}_predictions",
-            )
+        self.save_extra_results_to_csv(
+            extra_results=acc_by_region5,
+            name=f"{datamodule_name}_accuracy_by_region5",
+        )
+        self.save_extra_results_to_csv(
+            extra_results=acc_by_region1,
+            name=f"{datamodule_name}_accuracy_by_region1",
+        )
+
+        self.save_extra_results_to_csv(
+            extra_results=self.model.predictions,
+            name=f"{datamodule_name}_predictions",
+        )
 
         return results_dict
 
-    def make_new_test_step(self, datamodule_name, mask):
+    def make_new_test_step(
+        self,
+        datamodule_name,
+        mask,
+        label_col,
+    ):
         def new_test_step(self, batch, batch_idx):
             x, y, identifier = batch
 
@@ -221,13 +278,20 @@ class GeodePerformance(Measurement):
             acc1s = []
 
             for i in range(len(y)):
-                y_int = [int(x) for x in y[i].split(",")]
-                acc5 = len(set(y_int) & set(indices5[i].tolist())) > 0
-                acc1 = len(set(y_int) & set(indices1[i].tolist())) > 0
+                if "1k" in label_col:
+                    y_int = [int(x) for x in y[i].split(",")]
+                    acc5 = len(set(y_int) & set(indices5[i].tolist())) > 0
+                    acc1 = len(set(y_int) & set(indices1[i].tolist())) > 0
+                else:
+                    y_int = [int(y[i].item())]
+                    acc5 = len(set(y_int) & set(indices5[i].tolist())) > 0
+                    acc1 = len(set(y_int) & set(indices1[i].tolist())) > 0
+
                 acc5s.append(acc5)
                 acc1s.append(acc1)
 
-            self.log(datamodule_name + "_test_accuracy", np.mean(acc5s), on_epoch=True)
+            self.log(datamodule_name + "_test_accuracy1", np.mean(acc1s), on_epoch=True)
+            self.log(datamodule_name + "_test_accuracy5", np.mean(acc5s), on_epoch=True)
 
             self.save_predictions(
                 {
@@ -235,7 +299,9 @@ class GeodePerformance(Measurement):
                     "output": y_hat.cpu().tolist(),
                     "predictions": indices5.cpu().tolist(),
                     "confidences": confidences5.cpu().tolist(),
-                    "label": list(y),
+                    "label": list(y)
+                    if (type(y) == list or y.device == "cpu")
+                    else list(y.cpu()),
                     "accurate_top1": acc1s,
                     "accurate_top5": acc5s,
                 }

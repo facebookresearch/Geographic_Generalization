@@ -57,6 +57,7 @@ class Measurement(ABC):
     ) -> dict[str, ImageDataModule]:
         datamodules = {}
         for datamodule_name in datamodule_names:
+            print(experiment_config.keys())
             datamodule_config = getattr(experiment_config, datamodule_name)
             datamodule = instantiate(datamodule_config)
             datamodules[datamodule_name] = datamodule

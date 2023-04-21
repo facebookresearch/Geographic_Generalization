@@ -55,10 +55,24 @@ dollarstreet:
   batch_size: 32
   num_workers: 8
 
+dollarstreet_original:
+  _target_: datasets.dollarstreet_kaggle.DollarStreetDataModule
+  data_dir: /checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/
+  batch_size: 32
+  num_workers: 8
+  label_col: topic_indices
+
 geode:
   _target_: datasets.geode.GeodeDataModule 
   data_dir: /checkpoint/meganrichards/datasets/geode/images/
   batch_size: 32
   num_workers: 8
+  label_col: new_1k_index
 
+geode_original:
+  _target_: datasets.geode.GeodeDataModule 
+  data_dir: /checkpoint/meganrichards/datasets/geode/images/
+  batch_size: 32
+  num_workers: 8
+  label_col: object_index
 

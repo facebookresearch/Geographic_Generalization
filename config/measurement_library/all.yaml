@@ -158,6 +158,18 @@ fairness_dollarstreet:
   model: 
   experiment_config:
 
+fairness_dollarstreet_original: 
+  _target_: measurements.benefits.fairness.DollarStreetPerformance
+  datamodule_names: [dollarstreet_original]
+  model: 
+  experiment_config:
+
+fairness_geode_original: 
+  _target_: measurements.benefits.fairness.GeodePerformance
+  datamodule_names: [geode_original]
+  model: 
+  experiment_config:
+
 fairness_geode: 
   _target_: measurements.benefits.fairness.GeodePerformance
   datamodule_names: [geode]

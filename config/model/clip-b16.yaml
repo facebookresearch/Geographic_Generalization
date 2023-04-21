@@ -1,5 +1,0 @@
-# @package _global_
-model_name: clip-b16
-
-model: 
-  _target_: models.clip.clip.CLIPB16ClassifierModule

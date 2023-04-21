@@ -118,7 +118,7 @@ def perform_measurements(
             )
             results.update(result)
         except Exception as e:
-            print(measurement_name)
+            print("EXCEPTION")
             print(str(e))
 
     return results

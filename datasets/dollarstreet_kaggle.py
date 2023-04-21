@@ -5,33 +5,43 @@ from torch.utils.data import Dataset
 from ast import literal_eval
 from datasets.image_datamodule import ImageDataModule
 import numpy as np
-from datasets.image_datamodule import imagenet_normalization
+from datasets.image_datamodule import IMAGENET_NORMALIZATION
+from torchvision import transforms as transform_lib
 
 
 class DollarstreetDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_income_and_region_groups.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_groups.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/",
-        augmentations=imagenet_normalization,
+        augmentations=transform_lib.Compose(
+            [
+                transform_lib.Resize(256),
+                transform_lib.CenterCrop(224),
+                transform_lib.ToTensor(),
+                IMAGENET_NORMALIZATION,
+            ]
+        ),
+        label_col="imagenet_sysnet_id",  # topic_indicies
     ):
         self.file = pd.read_csv(file_path, index_col=0).reset_index()
+        self.label_col = label_col
+        self.file[label_col] = self.file[label_col].apply(literal_eval)
 
-        self.file["imagenet_sysnet_id"] = self.file["imagenet_sysnet_id"].apply(
-            literal_eval
-        )
+        if "imagenet" in label_col:
+            print("Using 1k mapping for DollarStreet")
+        else:
+            print("Using DollarStreet original labels")
 
         self.data_dir = data_dir
         self.augmentations = augmentations
-        print("making dataset")
-        print(augmentations)
 
     def __len__(self):
         return len(self.file)
 
     def __getitem__(self, idx):
         row = self.file.iloc[idx]
-        label = ",".join(str(x) for x in row["imagenet_sysnet_id"])
+        label = ",".join(str(x) for x in row[self.label_col])
         image_name = row["imageRelPath"]
         image_path = os.path.join(self.data_dir, image_name)
         identifier = row["id"]
@@ -53,6 +63,7 @@ class DollarStreetDataModule(ImageDataModule):
         batch_size: int = 32,
         num_workers=8,
         image_size=224,
+        label_col="imagenet_synset_id",
     ):
         """Dollarstreet Dataset
 
@@ -65,9 +76,14 @@ class DollarStreetDataModule(ImageDataModule):
             image_size=image_size,
             num_workers=num_workers,
         )
+        self.label_col = label_col
 
-    def _get_dataset(self, path, augmentations):
-        ds = DollarstreetDataset(augmentations=augmentations)
+    def _get_dataset(self, path, stage, augmentations):
+        ds = DollarstreetDataset(
+            file_path=f"/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_{stage}_with_groups.csv",
+            label_col=self.label_col,
+            augmentations=augmentations,
+        )
         self.file = ds.file
         return ds
 
@@ -172,36 +188,75 @@ MAPPING = {
 }
 
 
-# def make_imagenet_class_to_dollarstreet_idx():
-#     imagenet_class_to_dollarstreet_idx = {}
+def calculate_quartiles():
+    train_df = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_train.csv"
+    )
+    test_df = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test.csv"
+    )
+    all_data_df = pd.concat([train_df, test_df])
 
-#     for m in list(MAPPING.values()):
-#         for i, imagenet_class in IMAGENET1K_IDX_TO_NAMES.items():
-#             if m.strip() in imagenet_class:
-#                 if m.strip() in imagenet_class_to_dollarstreet_idx:
-#                     imagenet_class_to_dollarstreet_idx[m.strip()].append(i)
-#                 else:
-#                     imagenet_class_to_dollarstreet_idx[m.strip()] = [i]
+    qt_target_col = "income"
+    qt_col = "quantile"
+    qts = range(4)
 
-#     for cl, ls in imagenet_class_to_dollarstreet_idx.items():
-#         imagenet_class_to_dollarstreet_idx[cl] = list(set(ls))
-#     return imagenet_class_to_dollarstreet_idx
+    # Calculate quantile boundaries
+    all_data_quantiles = [
+        all_data_df[qt_target_col].quantile((i + 1) / len(qts)) for i in qts
+    ][: len(qts) - 1]
 
-
-# def make_idx_to_label(imagenet_class_to_dollarstreet_idx):
-#     idx_to_label = {}
-#     for name, idx_list in imagenet_class_to_dollarstreet_idx.items():
-#         for idx in idx_list:
-#             if idx in idx_to_label:
-#                 idx_to_label[idx].append(name)
-#             else:
-#                 idx_to_label[idx] = [name]
-
-#     return idx_to_label
+    print(all_data_quantiles)
+    return
 
 
-# def make_dollarstreet_mask():
-#     imagenet_class_to_dollarstreet_idx = make_imagenet_class_to_dollarstreet_idx()
-#     idx_to_label = make_idx_to_label(imagenet_class_to_dollarstreet_idx)
-#     imagenet_mask = list(idx_to_label.keys())
-#     return imagenet_mask
+def categorize_income(x):
+    if x <= 195:
+        return "Q4"
+    elif x <= 685:
+        return "Q3"
+    elif x <= 1963:
+        return "Q2"
+    else:
+        return "Q1"
+
+
+def categorize_region(x):
+    map = {
+        "am": "americas",
+        "as": "asia",
+        "af": "africa",
+        "eu": "europe",
+    }
+    return map[x]
+
+
+SORTED_TOPICS_LIST = sorted(list(MAPPING.keys()))
+
+
+def add_topics_index(x):
+    indices = []
+    for topic in x:
+        if topic in SORTED_TOPICS_LIST:
+            indices.append(SORTED_TOPICS_LIST.index(topic))
+    return indices
+
+
+def process_df_with_groups_and_indices(
+    file_path="/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test.csv",
+    save_path="",
+):
+    df = pd.read_csv(file_path)
+
+    df["Income_Group"] = df["income"].apply(categorize_income)
+    df["Region"] = df["region.id"].apply(categorize_region)
+
+    df["topics"] = df["topics"].apply(literal_eval)
+    df["topic_indices"] = df["topics"].apply(add_topics_index)
+
+    # check that they all got mapped
+    assert (df["topic_indices"].apply(lambda x: len(x) > 0)).unique().tolist() == [True]
+    if save_path:
+        df.to_csv(save_path)
+
+    return df

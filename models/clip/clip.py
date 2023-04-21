@@ -8,65 +8,12 @@ import torch.nn.functional as F
 import open_clip
 from open_clip import tokenizer
 from datasets.imagenet_classes import IMAGENET_CLASSES
+from datasets.geode import GEODE_CLASSES_TO_IMAGENET_CLASSES
+from datasets.dollarstreet_kaggle import MAPPING
 from models.classifier_model import ClassifierModule
 
 
-class CLIPClassifierModule(ClassifierModule):
-    """CLIP zero shot classiifer"""
-
-    def __init__(
-        self,
-        timm_name: str = "",
-        feature_extraction_layer_index=-2,
-        checkpoint_url: str = "",
-    ):
-        super().__init__(
-            timm_name=timm_name,
-            feature_extraction_layer_index=feature_extraction_layer_index,
-            checkpoint_url=checkpoint_url,
-        )
-
-    # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
-    CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in IMAGENET_CLASSES]
-    text_tokens = tokenizer.tokenize(CLASS_NAME_PROMPTS)
-
-    def load_backbone(self):
-        model, _, preprocess = open_clip.create_model_and_transforms("ViT-B-16")
-        print(preprocess)
-        self.preprocess = preprocess
-        return model
-
-    def forward(self, x):
-        text_input = self.processor(
-            text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
-        ).to(self.device)
-        image_input = {"pixel_values": x}
-        all_inputs = {**text_input, **image_input}
-        outputs = self.model(**all_inputs)
-        logits_per_image = outputs.logits_per_image
-        return logits_per_image
-
-    def forward_features(self, x):
-        with torch.no_grad():
-            self.feature_extraction_layer = "image_embeds"
-            self.model.eval()
-            text_input = self.processor(
-                text=self.CLASS_NAME_PROMPTS, return_tensors="pt", padding=True
-            ).to(self.device)
-
-            image_input = {"pixel_values": x}
-            all_inputs = {**text_input, **image_input}
-            outputs = self.model(**all_inputs)
-        return outputs[self.feature_extraction_layer]
-
-    def load_feature_extractor(self):
-        example = torch.rand((1, 3, 224, 224))
-        output = self.forward_features(example)
-        embedding_dim = output.shape[1]
-        return None, self.feature_extraction_layer, [], embedding_dim
-
-
-class CLIPOPENAI400MClassifierModule(ClassifierModule):
+class OpenCLIPBaseClassifierModule(ClassifierModule):
     """"""
 
     def __init__(
@@ -74,17 +21,33 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
         timm_name: str = "",
         feature_extraction_layer_index=-2,
         checkpoint_url: str = "",
+        linear_eval: bool = False,
+        dataset_to_use_for_classes: str = "Imagenet",
     ):
+        if dataset_to_use_for_classes == "Imagenet":
+            self.class_list = IMAGENET_CLASSES
+            print("Using Imagenet labels for CLIP")
+        elif dataset_to_use_for_classes == "Geode":
+            self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
+            print("Using Geode labels for CLIP")
+        elif dataset_to_use_for_classes == "DollarStreet":
+            self.class_list = list(MAPPING.keys())
+            print("Using DollarStreet labels for CLIP")
+        else:
+            raise Exception(
+                "CLIP models can use datasets: 'Imagenet', 'Geode', or 'DollarStreet' for the parameter dataset_to_use_for_classes"
+            )
+
+        # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
+        self.CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in self.class_list]
         super().__init__(
             timm_name=timm_name,
             feature_extraction_layer_index=feature_extraction_layer_index,
             checkpoint_url=checkpoint_url,
+            linear_eval=linear_eval,
         )
 
-    # based on https://colab.research.google.com/github/mlfoundations/open_clip/blob/master/docs/Interacting_with_open_clip.ipynb#scrollTo=C4S__zCGy2MT
-    CLASS_NAME_PROMPTS = [f"This is a photo of a {c}" for c in IMAGENET_CLASSES]
-
-    def load_backbone(self):
+    def load_model(self):
         model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
         self.processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
@@ -113,17 +76,17 @@ class CLIPOPENAI400MClassifierModule(ClassifierModule):
             outputs = self.model(**all_inputs)
         return outputs[self.feature_extraction_layer]
 
-    def load_feature_extractor(self):
+    def load_backbone(self):
         example = torch.rand((1, 3, 224, 224))
         output = self.forward_features(example)
         embedding_dim = output.shape[1]
         return None, self.feature_extraction_layer, [], embedding_dim
 
 
-class CLIPB32ClassifierModule(CLIPOPENAI400MClassifierModule):
+class OpenCLIPBaseWithoutEmbeddingClassifierModule(OpenCLIPBaseClassifierModule):
     """Vit-B32, pretrained on LAION-400M. Based on models trained from https://github.com/mlfoundations/open_clip"""
 
-    def load_backbone(self):
+    def load_model(self):
         model, _, self.preprocess = open_clip.create_model_and_transforms(
             "ViT-B-32-quickgelu", pretrained="laion400m_e32"
         )
@@ -151,32 +114,273 @@ class CLIPB32ClassifierModule(CLIPOPENAI400MClassifierModule):
             image_features = self.model.encode_image(x).float()
             return image_features
 
-    def load_feature_extractor(self):
+    def load_backbone(self):
         example = torch.rand((1, 3, 224, 224))
         output = self.forward_features(example)
         embedding_dim = output.shape[1]
         return None, "", [], embedding_dim
 
 
-class CLIPB16ClassifierModule(CLIPB32ClassifierModule):
-    """Vit-B16 Encoder CLIP, based on models trained from https://github.com/mlfoundations/open_clip"""
+class CLIPCoCaVit14ClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
 
-    def load_backbone(self):
+    def load_model(self):
         model, _, self.preprocess = open_clip.create_model_and_transforms(
-            "ViT-B-16",
-            pretrained="laion400m_e32",
+            "coca_ViT-L-14"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-L-14")
+        return model
+
+
+class CLIPCoCaVit32ClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "coca_ViT-B-32"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-B-32")
+        return model
+
+
+class CLIPConvNextLaion2BAClassifierModule(
+    OpenCLIPBaseWithoutEmbeddingClassifierModule
+):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "convnext_base_w", "laion_aesthetic_s13b_b82k"
+        )
+        self.tokenizer = open_clip.get_tokenizer("convnext_base_w")
+        return model
+
+
+class CLIPConvNextLaion2BAugClassifierModule(
+    OpenCLIPBaseWithoutEmbeddingClassifierModule
+):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "convnext_base_w", "laion2b_s13b_b82k_augreg"
+        )
+        self.tokenizer = open_clip.get_tokenizer("convnext_base_w")
+        return model
+
+
+class CLIPConvNextLaion2BClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "convnext_base_w", "laion2b_s13b_b82k"
+        )
+        self.tokenizer = open_clip.get_tokenizer("convnext_base_w")
+        return model
+
+
+class CLIPConvNextLargeLaion2BClassifierModule(
+    OpenCLIPBaseWithoutEmbeddingClassifierModule
+):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "convnext_large_d", "laion2b_s26b_b102k_augreg"
+        )
+        self.tokenizer = open_clip.get_tokenizer("convnext_large_d")
+        return model
+
+
+class CLIPConvNextXLargeLaion2BAugClassifierModule(
+    OpenCLIPBaseWithoutEmbeddingClassifierModule
+):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "convnext_xxlarge", "laion2b_s34b_b82k_augreg"
+        )
+        self.tokenizer = open_clip.get_tokenizer("convnext_xxlarge")
+        return model
+
+
+class CLIPConvNextXLargeLaion2BRewindClassifierModule(
+    OpenCLIPBaseWithoutEmbeddingClassifierModule
+):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "convnext_xxlarge", "laion2b_s34b_b82k_augreg_rewind"
+        )
+        self.tokenizer = open_clip.get_tokenizer("convnext_xxlarge")
+        return model
+
+
+class CLIPConvNextXLargeLaion2BSoupClassifierModule(
+    OpenCLIPBaseWithoutEmbeddingClassifierModule
+):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "convnext_xxlarge", "laion2b_s34b_b82k_augreg_soup"
+        )
+        self.tokenizer = open_clip.get_tokenizer("convnext_xxlarge")
+        return model
+
+
+class CLIPResnet50CC12MClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "RN50", "cc12m"
+        )
+        self.tokenizer = open_clip.get_tokenizer("RN50")
+        return model
+
+
+class CLIPResnet50OpenAIClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "RN50", "openai"
+        )
+        self.tokenizer = open_clip.get_tokenizer("RN50")
+        return model
+
+
+class CLIPResnet50YFCCClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "RN50", "yfcc15m"
+        )
+        self.tokenizer = open_clip.get_tokenizer("RN50")
+        return model
+
+
+class CLIPResnet101OpenAIClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "RN101", "openai"
+        )
+        self.tokenizer = open_clip.get_tokenizer("RN101")
+        return model
+
+
+class CLIPResnet101YFCCClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "RN101", "yfcc15m"
+        )
+        self.tokenizer = open_clip.get_tokenizer("RN101")
+        return model
+
+
+class CLIPVit14Laion2BClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-L-14", "laion2b_s32b_b82k"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-L-14")
+        return model
+
+
+class CLIPVit14Laion400MBClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-L-14", "laion400m_e31"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-L-14")
+        return model
+
+
+class CLIPVit14OpenAIClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-L-14", "openai"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-L-14")
+        return model
+
+
+class CLIPVit16Laion2BClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-B-16", "laion2b_s34b_b88k"
         )
         self.tokenizer = open_clip.get_tokenizer("ViT-B-16")
         return model
 
 
-class CLIPL14ClassifierModule(CLIPB32ClassifierModule):
-    """Vit-L14 Encoder CLIP, based on models trained from https://github.com/mlfoundations/open_clip"""
+class CLIPVit16Laion400MClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
 
-    def load_backbone(self):
+    def load_model(self):
         model, _, self.preprocess = open_clip.create_model_and_transforms(
-            "ViT-L-14",
-            pretrained="laion400m_e32",
+            "ViT-B-16", "laion400m_e31"
         )
-        self.tokenizer = open_clip.get_tokenizer("ViT-L-14")
+        self.tokenizer = open_clip.get_tokenizer("ViT-B-16")
+        return model
+
+
+class CLIPVit16OpenAIClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-B-16", "openai"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-B-16")
+        return model
+
+
+class CLIPVit32Laion2BClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-B-32", "laion2b_s34b_b88k"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-B-32")
+        return model
+
+
+class CLIPVit32Laion400MClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-B-32", "laion400m_e31"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-B-32")
+        return model
+
+
+class CLIPVit32OpenAIClassifierModule(OpenCLIPBaseWithoutEmbeddingClassifierModule):
+    """Based on models trained from https://github.com/mlfoundations/open_clip"""
+
+    def load_model(self):
+        model, _, self.preprocess = open_clip.create_model_and_transforms(
+            "ViT-B-32", "openai"
+        )
+        self.tokenizer = open_clip.get_tokenizer("ViT-B-32")
         return model

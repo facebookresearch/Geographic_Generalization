@@ -8,8 +8,11 @@ class VitClassifierModule(ClassifierModule):
         self,
         timm_name: str = "vit_base_patch16_224",
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )
 
 
 class VitLargeClassifierModule(ClassifierModule):
@@ -19,5 +22,8 @@ class VitLargeClassifierModule(ClassifierModule):
         self,
         timm_name: str = "vit_large_patch16_224",
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )

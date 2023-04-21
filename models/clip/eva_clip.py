@@ -12,5 +12,8 @@ class EvaCLIPClassifierModule(ClassifierModule):
         self,
         timm_name: str = "eva_giant_patch14_224.clip_ft_in1k",
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )

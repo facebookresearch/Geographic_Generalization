@@ -180,7 +180,7 @@ By default, the evaluation evaluates a pretrained Resnet50 on the base set of me
                 )
             
             # Optional 
-            def load_backbone(self):
+            def load_model(self):
                 model = <something>
   
                 return model

@@ -151,5 +151,5 @@ class ObjectNetDataModule(ImageDataModule):
             num_workers=num_workers,
         )
 
-    def _get_dataset(self, path, augmentations):
+    def _get_dataset(self, path, stage, augmentations):
         return ObjectNetDataset(path, augmentations)

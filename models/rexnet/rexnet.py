@@ -6,8 +6,11 @@ class RexNet100ClassifierModule(ClassifierModule):
         self,
         timm_name: str = "rexnet_100",
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )
 
 
 class RexNet130ClassifierModule(ClassifierModule):
@@ -15,8 +18,11 @@ class RexNet130ClassifierModule(ClassifierModule):
         self,
         timm_name: str = "rexnet_130",
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )
 
 
 class RexNet150ClassifierModule(ClassifierModule):
@@ -24,8 +30,11 @@ class RexNet150ClassifierModule(ClassifierModule):
         self,
         timm_name: str = "rexnet_150",
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )
 
 
 class RexNet200ClassifierModule(ClassifierModule):
@@ -33,5 +42,8 @@ class RexNet200ClassifierModule(ClassifierModule):
         self,
         timm_name: str = "rexnet_200",
         checkpoint_url: str = "",
+        linear_eval: bool = False,
     ):
-        super().__init__(timm_name=timm_name, checkpoint_url=checkpoint_url)
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )

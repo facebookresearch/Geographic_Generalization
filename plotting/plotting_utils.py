@@ -5,6 +5,9 @@ import pandas as pd
 import os
 from scipy.stats import pearsonr
 
+from scipy import stats
+import os
+
 font = {"weight": "normal", "size": 12}
 
 # Make universal color and marker maps
@@ -68,7 +71,7 @@ def make_performance_comparison_plots_across_models(
     ]
 
     x = np.arange(len(generalization_names))
-    width = 0.04
+    width = 0.01
     fig, ax = plt.subplots(figsize=(25, 8))
 
     for i in range(len(results)):
@@ -86,9 +89,10 @@ def make_performance_comparison_plots_across_models(
 
     ax.set_xticklabels(generalization_names)
     plt.xlabel("Dataset")
-    plt.ylabel("Top 1 Accuracy")
+    plt.ylabel("Accuracy")
     plt.title("Model Performance Comparison Across Datasets")
     plt.legend(loc="upper right")
+    plt.tight_layout(pad=10)
     plt.show()
     return fig
 
@@ -607,10 +611,6 @@ def generate_aggregate_plots(
     return
 
 
-from scipy import stats
-import os
-
-
 def calculate_corr_and_r2(
     results,
     property_name,
@@ -820,12 +820,16 @@ def calculate_corr_and_r2(
 def generate_generalizaton_fairness_comparison_combined(
     type: str = "Both",
     disparity_type: str = "income",
+    fairness_dataset: str = "dollarstreet",
+    fairness_measure: str = "gap",  # 'gap' or 'worst'
     country_threshold: float = 0.25,
     exclude_clip_and_seer=False,
     only_clip_and_seer=False,
     correlation_type="pearson",
     normalized=False,
     df=pd.DataFrame(),
+    title_add_on="",
+    custom_model_subset_description="",
 ):
     if exclude_clip_and_seer and only_clip_and_seer:
         raise Exception(
@@ -874,21 +878,47 @@ def generate_generalizaton_fairness_comparison_combined(
         filtered = filtered[filtered["Model"].isin(models_to_include)]
 
     if disparity_type == "income":
-        benefit2_col = "dollarstreet-gap_income"
-        benefit2_plot_name = "Income Disparity"
-        normalizing_col = "dollarstreet-q1_test_accuracy"
+        if fairness_measure == "gap":
+            benefit2_col = f"{fairness_dataset}-gap_income"
+            benefit2_plot_name = "Income Disparity"
+            normalizing_col = f"{fairness_dataset}-q1_test_accuracy"
+        elif fairness_measure == "worst":
+            benefit2_col = f"{fairness_dataset}-worst_income"
+            benefit2_plot_name = (
+                f"{fairness_dataset.capitalize()} Worst Income Subset Accuracy "
+            )
+            normalizing_col = f"{fairness_dataset}-q1_test_accuracy"
+        elif fairness_measure == "best":
+            benefit2_col = f"{fairness_dataset}-best_income"
+            benefit2_plot_name = (
+                f"{fairness_dataset.capitalize()} Best Income Subset Accuracy "
+            )
+            normalizing_col = f"{fairness_dataset}-q1_test_accuracy"
 
     elif disparity_type == "region":
-        benefit2_col = "dollarstreet-gap_region"
-        benefit2_plot_name = "Region Disparity"
-        normalizing_col = "dollarstreet-europe_test_accuracy"
+        if fairness_measure == "gap":
+            benefit2_col = f"{fairness_dataset}-gap_region"
+            benefit2_plot_name = f"{fairness_dataset.capitalize()} Region Disparity"
+            normalizing_col = f"{fairness_dataset}-europe_test_accuracy"
+        elif fairness_measure == "worst":
+            benefit2_col = f"{fairness_dataset}-worst_region"
+            benefit2_plot_name = (
+                f"{fairness_dataset.capitalize()} Worst Region Accuracy "
+            )
+            normalizing_col = f"{fairness_dataset}-europe_test_accuracy"
+        elif fairness_measure == "best":
+            benefit2_col = f"{fairness_dataset}-best_region"
+            benefit2_plot_name = (
+                f"{fairness_dataset.capitalize()} Best Region Accuracy "
+            )
+            normalizing_col = f"{fairness_dataset}-europe_test_accuracy"
 
     elif disparity_type == "country":
-        benefit2_col = f"dollarstreet-gap_country-{country_threshold}"
+        benefit2_col = f"{fairness_dataset}-gap_country-{country_threshold}"
         benefit2_plot_name = (
             f"Country Disparity (percentile = {int(100*country_threshold)}%)"
         )
-        normalizing_col = f"dollarstreet-country-top-{country_threshold}"
+        normalizing_col = f"{fairness_dataset}-country-top-{country_threshold}"
 
     if type == "OOD":
         acc_cols = [
@@ -956,16 +986,17 @@ def generate_generalizaton_fairness_comparison_combined(
         "dollarstreet-q2": "DS-q2",
         "dollarstreet-q3": "DS-q3",
         "dollarstreet-q4": "DS-q4",
+        "geode": "Geode",
     }
 
-    plt.xlabel(f"{'OOD Accuracy' if type == 'OOD'else 'ID Accuracy'}")
+    plt.xlabel(f"{'OOD Accuracy' if type == 'OOD'else 'Accuracy'}")
     plt.ylabel(benefit2_plot_name)
     plt.legend(title=f"Dataset, {correlation_type.capitalize()} Correlation")
     exclude_str = " - Excluding CLIP/SEER" if exclude_clip_and_seer else ""
     include_str = " - Only CLIP/SEER" if only_clip_and_seer else ""
 
     plt.title(
-        f"{'OOD Accuracy' if type == 'OOD'else 'Accuracy'} v.s. {'Normalized' if normalized else ''} {benefit2_plot_name}{exclude_str}{include_str} {'- All Models' if not (exclude_str or include_str) else ''}"
+        f"{'OOD Accuracy' if type == 'OOD'else 'Accuracy'} v.s. {'Normalized' if normalized else ''}{benefit2_plot_name}{exclude_str}{include_str} - {'All Models' if not (exclude_str or include_str or custom_model_subset_description) else ''}{custom_model_subset_description}{title_add_on}"
     )
     plt.show()
 
@@ -1086,3 +1117,192 @@ def make_task_improvement_plots(
                 f"{dataset_name.capitalize()} Acc vs DollarStreet {type.capitalize()} Subset Acc"
             )
         plt.show()
+
+
+from plotting.processing_results import combine_model_results_from_wandb
+from plotting.plotting_utils import generate_generalizaton_fairness_comparison_combined
+import pandas as pd
+
+
+#### 1K GeoDE results ####
+def generate_corrected_geode_plot():
+    new_geode_1k_results = combine_model_results_from_wandb(
+        experiment_name="geode_corrected"
+    ).dropna(how="any")
+
+    old_set = pd.read_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/more_models_04-03/combined_with_og_set.csv",
+        index_col=0,
+    )
+
+    # Calculate Geode Gaps, then plot
+    eval_1k_combined = pd.merge(new_geode_1k_results, old_set, on="Model", how="right")
+
+    eval_1k_combined["geode-best-region5"] = eval_1k_combined[
+        [
+            "geode-westasia_test_accuracy5",
+            "geode-africa_test_accuracy5",
+            "geode-europe_test_accuracy5",
+            "geode-southeastasia_test_accuracy5",
+            "geode-eastasia_test_accuracy5",
+            "geode-americas_test_accuracy5",
+        ]
+    ].values.max(axis=1)
+
+    eval_1k_combined["geode-worst-region5"] = eval_1k_combined[
+        [
+            "geode-westasia_test_accuracy5",
+            "geode-africa_test_accuracy5",
+            "geode-europe_test_accuracy5",
+            "geode-southeastasia_test_accuracy5",
+            "geode-eastasia_test_accuracy5",
+            "geode-americas_test_accuracy5",
+        ]
+    ].values.min(axis=1)
+
+    eval_1k_combined["geode-best-region1"] = eval_1k_combined[
+        [
+            "geode-westasia_test_accuracy1",
+            "geode-africa_test_accuracy1",
+            "geode-europe_test_accuracy1",
+            "geode-southeastasia_test_accuracy1",
+            "geode-eastasia_test_accuracy1",
+            "geode-americas_test_accuracy1",
+        ]
+    ].values.max(axis=1)
+
+    eval_1k_combined["geode-worst-region1"] = eval_1k_combined[
+        [
+            "geode-westasia_test_accuracy1",
+            "geode-africa_test_accuracy1",
+            "geode-europe_test_accuracy1",
+            "geode-southeastasia_test_accuracy1",
+            "geode-eastasia_test_accuracy1",
+            "geode-americas_test_accuracy1",
+        ]
+    ].values.min(axis=1)
+
+    eval_1k_combined = eval_1k_combined[
+        ~eval_1k_combined["Model"].isin(
+            ["clip-b16", "clip-b32", "clip-l14", "beit-base", "beit-large"]
+        )
+    ]
+
+    eval_1k_combined["geode-gap_region"] = (
+        eval_1k_combined["geode-southeastasia_test_accuracy1"]
+        - eval_1k_combined["geode-americas_test_accuracy1"]
+    )
+    generate_generalizaton_fairness_comparison_combined(
+        df=eval_1k_combined, disparity_type="region", fairness_dataset="geode"
+    )
+    return
+
+
+# CLIP Zero-Shot GeoDE, DollarStreet
+def generate_openclip_fairness_plots():
+    res_openclip = combine_model_results_from_wandb(
+        experiment_name="openclip_1k_eval"
+    ).dropna(axis=1, how="all")
+
+    res_openclip = (
+        res_openclip.drop(columns=["geode_test_accuracy"])
+        .set_index("Model")
+        .dropna(how="any")
+        .reset_index()
+    )
+    res_openclip = res_openclip[
+        ~res_openclip["Model"].isin(["clip-coca-vit14", "clip-coca-vit32"])
+    ]
+
+    zero_shot_geode = combine_model_results_from_wandb(
+        experiment_name="openclip_zeroshot_geode"
+    ).dropna(axis=1, how="all")
+
+    zero_shot_geode = zero_shot_geode[
+        ~zero_shot_geode["Model"].isin(
+            [
+                "clip-coca-vit14",
+                "clip-coca-vit32",
+                "clip-convnextxlarge-laion2b-rewind",
+                "clip-convnextxlarge-laion2b-soup",
+                "clip-vit32-laion2b",
+            ]
+        )
+    ]
+
+    g_cols = [x for x in res_openclip.columns if "geode" in x]
+    geode_zeroshot_combined = pd.merge(
+        zero_shot_geode, res_openclip.drop(columns=g_cols), on="Model", how="right"
+    )
+
+    geode_zeroshot_combined["geode-best-region5"] = geode_zeroshot_combined[
+        [
+            "geode-westasia_test_accuracy5",
+            "geode-africa_test_accuracy5",
+            "geode-europe_test_accuracy5",
+            "geode-southeastasia_test_accuracy5",
+            "geode-eastasia_test_accuracy5",
+            "geode-americas_test_accuracy5",
+        ]
+    ].values.max(axis=1)
+
+    geode_zeroshot_combined["geode-worst-region5"] = geode_zeroshot_combined[
+        [
+            "geode-westasia_test_accuracy5",
+            "geode-africa_test_accuracy5",
+            "geode-europe_test_accuracy5",
+            "geode-southeastasia_test_accuracy5",
+            "geode-eastasia_test_accuracy5",
+            "geode-americas_test_accuracy5",
+        ]
+    ].values.min(axis=1)
+
+    geode_zeroshot_combined["geode-best-region1"] = geode_zeroshot_combined[
+        [
+            "geode-westasia_test_accuracy1",
+            "geode-africa_test_accuracy1",
+            "geode-europe_test_accuracy1",
+            "geode-southeastasia_test_accuracy1",
+            "geode-eastasia_test_accuracy1",
+            "geode-americas_test_accuracy1",
+        ]
+    ].values.max(axis=1)
+
+    geode_zeroshot_combined["geode-worst-region1"] = geode_zeroshot_combined[
+        [
+            "geode-westasia_test_accuracy1",
+            "geode-africa_test_accuracy1",
+            "geode-europe_test_accuracy1",
+            "geode-southeastasia_test_accuracy1",
+            "geode-eastasia_test_accuracy1",
+            "geode-americas_test_accuracy1",
+        ]
+    ].values.min(axis=1)
+
+    geode_zeroshot_combined["dollarstreet_test_accuracy"] = geode_zeroshot_combined[
+        "dollarstreet_test_accuracy5"
+    ]
+
+    geode_zeroshot_combined["geode-gap_region"] = (
+        geode_zeroshot_combined["geode-best-region1"]
+        - geode_zeroshot_combined["geode-worst-region1"]
+    )
+
+    generate_generalizaton_fairness_comparison_combined(
+        df=geode_zeroshot_combined,
+        disparity_type="region",
+        fairness_dataset="geode",
+        custom_model_subset_description="OpenCLIP",
+    )
+
+    # Make DollarStreet
+    geode_zeroshot_combined["dollarstreet-gap_region"] = (
+        geode_zeroshot_combined["dollarstreet-europe_test_accuracy5"]
+        - geode_zeroshot_combined["dollarstreet-africa_test_accuracy5"]
+    )
+    generate_generalizaton_fairness_comparison_combined(
+        df=geode_zeroshot_combined,
+        disparity_type="region",
+        fairness_dataset="dollarstreet",
+        custom_model_subset_description="OpenCLIP",
+    )

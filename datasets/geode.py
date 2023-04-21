@@ -11,111 +11,111 @@ import pandas as pd
 from ast import literal_eval
 from datasets.image_datamodule import ImageDataModule
 import numpy as np
-from datasets.image_datamodule import imagenet_normalization
+from datasets.image_datamodule import IMAGENET_NORMALIZATION
 from torchvision import transforms as transform_lib
 
-GEODE_CLASSES_TO_IMAGENET_CLASSES = {
+NEW_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
     "bag": ["backpack", "purse", "punching bag", "sleeping bag", "plastic bag"],
     "hand soap": ["soap dispenser", "lotion"],
     "dustbin": ["bucket"],
     "toothbrush": [],
     "toothpaste toothpowder": [],
-    "hairbrush comb": ["hair slide"],
-    "chair": ["barber chair", "folding chair", "rocking chair", "studio couch"],
-    "hat": ["cowboy hat", "bathing cap", "football helmet"],
+    "hairbrush comb": ["hair clip"],
+    "chair": ["barber chair", "folding chair", "rocking chair", "couch"],
+    "hat": ["cowboy hat", "swimming cap", "football helmet"],
     "light fixture": ["table lamp"],
-    "light switch": ["switch"],
-    "plate of food": ["meat loaf", "soup bowl", "plate"],
+    "light switch": ["electrical switch"],
+    "plate of food": ["meatloaf", "soup bowl", "plate"],
     "spices": [],
     "stove": ["Dutch oven", "stove"],
-    "cooking pot": ["frying pan", "hot pot", "Crock Pot", "pot"],
-    "cleaning equipment": ["vacuum", "washer"],
+    "cooking pot": ["frying pan", "hot pot", "Crock Pot"],
+    "cleaning equipment": ["vacuum cleaner", "washing machine"],
     "lighter": ["lighter"],
-    "medicine": ["pill bottle", "medicine chest"],
+    "medicine": ["pill bottle", "medicine cabinet"],
     "candle": ["candle"],
-    "toy": ["teddy"],
+    "toy": ["teddy bear"],
     "jug": ["water jug", "whiskey jug", "water bottle"],
-    "streetlight lantern": ["beacon", "torch"],
+    "streetlight lantern": ["lighthouse", "torch"],
     "front door": ["sliding door"],
     "tree": [],
     "house": ["cliff dwelling", "mobile home", "barn", "home theater"],
     "backyard": ["patio"],
-    "truck": ["garbage truck", "trailer truck", "tow truck"],
+    "truck": ["garbage truck", "semi-trailer truck", "tow truck"],
     "waste container": ["plastic bag"],
     "car": [
         "garbage truck",
         "recreational vehicle",
-        "trailer truck",
+        "semi-trailer truck",
         "tow truck",
         "sports car",
-        "passenger car",
+        "railroad car",
     ],
-    "fence": ["chainlink fence", "picket fence", "worm fence"],
-    "road sign": ["street sign"],
+    "fence": ["chain-link fence", "picket fence", "split-rail fence"],
+    "road sign": ["traffic or street sign"],
     "dog": [
-        "Bernese mountain dog",
-        "Sealyham terrier",
-        "toy poodle",
+        "Bernese Mountain Dog",
+        "Sealyham Terrier",
+        "Toy Poodle",
         "toy terrier",
-        "African hunting dog",
-        "Eskimo dog",
-        "Maltese dog",
-        "beagle",
-        "Labrador retriever",
+        "African wild dog",
+        "husky",
+        "Maltese",
+        "Beagle",
+        "Labrador Retriever",
+        "Cairn Terrier",
     ],
-    "wheelbarrow": ["barrow"],
+    "wheelbarrow": ["wheelbarrow"],
     "religious building": ["mosque", "church"],
     "stall": ["toilet seat"],
-    "boat": ["speedboat", "canoe"],
-    "monument": ["triumphal arch", "obelisk", "stupa", "cairn"],
+    "boat": ["motorboat", "canoe"],
+    "monument": ["triumphal arch", "obelisk", "stupa"],
     "flag": ["flagpole"],
     "bus": ["minibus", "school bus"],
-    "storefront": ["street sign", "grocery store"],
+    "storefront": ["traffic or street sign", "grocery store"],
     "bicycle": ["tricycle", "mountain bike"],
 }
 
-
-GEODE_CLASSES_TO_IMAGENET_INDICES = {
-    "bag": [414, 746, 745, 795, 726],
-    "hand soap": [802, 630],
+NEW_GEODE_CLASSES_TO_IMAGENET_INDICIES = {
+    "bag": [414, 748, 747, 797, 728],
+    "hand soap": [804, 631],
     "dustbin": [463],
     "toothbrush": [],
     "toothpaste toothpowder": [],
-    "hairbrush comb": [583],
-    "chair": [423, 558, 763, 829],
-    "hat": [515, 433, 559],
-    "light fixture": [844],
-    "light switch": [842],
-    "plate of food": [960, 807, 921],
+    "hairbrush comb": [584],
+    "chair": [423, 559, 765, 831],
+    "hat": [515, 433, 560],
+    "light fixture": [846],
+    "light switch": [844],
+    "plate of food": [962, 809, 923],
     "spices": [],
-    "stove": [543, 825],
-    "cooking pot": [566, 924, 520, 736],
-    "cleaning equipment": [880, 895],
-    "lighter": [625],
-    "medicine": [718, 646],
+    "stove": [544, 827],
+    "cooking pot": [567, 926, 521],
+    "cleaning equipment": [882, 897],
+    "lighter": [626],
+    "medicine": [720, 648],
     "candle": [470],
-    "toy": [848],
-    "jug": [897, 899, 896],
-    "streetlight lantern": [437, 860],
-    "front door": [797],
+    "toy": [850],
+    "jug": [899, 901, 898],
+    "streetlight lantern": [437, 862],
+    "front door": [799],
     "tree": [],
-    "house": [500, 658, 425, 597],
-    "backyard": [704],
-    "truck": [568, 865, 862],
-    "waste container": [726],
-    "car": [568, 755, 865, 862, 815, 703],
-    "fence": [489, 714, 910],
-    "road sign": [917],
-    "dog": [239, 190, 265, 158, 275, 248, 153, 162, 208],
+    "house": [500, 660, 425, 598],
+    "backyard": [706],
+    "truck": [569, 867, 864],
+    "waste container": [728],
+    "car": [569, 757, 867, 864, 817, 705],
+    "fence": [489, 716, 912],
+    "road sign": [919],
+    "dog": [239, 190, 265, 158, 275, 248, 153, 162, 208, 192],
     "wheelbarrow": [428],
-    "religious building": [666, 497],
-    "stall": [859],
-    "boat": [812, 472],
-    "monument": [871, 680, 830, 192],
-    "flag": [556],
-    "bus": [652, 777],
-    "storefront": [917, 581],
-    "bicycle": [868, 669],
+    "religious building": [668, 497],
+    "stall": [861],
+    "boat": [814, 472],
+    "monument": [873, 682, 832],
+    "flag": [557],
+    "bus": [654, 779],
+    "storefront": [919, 582],
+    "bicycle": [870, 671],
 }
 
 
@@ -220,7 +220,6 @@ GEODE_CLASSES_TO_IMAGENET_INDICES = {
 
 
 # def prep_geode_pickle():
-
 #     master_csv = pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")
 
 #     image_names = []
@@ -283,51 +282,119 @@ GEODE_CLASSES_TO_IMAGENET_INDICES = {
 #             handle,
 #         )
 
-
-# def add_label_index(obj):
-#     metadata = pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")
-#     object_labels_list = sorted(list(metadata["object"].unique()))
-#     return object_labels_list.index(obj)
+import pandas as pd
+import pickle
 
 
-# def add_imagenet_index(obj):
-#     return GEODE_CLASSES_TO_IMAGENET_INDICES[obj.replace("_", " ")]
+def generate_metadata_csvs_from_pickle(save=True):
+    file = open("/checkpoint/meganrichards/datasets/geode/geode_prep.pkl", "rb")
+    data = pickle.load(file)
+    meta = pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")
+
+    ### Filter paths and save to CSVs
+    direct_paths_train = [x.split(".../")[1] for x in data["train"][0]]
+    direct_paths_simplified_train = [
+        "/".join(x.split("/")[2:]) for x in direct_paths_train
+    ]
+    train_metadata = meta[meta["file_path"].isin(direct_paths_simplified_train)]
+    assert len(train_metadata) == len(data["train"][0])
+
+    direct_paths_val = [x.split(".../")[1] for x in data["val"][0]]
+    direct_paths_simplified_val = ["/".join(x.split("/")[2:]) for x in direct_paths_val]
+    val_metadata = meta[meta["file_path"].isin(direct_paths_simplified_val)]
+    assert len(val_metadata) == len(data["val"][0])
+
+    direct_paths_test = [x.split(".../")[1] for x in data["test"][0]]
+    direct_paths_simplified_test = [
+        "/".join(x.split("/")[2:]) for x in direct_paths_test
+    ]
+    test_metadata = meta[meta["file_path"].isin(direct_paths_simplified_test)]
+    assert len(test_metadata) == len(data["test"][0])
+
+    # Save metadata to files
+    if save:
+        train_metadata.to_csv(
+            "/checkpoint/meganrichards/datasets/geode/metadata_train.csv"
+        )
+        val_metadata.to_csv("/checkpoint/meganrichards/datasets/geode/metadata_val.csv")
+        test_metadata.to_csv(
+            "/checkpoint/meganrichards/datasets/geode/metadata_test.csv"
+        )
+    return
 
 
-# def add_imagenet_labels_to_geode_metadata_csv():
+def add_label_index(obj):
+    object_labels_list = sorted(list(NEW_GEODE_CLASSES_TO_IMAGENET_INDICIES.keys()))
+    return object_labels_list.index(obj.replace("_", " "))
 
-#     metadata = pd.read_csv("/checkpoint/meganrichards/datasets/geode/index.csv")
 
-#     metadata["object_index"] = metadata["object"].apply(add_label_index)
-#     metadata["1k_index"] = metadata["object"].apply(add_imagenet_index)
-#     metadata_only_with_1k = metadata[metadata["1k_index"].apply(lambda x: len(x) > 0)]
-#     print("N samples: ", len(metadata))
-#     print("N classes: ", metadata["object"].nunique())
-#     print("N samples After 1K Filter: ", len(metadata_only_with_1k))
-#     print("N classes After 1K Filter: ", metadata_only_with_1k["object"].nunique())
+def add_imagenet_index(obj):
+    return NEW_GEODE_CLASSES_TO_IMAGENET_INDICIES[obj.replace("_", " ")]
 
-#     # metadata_only_with_1k.to_csv("/checkpoint/meganrichards/datasets/geode/metadata_1k.csv")
+
+def add_indexes_and_filter_by_1k(
+    file_path="/checkpoint/meganrichards/datasets/geode/metadata_test.csv",
+):
+    metadata = pd.read_csv(file_path, index_col=0)
+
+    # Add 1K index, and filter
+    metadata["1k_index"] = metadata["object"].apply(add_imagenet_index)
+    metadata_with_1k_mapping = metadata[
+        metadata["1k_index"].apply(lambda x: len(x) > 0)
+    ]
+
+    # Add object index
+    metadata_with_1k_mapping["object_index"] = metadata_with_1k_mapping["object"].apply(
+        add_label_index
+    )
+
+    print("Original Number of Samples: ", len(metadata))
+    print("Filtered Number of Samples: ", len(metadata_with_1k_mapping))
+
+    return metadata_with_1k_mapping
+
+
+def generate_1k_versions_of_metadata_csvs(save=False):
+    for stage in ["train", "val", "test"]:
+        print("\n-- Adding labels to", stage, "set --")
+        file_path = f"/checkpoint/meganrichards/datasets/geode/metadata_{stage}.csv"
+        metadata_1k_filtered = add_indexes_and_filter_by_1k(file_path)
+        if save:
+            metadata_1k_filtered.to_csv(
+                f"/checkpoint/meganrichards/datasets/geode/metadata_{stage}_1k.csv"
+            )
 
 
 class GeodeDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_1k_test.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_test_1k.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/geode/images/",
         augmentations=transform_lib.Compose(
             [
-                transform_lib.RandomResizedCrop(256),
+                transform_lib.Resize(256),
+                transform_lib.CenterCrop(224),
                 transform_lib.ToTensor(),
-                imagenet_normalization(),
+                IMAGENET_NORMALIZATION,
             ]
         ),
         indices=[],
+        label_col="1k_index",
     ):
         self.file = pd.read_csv(file_path, index_col=0).reset_index()
         if indices:
             self.file = self.file.iloc[indices]
 
-        self.file["1k_index"] = self.file["1k_index"].apply(literal_eval)
+        self.label_col = label_col
+        if label_col == "1k_index":
+            self.file[label_col] = self.file[label_col].apply(literal_eval)
+            print("Using 1k mapping for GeoDE")
+        elif label_col == "object_index":
+            print("Using GeoDE original labels")
+        else:
+            raise Exception(
+                "Geode has two options for the label_col parameter: 'object_index' for 0-40 geode object indexes, or '1k_index' for 1K indexes."
+            )
 
         self.data_dir = data_dir
         self.augmentations = augmentations
@@ -337,7 +404,10 @@ class GeodeDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.file.iloc[idx]
-        label = ",".join(str(x) for x in row["1k_index"])
+        if self.label_col == "1k_index":  # multilabel
+            label = ",".join(str(x) for x in row[self.label_col])
+        else:
+            label = row[self.label_col]
         image_name = row["file_path"]
         image_path = os.path.join(self.data_dir, image_name)
         identifier = idx
@@ -360,8 +430,9 @@ class GeodeDataModule(ImageDataModule):
         num_workers=8,
         image_size=224,
         indices=[],
+        label_col="1k_index",
     ):
-        """Dollarstreet Dataset
+        """Geode Dataset
 
         Args:
             batch_size (int, optional): _description_. Defaults to 32.
@@ -373,8 +444,14 @@ class GeodeDataModule(ImageDataModule):
             num_workers=num_workers,
         )
         self.indices = indices
+        self.label_col = label_col
 
-    def _get_dataset(self, path, augmentations):
-        ds = GeodeDataset(augmentations=augmentations, indices=self.indices)
+    def _get_dataset(self, path, stage, augmentations):
+        ds = GeodeDataset(
+            file_path=f"/checkpoint/meganrichards/datasets/geode/metadata_{stage}_1k.csv",
+            augmentations=augmentations,
+            indices=self.indices,
+            label_col=self.label_col,
+        )
         self.file = ds.file
         return ds

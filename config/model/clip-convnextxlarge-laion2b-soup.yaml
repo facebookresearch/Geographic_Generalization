@@ -1,0 +1,6 @@
+# @package _global_
+model_name: clip-convnextxlarge-laion2b-soup
+
+model: 
+  _target_: models.clip.clip.CLIPConvNextXLargeLaion2BSoupClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

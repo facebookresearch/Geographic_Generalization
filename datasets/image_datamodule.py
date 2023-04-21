@@ -1,17 +1,21 @@
 import pytorch_lightning as pl
-from pl_bolts.transforms.dataset_normalizations import imagenet_normalization
 from torchvision import transforms as transform_lib
 from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 from typing import Callable
 import os
 from torchvision.transforms import InterpolationMode
+import torchvision.transforms as transforms
 
 # resnet50: bilinear, 235
 # resnet101: bicubic, 235
 # mlpmixer: bicubic, 256 resize, normalize with all means and std as 0.5
 # vit: bicubic, 248, normalization at 0.5s
 # vitlarge: bicubic
+
+IMAGENET_NORMALIZATION = transforms.Normalize(
+    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+)
 
 
 class ImageDataModule(pl.LightningDataModule):
@@ -60,13 +64,13 @@ class ImageDataModule(pl.LightningDataModule):
         data_loader = self._create_dataloader("test", augmentations)
         return data_loader
 
-    def _get_dataset(self, path, augmentations):
+    def _get_dataset(self, path, stage, augmentations):
         return ImageFolder(path, augmentations)
 
     def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
         path = os.path.join(self.data_dir, stage)
         shuffle = True if stage == "train" else False
-        dataset = self._get_dataset(path, augmentations)
+        dataset = self._get_dataset(path, stage, augmentations)
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
@@ -85,7 +89,7 @@ class ImageDataModule(pl.LightningDataModule):
                 transform_lib.RandomResizedCrop(self.image_size),
                 transform_lib.RandomHorizontalFlip(),
                 transform_lib.ToTensor(),
-                imagenet_normalization(),
+                IMAGENET_NORMALIZATION,
             ]
         )
         return preprocessing
@@ -96,16 +100,12 @@ class ImageDataModule(pl.LightningDataModule):
         """
         preprocessing = transform_lib.Compose(
             [
-                transform_lib.Resize(
-                    self.image_size + 32,
-                    interpolation=InterpolationMode.BICUBIC,
-                ),
+                transform_lib.Resize(self.image_size + 32),
                 transform_lib.CenterCrop(self.image_size),
                 transform_lib.ToTensor(),
-                imagenet_normalization(),
+                IMAGENET_NORMALIZATION,
             ]
         )
-        print("using val transform\n", preprocessing)
         return preprocessing
 
     def test_transform(self) -> Callable:
@@ -117,7 +117,7 @@ class ImageDataModule(pl.LightningDataModule):
                 transform_lib.Resize(self.image_size + 32),
                 transform_lib.CenterCrop(self.image_size),
                 transform_lib.ToTensor(),
-                imagenet_normalization(),
+                IMAGENET_NORMALIZATION,
             ]
         )
         return preprocessing
