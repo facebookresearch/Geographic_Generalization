@@ -64,13 +64,13 @@ class ImageDataModule(pl.LightningDataModule):
         data_loader = self._create_dataloader("test", augmentations)
         return data_loader
 
-    def _get_dataset(self, path, augmentations):
+    def _get_dataset(self, path, stage, augmentations):
         return ImageFolder(path, augmentations)
 
     def _create_dataloader(self, stage: str, augmentations: transform_lib.Compose):
         path = os.path.join(self.data_dir, stage)
         shuffle = True if stage == "train" else False
-        dataset = self._get_dataset(path, augmentations)
+        dataset = self._get_dataset(path, stage, augmentations)
         data_loader = DataLoader(
             dataset,
             batch_size=self.batch_size,
@@ -106,7 +106,6 @@ class ImageDataModule(pl.LightningDataModule):
                 IMAGENET_NORMALIZATION,
             ]
         )
-        print("using val transform\n", preprocessing)
         return preprocessing
 
     def test_transform(self) -> Callable:

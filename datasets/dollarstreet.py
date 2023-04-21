@@ -72,7 +72,7 @@ class DollarStreetDataModule(ImageDataModule):
             num_workers=num_workers,
         )
 
-    def _get_dataset(self, path, augmentations):
+    def _get_dataset(self, path, stage, augmentations):
         ds = DollarstreetDataset(data_dir=path, augmentations=augmentations)
         self.file = ds.file
         return ds
