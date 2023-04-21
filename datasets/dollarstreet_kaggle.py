@@ -260,3 +260,22 @@ def process_df_with_groups_and_indices(
         df.to_csv(save_path)
 
     return df
+
+
+def sample_train_set_for_validation():
+    train_set = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/original_images_v2_imagenet_train_with_groups.csv"
+    )
+    test_set = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_groups.csv"
+    )
+    total_n = len(train_set) + len(test_set)
+    n_val_to_sample = round(0.2 * total_n)
+    print("Original train", len(train_set))
+
+    val_set = train_set.sample(n_val_to_sample, replace=False, random_state=1)
+    new_train_set = train_set[~train_set["id"].isin(val_set["id"])]
+    print("Train: ", len(new_train_set))
+    print("Val", len(val_set))
+    assert len(new_train_set) + len(val_set) == len(train_set)
+    return new_train_set, val_set
