@@ -292,6 +292,49 @@ class ResNet50CutMixClassifierModule(ClassifierModule):
         return None, self.feature_extraction_layer, [], embedding_dim
 
 
+class ResNet50CutMixBaselineClassifierModule(ClassifierModule):
+    """https://github.com/clovaai/CutMix-PyTorch"""
+
+    def __init__(
+        self,
+        timm_name: str = "",
+        checkpoint_url: str = "",
+        linear_eval: bool = False,
+    ):
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )
+
+    def load_model(self):
+        model = resnet50()
+
+        w = torch.load(
+            "/checkpoint/meganrichards/model_weights/resnet50_cutmixbaseline.tar"
+        )
+        weights = w["state_dict"]
+        new_weights = {}
+        for k in weights.keys():
+            if "module" in k:
+                new_weights[k.split("module.")[1]] = weights[k]
+            else:
+                new_weights[k] = weights[k]
+
+        model.load_state_dict(new_weights)
+        return model
+
+    def forward_features(self, x):
+        with torch.no_grad():
+            self.model.eval()
+        self.feature_extraction_layer = ""
+        return []
+
+    def load_backbone(self):
+        example = torch.rand((1, 3, 224, 224))
+        embedding_dim = 0
+        self.forward_features(example)
+        return None, self.feature_extraction_layer, [], embedding_dim
+
+
 class ResNet101CutMixClassifierModule(ClassifierModule):
     """https://github.com/clovaai/CutMix-PyTorch"""
 
