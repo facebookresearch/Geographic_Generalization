@@ -1,0 +1,6 @@
+# @package _global_
+model_name: resnet50deepaugmix
+
+model: 
+  _target_: models.resnet.resnet.ResNet50DeepAugMixClassifierModule
+

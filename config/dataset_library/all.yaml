@@ -67,7 +67,7 @@ geode:
   data_dir: /checkpoint/meganrichards/datasets/geode/images/
   batch_size: 32
   num_workers: 8
-  label_col: new_1k_index
+  label_col: 1k_index
 
 geode_original:
   _target_: datasets.geode.GeodeDataModule 
