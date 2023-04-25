@@ -1,0 +1,1 @@
+python evaluate.py -m model=resnet18anti,resnet34anti,resnet50anti,resnet101anti,resnet152anti,vgg-11anti,vgg-13anti,vgg-16anti,vgg-19anti
