@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import open_clip
 from open_clip import tokenizer
 from datasets.imagenet_classes import IMAGENET_CLASSES
-from datasets.geode import GEODE_CLASSES_TO_IMAGENET_CLASSES
+from datasets.geode import NEW_GEODE_CLASSES_TO_IMAGENET_CLASSES
 from datasets.dollarstreet_kaggle import MAPPING
 from models.classifier_model import ClassifierModule
 
@@ -28,7 +28,7 @@ class OpenCLIPBaseClassifierModule(ClassifierModule):
             self.class_list = IMAGENET_CLASSES
             print("Using Imagenet labels for CLIP")
         elif dataset_to_use_for_classes == "Geode":
-            self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
+            self.class_list = list(sorted(NEW_GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
             print("Using Geode labels for CLIP")
         elif dataset_to_use_for_classes == "DollarStreet":
             self.class_list = list(MAPPING.keys())
