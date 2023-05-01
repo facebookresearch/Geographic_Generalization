@@ -368,7 +368,7 @@ def generate_1k_versions_of_metadata_csvs(save=False):
 class GeodeDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_test_1k.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_test_1k_newids.csv",  # "/checkpoint/meganrichards/datasets/geode/metadata_test_1k.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/geode/images/",
         augmentations=transform_lib.Compose(
             [
@@ -410,7 +410,7 @@ class GeodeDataset(Dataset):
             label = row[self.label_col]
         image_name = row["file_path"]
         image_path = os.path.join(self.data_dir, image_name)
-        identifier = idx
+        identifier = row["id"]  # idx
 
         image = Image.open(image_path)
         if np.array(image).shape[2] != 3:
@@ -448,7 +448,7 @@ class GeodeDataModule(ImageDataModule):
 
     def _get_dataset(self, path, stage, augmentations):
         ds = GeodeDataset(
-            file_path=f"/checkpoint/meganrichards/datasets/geode/metadata_{stage}_1k.csv",
+            file_path=f"/checkpoint/meganrichards/datasets/geode/metadata_{stage}_1k_newids.csv",
             augmentations=augmentations,
             indices=self.indices,
             label_col=self.label_col,

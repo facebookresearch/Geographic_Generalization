@@ -178,17 +178,14 @@ class GeodePerformance(Measurement):
 
     def calculate_disparities(self, datamodule_name="geode", n=1):
         print(self.model.predictions.columns)
-        accuracies = (
-            self.model.predictions.drop(columns=["id"])
-            .reset_index()
-            .rename(columns={"index": "id"})[["id", f"accurate_top{n}"]]
-        )
+        accuracies = self.model.predictions[["id", f"accurate_top{n}"]]
 
-        print(self.datamodules[datamodule_name].file.columns)
-
-        incomes_and_regions = self.datamodules[datamodule_name].file[["region"]]
-        incomes_and_regions["id"] = incomes_and_regions.index
+        incomes_and_regions = self.datamodules[datamodule_name].file[["id", "region"]]
         combined = pd.merge(accuracies, incomes_and_regions, on="id", how="left")
+
+        # Check that the merge happened successfully
+        assert len(combined) == len(accuracies)
+        assert combined.isna().sum().sum() == 0
 
         avg_acc_by_region = (
             combined.groupby("region")[f"accurate_top{n}"].mean().to_dict()
@@ -300,7 +297,7 @@ class GeodePerformance(Measurement):
 
             self.save_predictions(
                 {
-                    "id": list(identifier.cpu()),
+                    "id": identifier,
                     "output": y_hat.cpu().tolist(),
                     "predictions": indices5.cpu().tolist(),
                     "confidences": confidences5.cpu().tolist(),

@@ -27,7 +27,7 @@ git_hash = get_git_hash()
 )
 def main(config: DictConfig) -> None:
     pl.seed_everything(config.seed)
-    print_config(config)
+    # print_config(config)
     wandb_logger = setup_wandb(config, log, git_hash)
     wandb.log({"Experiment": config.experiment_identifier})
 
