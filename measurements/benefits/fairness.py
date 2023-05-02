@@ -21,9 +21,8 @@ class DollarStreetPerformance(Measurement):
         )
 
     def calculate_disparities(self, datamodule_name="dollarstreet", n=5):
-        print(self.datamodules[datamodule_name].file.columns)
         accuracies = self.model.predictions[["id", f"accurate_top{n}"]]
-        incomes_and_regions = self.datamodules[datamodule_name].file[
+        incomes_and_regions = self.datamodules[datamodule_name].file["test"][
             ["id", "Income_Group", "Region"]
         ]
         combined = pd.merge(accuracies, incomes_and_regions, on="id", how="left")
