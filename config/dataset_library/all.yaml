@@ -54,6 +54,8 @@ dollarstreet:
   data_dir: /checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/
   batch_size: 32
   num_workers: 8
+  house_separated_only: ${ds_house_separated_only}
+  house_separated_and_region_balanced: ${ds_house_separated_and_region_balanced}
 
 dollarstreet_original:
   _target_: datasets.dollarstreet_kaggle.DollarStreetDataModule
@@ -61,6 +63,8 @@ dollarstreet_original:
   batch_size: 32
   num_workers: 8
   label_col: topic_indices
+  house_separated_only: ${ds_house_separated_only}
+  house_separated_and_region_balanced: ${ds_house_separated_and_region_balanced}
 
 geode:
   _target_: datasets.geode.GeodeDataModule 

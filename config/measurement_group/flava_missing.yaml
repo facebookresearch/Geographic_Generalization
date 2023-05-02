@@ -1,0 +1,8 @@
+# @package _global_
+measurement_group_name: flava_missing
+
+measurements: [
+  fairness_dollarstreet, 
+  fairness_geode,
+  generalization_imagenetr, generalization_imageneta, generalization_imagenetsketch, generalization_objectnet
+  ] 

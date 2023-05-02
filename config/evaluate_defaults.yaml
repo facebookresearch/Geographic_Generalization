@@ -3,9 +3,11 @@ defaults:
   - base: base
   - mode: cluster_one_gpu
   - dataset_library: all
-  - model: resnet18
+  - model: dino
   - measurement_library: all
   - measurement_group: base
 
-experiment_identifier: test
-dataset_to_use_for_class_prompts: Imagenet
+experiment_identifier: dino_house
+dataset_to_use_for_class_prompts: DollarStreet
+ds_house_separated_only: True
+ds_house_separated_and_region_balanced: 

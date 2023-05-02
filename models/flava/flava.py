@@ -4,6 +4,7 @@ import torch
 from models.classifier_model import ClassifierModule
 from transformers import BertTokenizer, FlavaModel, FlavaImageProcessor
 from PIL import Image
+from datasets.dollarstreet_kaggle import MAPPING
 
 
 class FLAVAClassifierModule(ClassifierModule):
@@ -23,6 +24,10 @@ class FLAVAClassifierModule(ClassifierModule):
         elif dataset_to_use_for_classes == "Geode":
             self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
             print("Using Geode labels for FLAVA")
+        elif dataset_to_use_for_classes == "DollarStreet":
+            self.class_list = list(sorted(MAPPING.keys()))
+            print("Using DollarStreet labels for FLAVA")
+
         else:
             raise Exception(
                 "FLAVAClassifierModule accepts two options for the 'dataset_to_use_for_classes' parameter: Imagenet or Geode"
