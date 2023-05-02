@@ -1,5 +1,5 @@
 from datasets.imagenet_classes import IMAGENET_CLASSES
-from datasets.geode import NEW_GEODE_CLASSES_TO_IMAGENET_CLASSES
+from datasets.geode import GEODE_CLASSES_TO_IMAGENET_CLASSES
 import torch
 from models.classifier_model import ClassifierModule
 from transformers import BertTokenizer, FlavaModel, FlavaImageProcessor
@@ -21,7 +21,7 @@ class FLAVAClassifierModule(ClassifierModule):
             self.class_list = IMAGENET_CLASSES
             print("Using Imagenet labels for FLAVA")
         elif dataset_to_use_for_classes == "Geode":
-            self.class_list = list(sorted(NEW_GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
+            self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
             print("Using Geode labels for FLAVA")
         else:
             raise Exception(

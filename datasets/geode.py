@@ -13,112 +13,9 @@ from datasets.image_datamodule import ImageDataModule
 import numpy as np
 from datasets.image_datamodule import IMAGENET_NORMALIZATION
 from torchvision import transforms as transform_lib
+from datasets.imagenet_classes import IMAGENET_CLASSES
 
-NEW_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
-    "bag": ["backpack", "purse", "punching bag", "sleeping bag", "plastic bag"],
-    "hand soap": ["soap dispenser", "lotion"],
-    "dustbin": ["bucket"],
-    "toothbrush": [],
-    "toothpaste toothpowder": [],
-    "hairbrush comb": ["hair clip"],
-    "chair": ["barber chair", "folding chair", "rocking chair", "couch"],
-    "hat": ["cowboy hat", "swimming cap", "football helmet"],
-    "light fixture": ["table lamp"],
-    "light switch": ["electrical switch"],
-    "plate of food": ["meatloaf", "soup bowl", "plate"],
-    "spices": [],
-    "stove": ["Dutch oven", "stove"],
-    "cooking pot": ["frying pan", "hot pot", "Crock Pot"],
-    "cleaning equipment": ["vacuum cleaner", "washing machine"],
-    "lighter": ["lighter"],
-    "medicine": ["pill bottle", "medicine cabinet"],
-    "candle": ["candle"],
-    "toy": ["teddy bear"],
-    "jug": ["water jug", "whiskey jug", "water bottle"],
-    "streetlight lantern": ["lighthouse", "torch"],
-    "front door": ["sliding door"],
-    "tree": [],
-    "house": ["cliff dwelling", "mobile home", "barn", "home theater"],
-    "backyard": ["patio"],
-    "truck": ["garbage truck", "semi-trailer truck", "tow truck"],
-    "waste container": ["plastic bag"],
-    "car": [
-        "garbage truck",
-        "recreational vehicle",
-        "semi-trailer truck",
-        "tow truck",
-        "sports car",
-        "railroad car",
-    ],
-    "fence": ["chain-link fence", "picket fence", "split-rail fence"],
-    "road sign": ["traffic or street sign"],
-    "dog": [
-        "Bernese Mountain Dog",
-        "Sealyham Terrier",
-        "Toy Poodle",
-        "toy terrier",
-        "African wild dog",
-        "husky",
-        "Maltese",
-        "Beagle",
-        "Labrador Retriever",
-        "Cairn Terrier",
-    ],
-    "wheelbarrow": ["wheelbarrow"],
-    "religious building": ["mosque", "church"],
-    "stall": ["toilet seat"],
-    "boat": ["motorboat", "canoe"],
-    "monument": ["triumphal arch", "obelisk", "stupa"],
-    "flag": ["flagpole"],
-    "bus": ["minibus", "school bus"],
-    "storefront": ["traffic or street sign", "grocery store"],
-    "bicycle": ["tricycle", "mountain bike"],
-}
-
-NEW_GEODE_CLASSES_TO_IMAGENET_INDICIES = {
-    "bag": [414, 748, 747, 797, 728],
-    "hand soap": [804, 631],
-    "dustbin": [463],
-    "toothbrush": [],
-    "toothpaste toothpowder": [],
-    "hairbrush comb": [584],
-    "chair": [423, 559, 765, 831],
-    "hat": [515, 433, 560],
-    "light fixture": [846],
-    "light switch": [844],
-    "plate of food": [962, 809, 923],
-    "spices": [],
-    "stove": [544, 827],
-    "cooking pot": [567, 926, 521],
-    "cleaning equipment": [882, 897],
-    "lighter": [626],
-    "medicine": [720, 648],
-    "candle": [470],
-    "toy": [850],
-    "jug": [899, 901, 898],
-    "streetlight lantern": [437, 862],
-    "front door": [799],
-    "tree": [],
-    "house": [500, 660, 425, 598],
-    "backyard": [706],
-    "truck": [569, 867, 864],
-    "waste container": [728],
-    "car": [569, 757, 867, 864, 817, 705],
-    "fence": [489, 716, 912],
-    "road sign": [919],
-    "dog": [239, 190, 265, 158, 275, 248, 153, 162, 208, 192],
-    "wheelbarrow": [428],
-    "religious building": [668, 497],
-    "stall": [861],
-    "boat": [814, 472],
-    "monument": [873, 682, 832],
-    "flag": [557],
-    "bus": [654, 779],
-    "storefront": [919, 582],
-    "bicycle": [870, 671],
-}
-
-NEWER_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
+GEODE_CLASSES_TO_IMAGENET_CLASSES = {
     "bag": [
         "backpack",
         "purse",
@@ -133,12 +30,20 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
     "dustbin": ["bucket", "trash can", "plastic bag", "barrel"],
     "toothbrush": [],
     "toothpaste toothpowder": [],
-    "hairbrush comb": ["hair clip"],
+    "hairbrush comb": [],
     "chair": ["barber chair", "folding chair", "rocking chair", "couch", "throne"],
-    "hat": ["cowboy hat", "swimming cap", "football helmet", "poke bonnet"],
+    "hat": [
+        "cowboy hat",
+        "swimming cap",
+        "football helmet",
+        "poke bonnet",
+        "sombrero",
+        "military hat (bearskin or shako)",
+        "shower cap",
+    ],
     "light fixture": ["table lamp", "spotlight", "lampshade", "candle"],
     "light switch": ["electrical switch"],
-    "plate of food": ["meatloaf", "soup bowl", "plate", "tray"],
+    "plate of food": ["plate", "tray"],
     "spices": [],
     "stove": ["Dutch oven", "stove"],
     "cooking pot": [
@@ -162,7 +67,7 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
     "candle": ["candle"],
     "toy": ["teddy bear", "toy store"],
     "jug": ["water jug", "whiskey jug", "water bottle", "drink pitcher"],
-    "streetlight lantern": ["lighthouse", "torch", "pole"],
+    "streetlight lantern": ["torch", "pole"],
     "front door": ["sliding door"],
     "tree": [],
     "house": ["cliff dwelling", "mobile home", "barn", "home theater", "boathouse"],
@@ -186,6 +91,7 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
         "pickup truck",
         "moving van",
         "police van",
+        "race car",
     ],
     "fence": ["chain-link fence", "picket fence", "split-rail fence"],
     "road sign": ["traffic or street sign"],
@@ -212,10 +118,14 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
         "American Staffordshire Terrier",
         "Pembroke Welsh Corgi",
         "Miniature Poodle",
+        "Basenji",
+        "Rhodesian Ridgeback",
+        "Appenzeller Sennenhund",
+        "Ibizan Hound",
     ],
     "wheelbarrow": ["wheelbarrow"],
-    "religious building": ["mosque", "church", "monastery", "bell tower"],
-    "stall": ["toilet seat"],
+    "religious building": ["mosque", "church", "monastery", "bell tower", "altar"],
+    "stall": [],
     "boat": [
         "motorboat",
         "canoe",
@@ -224,6 +134,8 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
         "sailboat",
         "submarine",
         "ocean liner",
+        "trimaran",
+        "catamaran",
     ],
     "monument": [
         "triumphal arch",
@@ -236,28 +148,29 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_CLASSES = {
     "flag": ["flagpole"],
     "bus": ["minibus", "school bus", "trolleybus"],
     "storefront": [
-        "traffic or street sign",
         "grocery store",
         "tobacco shop",
         "bookstore",
         "toy store",
         "barbershop",
+        "candy store",
+        "shoe store",
     ],
     "bicycle": ["tricycle", "mountain bike", "tandem bicycle", "unicycle"],
 }
 
-NEWER_GEODE_CLASSES_TO_IMAGENET_INDICIES = {
+GEODE_CLASSES_TO_IMAGENET_INDICIES = {
     "bag": [414, 748, 747, 797, 728, 636, 790, 709],
     "hand soap": [804, 631],
     "dustbin": [463, 412, 728, 427],
     "toothbrush": [],
     "toothpaste toothpowder": [],
-    "hairbrush comb": [584],
+    "hairbrush comb": [],
     "chair": [423, 559, 765, 831, 857],
-    "hat": [515, 433, 560, 452],
+    "hat": [515, 433, 560, 452, 808, 439, 793],
     "light fixture": [846, 818, 619, 470],
     "light switch": [844],
-    "plate of food": [962, 809, 923, 868],
+    "plate of food": [923, 868],
     "spices": [],
     "stove": [544, 827],
     "cooking pot": [567, 926, 521, 469, 544, 909],
@@ -267,7 +180,7 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_INDICIES = {
     "candle": [470],
     "toy": [850, 865],
     "jug": [899, 901, 898, 725],
-    "streetlight lantern": [437, 862, 733],
+    "streetlight lantern": [862, 733],
     "front door": [799],
     "tree": [],
     "house": [500, 660, 425, 598, 449],
@@ -291,6 +204,7 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_INDICIES = {
         717,
         675,
         734,
+        751,
     ],
     "fence": [489, 716, 912],
     "road sign": [919],
@@ -317,18 +231,82 @@ NEWER_GEODE_CLASSES_TO_IMAGENET_INDICIES = {
         180,
         263,
         266,
+        253,
+        159,
+        240,
+        173,
     ],
     "wheelbarrow": [428],
-    "religious building": [668, 497, 663, 442],
-    "stall": [861],
-    "boat": [814, 472, 554, 625, 914, 833, 628],
+    "religious building": [668, 497, 663, 442, 406],
+    "stall": [],
+    "boat": [814, 472, 554, 625, 914, 833, 628, 871, 484],
     "monument": [873, 682, 832, 708, 458, 649],
     "flag": [557],
     "bus": [654, 779, 874],
-    "storefront": [919, 582, 860, 454, 865, 424],
+    "storefront": [582, 860, 454, 865, 424, 509, 788],
     "bicycle": [870, 671, 444, 880],
 }
 
+
+def check_mapping_consistency():
+    # This should print nothing if it passed :)
+    for k, v in GEODE_CLASSES_TO_IMAGENET_CLASSES.items():
+        for v_i in v:
+            if v_i not in IMAGENET_CLASSES:
+                print(v_i, "not in ImageNet Classes")
+
+    for k, v in GEODE_CLASSES_TO_IMAGENET_CLASSES.items():
+        imagenet_classes = v
+        imagenet_indices = GEODE_CLASSES_TO_IMAGENET_INDICIES[k]
+        for i in range(len(imagenet_classes)):
+            ind = imagenet_indices[i]
+            cl = imagenet_classes[i]
+            if IMAGENET_CLASSES[ind] != cl:
+                raise Exception(
+                    f"Found a mismatch for GeoDE class {k}, matching to ImageNet class {cl}. The imagenet index given is {ind}, but the one found was {IMAGENET_CLASSES.index(cl)}"
+                )
+
+    print("Passed!")
+
+
+def generate_random_ids_for_geode(): 
+    # This generates 10 character (lowercase) random ids that are assigned to the 1k subsets of train/test sets for GeoDE. 
+
+    test = pd.read_csv("/checkpoint/meganrichards/datasets/geode/metadata_test_1k.csv", index_col=0)
+    train = pd.read_csv("/checkpoint/meganrichards/datasets/geode/metadata_train_1k.csv", index_col=0)
+
+    # Checks 
+    assert len(set(test['file_path'].tolist()) & set(train['file_path'].tolist())) == 0 # no train/test overlap
+    assert test['object_index'].nunique() == 36 # correct number of classes 
+    assert train['object_index'].nunique() == 36 # correct number of classes
+
+    char_length = 10
+    n_char_to_gen = char_length*(len(test) + len(train) + 100)
+
+    import random
+    import string
+
+    random.seed(10)
+    all_char = ''.join(random.choices(string.ascii_lowercase, k=n_char_to_gen))
+    chunks = [all_char[i:i+char_length] for i in range(0, len(all_char), char_length)]
+
+    assert len(set(chunks)) == len(chunks) # all ids are unique 
+    assert len(chunks) >= len(train) + len(test) # generated enough ids
+
+    train_ids = chunks[0: len(train)]
+    test_ids = chunks[len(train) + 1: len(train) + len(test) + 1]
+
+    assert len(train) == len(train_ids) # number of ids matches df
+    assert len(test) == len(test_ids) # number of ids matches df
+
+    assert len(set(train_ids) & set(test_ids)) == 0 # no overlap
+
+    train['id'] = train_ids
+    test['id'] = test_ids
+
+    #train.to_csv("/checkpoint/meganrichards/datasets/geode/metadata_train_1k_newids.csv")
+    #test.to_csv("/checkpoint/meganrichards/datasets/geode/metadata_test_1k_newids.csv") 
+    return train, test
 
 # def calculate_geode_top_classes_and_indices(n):
 #     nlp = spacy.load("en_core_web_lg")
@@ -535,12 +513,12 @@ def generate_metadata_csvs_from_pickle(save=True):
 
 
 def add_label_index(obj):
-    object_labels_list = sorted(list(NEW_GEODE_CLASSES_TO_IMAGENET_INDICIES.keys()))
+    object_labels_list = sorted(list(GEODE_CLASSES_TO_IMAGENET_INDICIES.keys()))
     return object_labels_list.index(obj.replace("_", " "))
 
 
 def add_imagenet_index(obj):
-    return NEW_GEODE_CLASSES_TO_IMAGENET_INDICIES[obj.replace("_", " ")]
+    return GEODE_CLASSES_TO_IMAGENET_INDICIES[obj.replace("_", " ")]
 
 
 def add_indexes_and_filter_by_1k(
@@ -576,10 +554,35 @@ def generate_1k_versions_of_metadata_csvs(save=False):
             )
 
 
+def make_final_version_of_csvs():
+    train_path = "/checkpoint/meganrichards/datasets/geode/metadata_train_1k_newids.csv"
+    test_path = "/checkpoint/meganrichards/datasets/geode/metadata_test_1k_newids.csv"
+
+    train_new_labels = add_indexes_and_filter_by_1k(file_path=train_path)
+    test_new_labels = add_indexes_and_filter_by_1k(file_path=test_path)
+
+    return train_new_labels, test_new_labels
+
+
+def confirm_class_removal():
+    # This is a class accuracy check for a resnet 50 with the 2 classes we removed.
+    preds = pd.read_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/geode_new_mapping_nonfiltered_05-01/resnet50/19/GeodePerformance/geode_predictions.csv"
+    )
+
+    m = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/geode/metadata_test_1k_newids_new_mapping_nonfilteredv2.csv"
+    )
+    c = pd.merge(preds, m, how="left", on="id")
+
+    print(c[c["object"] == "stall"]["accurate_top1"].mean())  # 0.0%
+    print(c[c["object"] == "hairbrush_comb"]["accurate_top1"].mean())  # 2.5%
+
+
 class GeodeDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_test_1k_newids_new_mapping.csv",  # "/checkpoint/meganrichards/datasets/geode/metadata_test_1k.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/geode/metadata_test_1k_final.csv",  # "/checkpoint/meganrichards/datasets/geode/metadata_test_1k.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/geode/images/",
         augmentations=transform_lib.Compose(
             [
@@ -659,7 +662,7 @@ class GeodeDataModule(ImageDataModule):
 
     def _get_dataset(self, path, stage, augmentations):
         ds = GeodeDataset(
-            file_path=f"/checkpoint/meganrichards/datasets/geode/metadata_{stage}_1k_newids_new_mapping.csv",
+            file_path=f"/checkpoint/meganrichards/datasets/geode/metadata_{stage}_1k_final.csv",
             augmentations=augmentations,
             indices=self.indices,
             label_col=self.label_col,
