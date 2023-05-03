@@ -12,7 +12,7 @@ from torchvision import transforms as transform_lib
 class DollarstreetDataset(Dataset):
     def __init__(
         self,
-        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_test_with_groups.csv",
+        file_path: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/splits_with_metadata/test.csv",
         data_dir: str = "/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/",
         augmentations=transform_lib.Compose(
             [
@@ -64,6 +64,8 @@ class DollarStreetDataModule(ImageDataModule):
         num_workers=8,
         image_size=224,
         label_col="imagenet_synset_id",
+        house_separated_only=False,  # If set to True, this will use a randomly generated training/test split based on the household
+        house_separated_and_region_balanced=False,  # If set to True, this will use a subsampled version of DollarStreet by region, such that regions has (not exactly) balanced subsets by region.
     ):
         """Dollarstreet Dataset
 
@@ -77,14 +79,33 @@ class DollarStreetDataModule(ImageDataModule):
             num_workers=num_workers,
         )
         self.label_col = label_col
+        self.file = {}
+        self.house_separated_only = house_separated_only
+        self.house_separated_and_region_balanced = house_separated_and_region_balanced
+        if self.house_separated_only and self.house_separated_and_region_balanced:
+            raise Exception(
+                "Sorry - DollarStreet (Kaggle version) has mutually exclusive dataset split options. Please set one of 'house_separated_only' or 'house_separated_and_region_balanced' parameters to be False."
+            )
+
+    def get_path(self, stage):
+        if self.house_separated_only:
+            path = f"/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/house_separated_with_metadata/{stage}.csv"
+        elif self.house_separated_and_region_balanced:
+            path = f"/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/house_separated_region_balanced_with_metadata/{stage}.csv"
+        else:
+            path = f"/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/splits_with_metadata/{stage}_with_groups.csv"
+
+        print("Generating DS dataset with path ", path)
+        return path
 
     def _get_dataset(self, path, stage, augmentations):
         ds = DollarstreetDataset(
-            file_path=f"/checkpoint/meganrichards/datasets/dollarstreet_kaggle/dataset_dollarstreet/images_v2_imagenet_{stage}_with_groups.csv",
+            file_path=self.get_path(stage),
             label_col=self.label_col,
             augmentations=augmentations,
         )
-        self.file = ds.file
+
+        self.file[stage] = ds.file
         return ds
 
 

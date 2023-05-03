@@ -22,8 +22,8 @@ class DollarStreetPerformance(Measurement):
 
     def calculate_disparities(self, datamodule_name="dollarstreet", n=5):
         accuracies = self.model.predictions[["id", f"accurate_top{n}"]]
-        incomes_and_regions = self.datamodules[datamodule_name].file[
-            ["id", "Income_Group", "region"]
+        incomes_and_regions = self.datamodules[datamodule_name].file["test"][
+            ["id", "Income_Group", "Region"]
         ]
         combined = pd.merge(accuracies, incomes_and_regions, on="id", how="left")
 
@@ -31,7 +31,7 @@ class DollarStreetPerformance(Measurement):
             combined.groupby("Income_Group")[f"accurate_top{n}"].mean().to_dict()
         )
         avg_acc_by_region = (
-            combined.groupby("region")[f"accurate_top{n}"].mean().to_dict()
+            combined.groupby("Region")[f"accurate_top{n}"].mean().to_dict()
         )
 
         return avg_acc_by_income, avg_acc_by_region
@@ -176,14 +176,15 @@ class GeodePerformance(Measurement):
         )
 
     def calculate_disparities(self, datamodule_name="geode", n=1):
-        accuracies = (
-            self.model.predictions.drop(columns=["id"])
-            .reset_index()
-            .rename(columns={"index": "id"})[["id", f"accurate_top{n}"]]
-        )
+        print(self.model.predictions.columns)
+        accuracies = self.model.predictions[["id", f"accurate_top{n}"]]
+
         incomes_and_regions = self.datamodules[datamodule_name].file[["id", "region"]]
-        incomes_and_regions["id"] = incomes_and_regions.index
         combined = pd.merge(accuracies, incomes_and_regions, on="id", how="left")
+
+        # Check that the merge happened successfully
+        assert len(combined) == len(accuracies)
+        assert combined.isna().sum().sum() == 0
 
         avg_acc_by_region = (
             combined.groupby("region")[f"accurate_top{n}"].mean().to_dict()
@@ -295,7 +296,7 @@ class GeodePerformance(Measurement):
 
             self.save_predictions(
                 {
-                    "id": list(identifier.cpu()),
+                    "id": identifier,
                     "output": y_hat.cpu().tolist(),
                     "predictions": indices5.cpu().tolist(),
                     "confidences": confidences5.cpu().tolist(),

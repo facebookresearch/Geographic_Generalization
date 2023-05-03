@@ -1,0 +1,6 @@
+# @package _global_
+model_name: resnet50deepaug
+
+model: 
+  _target_: models.resnet.resnet.ResNet50DeepAugClassifierModule
+

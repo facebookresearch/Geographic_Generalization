@@ -1,0 +1,1 @@
+python evaluate.py -m model=resnet50cutmixbaseline,resnet50augmix,resnet50deepaug,resnet50deepaugmix,resnet50texture,resnet50cutmix,resnet50anti

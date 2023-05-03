@@ -436,3 +436,172 @@ def make_geode_gap_plot():
         disparity_type="region", fairness_dataset="geode", df=combined
     )
     return
+
+
+import pandas as pd
+import os
+
+
+def calculate_per_region_acc(r):
+    metadata = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/geode/metadata_test_1k_newids.csv"
+    )  # .reset_index()
+    c = pd.merge(r, metadata, how="left", on="id")
+    c = c[~c["object"].isin(["stall", "hairbrush_comb"])]
+
+    regions = (
+        c.groupby("region")["accurate_top1"]
+        .mean()
+        .sort_values(ascending=False)
+        .to_dict()
+    )
+    max_region = max(regions, key=regions.get)
+    min_region = min(regions, key=regions.get)
+    print("Best", max_region, "Worst", min_region)
+    regions_with_better_keys = {}
+    for k, v in regions.items():
+        regions_with_better_keys[f"geode-{k.lower()}_test_accuracy"] = [v]
+    return regions_with_better_keys
+
+
+def recalculate_geode_regions_for_experiment(base):
+    all_models = []
+    print(os.listdir(base))
+    for model in os.listdir(base):
+        print(model)
+        try:
+            model_dir = os.path.join(base, model)
+            # print(model_dir)
+            for g in os.listdir(model_dir):
+                res_dir = os.path.join(model_dir, g)  # 0
+                # print(res_dir)
+                if os.path.isdir(res_dir) and g[0] != ".":
+                    for h in os.listdir(res_dir):
+                        res_dir_h = os.path.join(res_dir, h)
+                        # print(res_dir_h)
+                        if "GeodePerformance" in res_dir_h:
+                            l = os.path.join(res_dir_h, "geode_results.csv")
+                            # print(l)
+                            res = pd.read_csv(l)
+                            per_region = calculate_per_region_acc(res)
+                            per_region["Model"] = [model]
+                            all_models.append(pd.DataFrame.from_dict(per_region))
+
+        except Exception as e:
+            print(e)
+            pass
+    return pd.concat(all_models)
+
+
+def recalcualte_ds_regions_for_experiment(base):
+    for model in os.listdir(base):
+        print(model)
+        try:
+            model_dir = os.path.join(base, model)
+            # print(model_dir)
+            for g in os.listdir(model_dir):
+                res_dir = os.path.join(model_dir, g)  # 0
+                # print(res_dir)
+                if os.path.isdir(res_dir) and g[0] != ".":
+                    for h in os.listdir(res_dir):
+                        res_dir_h = os.path.join(res_dir, h)
+                        # print(res_dir_h)
+                        if "DollarStreetPerformance" in res_dir_h:
+                            l = os.path.join(res_dir_h, "dollarstreet_results.csv")
+                            # print(l)
+                            res = pd.read_csv(l)
+                            calculate_per_region_acc(res)
+        except Exception as e:
+            print(e)
+            pass
+
+
+def calculate_best_worst_regions_counts_with_combined_df(
+    a, fairness_datasets=["dollarstreet", "geode"]
+):
+    for ds in fairness_datasets:
+        if ds == "dollarstreet":
+            a_ = a[
+                [
+                    x
+                    for x in a.columns.values
+                    if (
+                        "dollarstreet-" in x
+                        and "q" not in x
+                        and "country" not in x
+                        and "gap" not in x
+                    )
+                ]
+                + ["Model"]
+            ]
+        else:
+            a_ = a[
+                [x for x in a.columns.values if "geode-" in x and "test_accuracy" in x]
+                + ["Model"]
+            ]
+
+        # Calculate region breakdown
+        co = []
+        for i, row in a_.iterrows():
+            d = row.to_dict()
+            d.pop("Model")
+
+            l = pd.DataFrame(
+                {
+                    "Model": [row["Model"]],
+                    "Best": [max(d, key=d.get).split("_")[0].split("-")[1]],
+                    "Worst": [min(d, key=d.get).split("_")[0].split("-")[1]],
+                }
+            )
+            co.append(l)
+
+        print(f"\n---- {ds} ----")
+        print("\n Best Regions\n", pd.concat(co)["Best"].value_counts())
+        print()
+        print("\n Worst Region\n", pd.concat(co)["Worst"].value_counts())
+
+
+# Calculate Top Predictions
+from ast import literal_eval
+from datasets.imagenet_classes import IMAGENET_CLASSES
+import pandas as pd
+
+
+def calculate_most_common_geode_predictions():
+    metadata = pd.read_csv(
+        "/checkpoint/meganrichards/datasets/geode/metadata_test_1k.csv"
+    )
+    preds = pd.read_csv(
+        "/checkpoint/meganrichards/logs/interplay_project/geode_corrected_04-18/vit/38/GeodePerformance/geode_results.csv"
+    )
+    preds["id"] = preds.index
+    metadata["id"] = metadata.index
+    preds = pd.merge(preds, metadata, how="left", on="id")
+
+    preds["predictions"] = preds["predictions"].apply(literal_eval)
+    preds["label"] = preds["label"].apply(lambda x: x.split(","))
+    preds[["predictions", "label", "object", "accurate_top1"]]
+    for obj in preds["object"].unique():
+        obj_subset = preds[preds["object"] == obj]
+        obj_preds = pd.Series(sum(obj_subset["predictions"].tolist(), []))
+        obj_label = [int(x) for x in obj_subset["label"].iloc[0]]
+
+        top_10_most_common_indices = obj_preds.value_counts()[:15].index.tolist()
+        top_10_most_common_indices = [
+            x for x in top_10_most_common_indices if x not in obj_label
+        ]
+
+        top_10_most_common_classes = [
+            IMAGENET_CLASSES[i] for i in top_10_most_common_indices
+        ]
+        print(f"\n-- {obj} --")
+
+        print_str = ""
+        for i in range(len(top_10_most_common_indices)):
+            print_str = (
+                print_str
+                + f"{top_10_most_common_classes[i]} ({top_10_most_common_indices[i]}), "
+            )
+        print(print_str)
+
+        print("Original labels", [IMAGENET_CLASSES[i] for i in obj_label])

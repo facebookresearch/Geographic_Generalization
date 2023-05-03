@@ -1,0 +1,8 @@
+# @package _global_
+model_name: flava
+
+model: 
+  _target_: models.flava.flava.FLAVAClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}
+
+

@@ -31,7 +31,7 @@ class OpenCLIPBaseClassifierModule(ClassifierModule):
             self.class_list = list(sorted(GEODE_CLASSES_TO_IMAGENET_CLASSES.keys()))
             print("Using Geode labels for CLIP")
         elif dataset_to_use_for_classes == "DollarStreet":
-            self.class_list = list(MAPPING.keys())
+            self.class_list = list(sorted(MAPPING.keys()))
             print("Using DollarStreet labels for CLIP")
         else:
             raise Exception(

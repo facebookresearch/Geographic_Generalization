@@ -1,0 +1,6 @@
+# @package _global_
+measurement_group_name: fairness
+
+measurements: [
+  fairness_dollarstreet, fairness_geode
+  ]

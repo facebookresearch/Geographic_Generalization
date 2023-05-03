@@ -1125,10 +1125,12 @@ import pandas as pd
 
 
 #### 1K GeoDE results ####
-def generate_corrected_geode_plot():
+
+def generate_new_corrected_geode_plot(gap_type = 'bestworst'):
     new_geode_1k_results = combine_model_results_from_wandb(
-        experiment_name="geode_corrected"
-    ).dropna(how="any")
+        experiment_name="geode_new_mapping_final"
+    )
+
 
     old_set = pd.read_csv(
         "/checkpoint/meganrichards/logs/interplay_project/more_models_04-03/combined_with_og_set.csv",
@@ -1136,7 +1138,13 @@ def generate_corrected_geode_plot():
     )
 
     # Calculate Geode Gaps, then plot
-    eval_1k_combined = pd.merge(new_geode_1k_results, old_set, on="Model", how="right")
+    eval_1k_combined = pd.merge(new_geode_1k_results, old_set, on="Model", how="inner")
+
+    eval_1k_combined = eval_1k_combined[
+        ~eval_1k_combined["Model"].isin(
+            ["clip-b16", "clip-b32", "clip-l14", "beit-base", "beit-large"]
+        )
+    ]
 
     eval_1k_combined["geode-best-region5"] = eval_1k_combined[
         [
@@ -1170,6 +1178,45 @@ def generate_corrected_geode_plot():
             "geode-americas_test_accuracy1",
         ]
     ].values.max(axis=1)
+    
+    best_regions1 = []
+    worst_regions1 = []
+    best_regions5 = []
+    worst_regions5 = []
+
+    for i in range(len(eval_1k_combined)): 
+        row1 = eval_1k_combined[
+        [
+            "geode-westasia_test_accuracy1",
+            "geode-africa_test_accuracy1",
+            "geode-europe_test_accuracy1",
+            "geode-southeastasia_test_accuracy1",
+            "geode-eastasia_test_accuracy1",
+            "geode-americas_test_accuracy1",
+        ]
+        ].iloc[i].to_dict()
+        best_regions1.append(max(row1, key = row1.get))
+        worst_regions1.append(min(row1, key = row1.get))
+
+        row5 = eval_1k_combined[
+        [
+            "geode-westasia_test_accuracy5",
+            "geode-africa_test_accuracy5",
+            "geode-europe_test_accuracy5",
+            "geode-southeastasia_test_accuracy5",
+            "geode-eastasia_test_accuracy5",
+            "geode-americas_test_accuracy5",
+        ]
+        ].iloc[i].to_dict()
+        best_regions5.append(max(row5, key = row5.get))
+        worst_regions5.append(min(row5, key = row5.get))
+
+    print("----- Top 1 Acc -----")
+    print(pd.Series(best_regions1).value_counts()) 
+    print(pd.Series(worst_regions1).value_counts()) 
+    print("----- Top 5 Acc -----")
+    print(pd.Series(best_regions5).value_counts()) 
+    print(pd.Series(worst_regions5).value_counts())
 
     eval_1k_combined["geode-worst-region1"] = eval_1k_combined[
         [
@@ -1182,16 +1229,35 @@ def generate_corrected_geode_plot():
         ]
     ].values.min(axis=1)
 
-    eval_1k_combined = eval_1k_combined[
-        ~eval_1k_combined["Model"].isin(
-            ["clip-b16", "clip-b32", "clip-l14", "beit-base", "beit-large"]
+    # Top 1 Accuracy
+    if gap_type == 'bestworst': 
+        eval_1k_combined["geode-gap_region"] = (
+            eval_1k_combined["geode-best-region1"]
+            - eval_1k_combined["geode-worst-region1"]
         )
-    ]
-
-    eval_1k_combined["geode-gap_region"] = (
-        eval_1k_combined["geode-southeastasia_test_accuracy1"]
-        - eval_1k_combined["geode-americas_test_accuracy1"]
+    else: 
+        eval_1k_combined["geode-gap_region"] = (
+            eval_1k_combined["geode-europe_test_accuracy1"]
+            - eval_1k_combined["geode-africa_test_accuracy1"]
+        )
+    generate_generalizaton_fairness_comparison_combined(
+        df=eval_1k_combined, disparity_type="region", fairness_dataset="geode"
     )
+
+    # Top 5 Accuracy
+    if gap_type == 'bestworst': 
+        print("Using best vs worst region as the disparity type...")
+        eval_1k_combined["geode-gap_region"] = (
+            eval_1k_combined["geode-best-region5"]
+            - eval_1k_combined["geode-worst-region5"]
+        )
+    else: 
+        print("Using europe vs africa as the disparity type...")
+        eval_1k_combined["geode-gap_region"] = (
+            eval_1k_combined["geode-europe_test_accuracy5"]
+            - eval_1k_combined["geode-africa_test_accuracy5"]
+        )
+
     generate_generalizaton_fairness_comparison_combined(
         df=eval_1k_combined, disparity_type="region", fairness_dataset="geode"
     )

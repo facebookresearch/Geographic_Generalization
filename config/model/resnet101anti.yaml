@@ -1,0 +1,6 @@
+# @package _global_
+model_name: resnet101anti
+
+model: 
+  _target_: models.resnet.resnet.ResNet101AntiAliasedClassifierModule
+

@@ -1,0 +1,6 @@
+# @package _global_
+model_name: resnet50cutmixbaseline
+
+model: 
+  _target_: models.resnet.resnet.ResNet50CutMixBaselineClassifierModule
+

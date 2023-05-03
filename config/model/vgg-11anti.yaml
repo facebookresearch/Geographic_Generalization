@@ -1,0 +1,5 @@
+# @package _global_
+model_name: vgg-11anti
+
+model: 
+  _target_: models.vgg.vgg.Vgg11AntiAliasedClassifierModule
