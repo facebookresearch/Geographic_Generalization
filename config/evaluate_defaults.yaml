@@ -3,11 +3,11 @@ defaults:
   - base: base
   - mode: cluster_one_gpu
   - dataset_library: all
-  - model: dino
+  - model: clip-r50-openai
   - measurement_library: all
-  - measurement_group: base
+  - measurement_group: zeroshot_dollarstreet
 
-experiment_identifier: dino_house
+experiment_identifier: all_zeroshot_dollarstreet
 dataset_to_use_for_class_prompts: DollarStreet
 ds_house_separated_only: True
 ds_house_separated_and_region_balanced: 
