@@ -29,7 +29,7 @@ class ResNet18ClassifierModule(ClassifierModule):
     def __init__(
         self,
         timm_name: str = "resnet18",
-        checkpoint_url: str = "https://github.com/huggingface/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet18_a1_0-d63eafa0.pth",
+        checkpoint_url: str = "",
         linear_eval: bool = False,
     ):
         super().__init__(
@@ -46,7 +46,7 @@ class ResNet34ClassifierModule(ClassifierModule):
     def __init__(
         self,
         timm_name: str = "resnet34",
-        checkpoint_url: str = "https://github.com/huggingface/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet34_a1_0-46f8f793.pth",
+        checkpoint_url: str = "",
         linear_eval: bool = False,
     ):
         super().__init__(
@@ -60,7 +60,7 @@ class ResNet50ClassifierModule(ClassifierModule):
     def __init__(
         self,
         timm_name: str = "resnet50",
-        checkpoint_url: str = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet50_a1_0-14fe96d1.pth",
+        checkpoint_url: str = "",
         linear_eval: bool = False,
     ):
         """Loads ResNet-50 weights from ResNet Strikes back paper.
@@ -83,7 +83,7 @@ class ResNet101ClassifierModule(ClassifierModule):
     def __init__(
         self,
         timm_name: str = "resnet101",
-        checkpoint_url: str = "https://github.com/huggingface/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet101_a1_0-cdcb52a9.pth",
+        checkpoint_url: str = "",
         linear_eval: bool = False,
     ):
         super().__init__(
@@ -100,7 +100,7 @@ class ResNet152ClassifierModule(ClassifierModule):
     def __init__(
         self,
         timm_name: str = "resnet152",
-        checkpoint_url: str = "https://github.com/huggingface/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet152_a1_0-2eee8a7a.pth",
+        checkpoint_url: str = "",
         linear_eval: bool = False,
     ):
         super().__init__(
