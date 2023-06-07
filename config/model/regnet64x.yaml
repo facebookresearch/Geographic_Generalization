@@ -1,0 +1,6 @@
+# @package _global_
+model_name: regnet64x
+
+model: 
+  _target_: models.regnet.regnetx.RegNet64xClassifierModule
+

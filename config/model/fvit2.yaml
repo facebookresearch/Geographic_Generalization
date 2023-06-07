@@ -1,0 +1,6 @@
+# @package _global_
+model_name: fvit2
+
+model: 
+  _target_: models.vit.vit.VitClassifierModule
+  checkpoint_url: /checkpoint/polkirichenko/logs/interplay_project/finetuning_ckpt/finetuning_household_lr1e-5_5epochs_seed2.ckpt

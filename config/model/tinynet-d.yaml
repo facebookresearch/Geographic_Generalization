@@ -1,6 +1,6 @@
 
 # @package _global_
-model_name: tinynet-e
+model_name: tinynet-d
 
 model: 
-  _target_: models.tinynet.tinynet.TinyNetEClassifierModule
+  _target_: models.tinynet.tinynet.TinyNetDClassifierModule

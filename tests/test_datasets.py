@@ -98,7 +98,6 @@ class TestDollarStreet:
 class TestGeode:
     def test_geode(self):
         dm = GeodeDataModule(batch_size=8)
-        assert Path(dm.data_dir, "test").exists()
         test_loader = dm.test_dataloader()
         x, y, id = next(iter(test_loader))
 

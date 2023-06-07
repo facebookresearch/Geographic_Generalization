@@ -1,0 +1,5 @@
+# @package _global_
+model_name: mobilenet-smallmin100
+
+model: 
+  _target_: models.mobilenet.mobilenet.MobileNetSmallMin100ClassifierModule
