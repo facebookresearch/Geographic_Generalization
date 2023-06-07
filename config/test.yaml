@@ -8,5 +8,6 @@ defaults:
   - measurement_group: all
 
 experiment_identifier: test
+dataset_to_use_for_class_prompts: ImageNet
 ds_house_separated_only: True
 ds_house_separated_and_region_balanced: 
