@@ -53,9 +53,16 @@ class ClassifierModule(pl.LightningModule):
     def load_model(self):
         if self.checkpoint_url:
             model = timm.create_model(self.timm_name, pretrained=False)
-            state_dict = torch.utils.model_zoo.load_url(self.checkpoint_url)
-            model.load_state_dict(state_dict)
+            print(f"Loading state dict: {self.checkpoint_url}")
+            state_dict = torch.load(self.checkpoint_url)["state_dict"]
+            new_state_dict = {}
+            for k, v in state_dict.items():
+                if "model" in k:
+                    new_state_dict[k.replace("model.", "")] = v
+
+            model.load_state_dict(new_state_dict)
         else:
+            print("Loading Timm model")
             model = timm.create_model(self.timm_name, pretrained=True)
         return model
 

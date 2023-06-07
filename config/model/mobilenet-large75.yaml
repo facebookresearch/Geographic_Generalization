@@ -1,0 +1,5 @@
+# @package _global_
+model_name: mobilenet-large75
+
+model: 
+  _target_: models.mobilenet.mobilenet.MobileNetLarge75ClassifierModule

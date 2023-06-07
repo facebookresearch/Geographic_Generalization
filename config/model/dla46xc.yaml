@@ -1,0 +1,5 @@
+# @package _global_
+model_name: dla46xc
+
+model: 
+  _target_: models.dla.dla.DLA46xcClassifierModule

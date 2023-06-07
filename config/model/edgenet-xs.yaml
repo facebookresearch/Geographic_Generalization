@@ -1,0 +1,5 @@
+# @package _global_
+model_name: edgenet-xs
+
+model: 
+  _target_: models.edgenet.edgenet.EdgeNetXSClassifierModule

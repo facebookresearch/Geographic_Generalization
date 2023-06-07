@@ -1,0 +1,5 @@
+# @package _global_
+model_name: mobilevit-xsmall
+
+model: 
+  _target_: models.mobilevit.mobilevit.MobileVitXSClassifierModule

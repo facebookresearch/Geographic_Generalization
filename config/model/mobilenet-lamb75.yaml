@@ -1,0 +1,5 @@
+# @package _global_
+model_name: mobilenet-lamb75
+
+model: 
+  _target_: models.mobilenet.mobilenet.MobileNetLamb75ClassifierModule

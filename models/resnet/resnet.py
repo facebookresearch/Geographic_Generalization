@@ -6,6 +6,20 @@ import torch
 from torchvision.models import resnet50, resnet101, resnet152
 
 
+class ResNet10tClassifierModule(ClassifierModule):
+    """ """
+
+    def __init__(
+        self,
+        timm_name: str = "resnet10t",
+        checkpoint_url: str = "",
+        linear_eval: bool = False,
+    ):
+        super().__init__(
+            timm_name=timm_name, checkpoint_url=checkpoint_url, linear_eval=linear_eval
+        )
+
+
 class ResNet18ClassifierModule(ClassifierModule):
     """Weights from Resnet Strikes Back.
     Paper: https://arxiv.org/abs/2110.00476

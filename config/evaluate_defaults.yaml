@@ -3,11 +3,11 @@ defaults:
   - base: base
   - mode: cluster_one_gpu
   - dataset_library: all
-  - model: clip-r50-openai
+  - model: fvit0
   - measurement_library: all
-  - measurement_group: zeroshot_dollarstreet
+  - measurement_group: fairness
 
-experiment_identifier: all_zeroshot_dollarstreet
-dataset_to_use_for_class_prompts: DollarStreet
+experiment_identifier: finetuned
+dataset_to_use_for_class_prompts: ImageNet
 ds_house_separated_only: True
 ds_house_separated_and_region_balanced: 
