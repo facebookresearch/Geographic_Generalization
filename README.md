@@ -16,7 +16,7 @@ To run an evaluation over several models, use a sweep: `sh sweeps/basic_interpla
 
 
 ## Customization
-By default, the evaluation evaluates a pretrained Resnet50 on the base set of measurements (Imagenet V2 performance). These choices are encoded in configs, refer to the advanced section to learn about customization. The configs have the following structure: 
+By default, the evaluation evaluates a pretrained Resnet50 on the base set of measurements (Imagenet V2 performance). These choices are encoded in config files, refer to the advanced section to learn about customization. The configs have the following structure: 
 
     config
     ├── base                # Hydra specifications, including experiment naming
