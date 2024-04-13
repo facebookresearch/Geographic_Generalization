@@ -1,0 +1,30 @@
+# @package _global_
+seed: 0
+
+hydra/job_logging: colorlog
+hydra/hydra_logging: colorlog
+
+name: ${experiment_identifier}_${model_name}_${now:%m-%d}
+logs_dir: logs/${project}/${experiment_identifier}_${now:%m-%d}/${model_name}/
+
+
+wandb:
+  project: ${project}
+  name: ${name}
+  notes: null
+  tags: null
+  log_model: True
+  save_code: True
+  reinit: True
+  # group multi-node runs
+  group: ${trainer.strategy}
+
+hydra:
+  job:
+    name: ${name}
+    # when exceuting a job change to the logs_dir
+    chdir: True
+  run:
+    dir: ${logs_dir}
+  sweep:
+    dir: ${logs_dir}

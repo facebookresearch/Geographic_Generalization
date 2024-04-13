@@ -1,0 +1,5 @@
+# @package _global_
+model_name: lcnet50
+
+model: 
+  _target_: models.lcnet.lcnet.Lcnet50ClassifierModule

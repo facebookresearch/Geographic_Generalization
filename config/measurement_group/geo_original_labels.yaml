@@ -1,0 +1,6 @@
+# @package _global_
+measurement_group_name: dollarstreet_zeroshot
+
+measurements: [
+  generalization_dollarstreet_original_labels, generalization_geode_original_labels, 
+] 

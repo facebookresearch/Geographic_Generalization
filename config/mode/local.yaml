@@ -1,0 +1,11 @@
+# @package _global_
+
+project: RealWorldGen
+
+trainer:
+  num_nodes: 1
+  gpus: 1
+  max_epochs: 10
+  strategy: null
+
+save_detailed_results: True

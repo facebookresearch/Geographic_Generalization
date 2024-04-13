@@ -1,0 +1,6 @@
+# @package _global_
+model_name: seer10b
+
+model: 
+  _target_: models.seer.seer.Seer10bClassifierModule
+

@@ -1,0 +1,6 @@
+# @package _global_
+measurement_group_name: geo
+
+measurements: [
+  generalization_dollarstreet, generalization_geode
+  ]

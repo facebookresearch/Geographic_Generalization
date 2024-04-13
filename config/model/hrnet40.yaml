@@ -1,0 +1,5 @@
+# @package _global_
+model_name: hrnet40
+
+model: 
+  _target_: models.hrnet.hrnet.HRNet40ClassifierModule

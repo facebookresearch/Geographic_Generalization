@@ -1,0 +1,7 @@
+# @package _global_
+model_name: dino
+
+model: 
+  _target_: models.dino.dino.DINOv2ViTB14
+
+

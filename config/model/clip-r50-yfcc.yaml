@@ -1,0 +1,6 @@
+# @package _global_
+model_name: clip-r50-yfcc
+
+model: 
+  _target_: models.clip.clip.CLIPResnet50YFCCClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

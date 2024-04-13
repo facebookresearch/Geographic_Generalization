@@ -1,0 +1,6 @@
+# @package _global_
+model_name: clip-vit32-laion400m
+
+model: 
+  _target_: models.clip.clip.CLIPVit32Laion400MClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

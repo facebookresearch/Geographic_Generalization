@@ -1,0 +1,5 @@
+# @package _global_
+model_name: vit
+
+model: 
+  _target_: models.vit.vit.VitClassifierModule

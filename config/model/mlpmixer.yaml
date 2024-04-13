@@ -1,0 +1,6 @@
+# @package _global_
+model_name: mlpmixer
+
+model: 
+  _target_: models.mlp_mixer.mlp_mixer.MLPMixerClassifierModule
+

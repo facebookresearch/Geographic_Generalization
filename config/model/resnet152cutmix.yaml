@@ -1,0 +1,6 @@
+# @package _global_
+model_name: resnet152cutmix
+
+model: 
+  _target_: models.resnet.resnet.ResNet152CutMixClassifierModule
+

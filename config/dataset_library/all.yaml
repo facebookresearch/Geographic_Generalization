@@ -1,0 +1,69 @@
+# @package _global_
+dataset_libary_name: all
+
+###### Testing ######
+dummy:
+  _target_: datasets.dummy.DummyDataModule
+  batch_size: 32
+  num_classes: 1000
+ 
+###### Imagenet & Variants ######
+imagenet:
+  _target_: datasets.imagenet_1k.ImageNet1kDataModule
+  batch_size: 32
+  num_workers: 8
+
+imagenetv2:
+  _target_: datasets.image_datamodule.ImageDataModule
+  data_dir: /data/imagenet_v2/
+  batch_size: 32
+  num_workers: 8
+
+imagenetr:
+  _target_: datasets.imagenet_rendition.ImageNetRenditionDataModule
+  batch_size: 32
+  num_workers: 8
+
+imageneta:
+  _target_: datasets.imagenet_adversarial.ImageNetAdversarialDataModule
+  batch_size: 32
+  num_workers: 8
+
+imagenetsketch:
+  _target_: datasets.imagenet_sketch.ImageNetSketchDataModule
+  batch_size: 32
+  num_workers: 8
+
+objectnet:
+  _target_: datasets.objectnet.ObjectNetDataModule
+  batch_size: 32
+  num_workers: 8
+
+###### Fairness ######
+dollarstreet:
+  _target_: datasets.dollarstreet.DollarStreetDataModule
+  batch_size: 32
+  num_workers: 8
+  house_separated_only: ${ds_house_separated_only}
+  house_separated_and_region_balanced: ${ds_house_separated_and_region_balanced}
+
+dollarstreet_original_labels:
+  _target_: datasets.dollarstreet.DollarStreetDataModule
+  batch_size: 32
+  num_workers: 8
+  label_col: topic_indices
+  house_separated_only: ${ds_house_separated_only}
+  house_separated_and_region_balanced: ${ds_house_separated_and_region_balanced}
+
+geode:
+  _target_: datasets.geode.GeodeDataModule 
+  batch_size: 32
+  num_workers: 8
+  label_col: 1k_index
+
+geode_original_labels:
+  _target_: datasets.geode.GeodeDataModule 
+  batch_size: 32
+  num_workers: 8
+  label_col: object_index
+

@@ -1,0 +1,13 @@
+# @package _global_
+project: tmp
+
+trainer:
+  gpus: 0
+  limit_train_batches: 3
+  limit_val_batches: 3
+  limit_test_batches: 3
+  max_epochs: 2
+  log_every_n_steps: 1
+  strategy: null
+  
+save_detailed_results: True

@@ -1,0 +1,6 @@
+# @package _global_
+model_name: resnet18
+
+model: 
+  _target_: models.resnet.resnet.ResNet18ClassifierModule
+

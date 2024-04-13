@@ -1,0 +1,6 @@
+# @package _global_
+model_name: simclr
+
+model: 
+  _target_: models.simclr.simclr.SimCLRClassifierModule
+

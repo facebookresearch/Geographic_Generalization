@@ -1,0 +1,70 @@
+# @package _global_
+measurement_libary_name: all
+  
+## -- Generalization Measures -- ##
+generalization_dummy: 
+  _target_: measurements.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [dummy]
+  model: 
+  experiment_config:
+
+validation_imagenet: 
+  _target_: measurements.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenet]
+  model: 
+  experiment_config:
+
+generalization_imagenetv2: 
+  _target_: measurements.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenetv2]
+  model: 
+  experiment_config:
+
+generalization_imagenetr: 
+  _target_: measurements.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenetr]
+  model: 
+  experiment_config:
+
+generalization_imageneta: 
+  _target_: measurements.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imageneta]
+  model: 
+  experiment_config:
+
+generalization_imagenetsketch: 
+  _target_: measurements.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [imagenetsketch]
+  model: 
+  experiment_config:
+
+generalization_objectnet: 
+  _target_: measurements.generalization.ClassificationAccuracyEvaluation
+  datamodule_names: [objectnet]
+  model: 
+  experiment_config:
+  
+
+generalization_dollarstreet: 
+  _target_: measurements.generalization.DollarStreetPerformance
+  datamodule_names: [dollarstreet]
+  model: 
+  experiment_config:
+
+generalization_dollarstreet_original_labels: 
+  _target_: measurements.generalization.DollarStreetPerformance
+  datamodule_names: [dollarstreet_original_labels]
+  model: 
+  experiment_config:
+
+generalization_geode_original_labels: 
+  _target_: measurements.generalization.GeodePerformance
+  datamodule_names: [geode_original_labels]
+  model: 
+  experiment_config:
+
+generalization_geode: 
+  _target_: measurements.generalization.GeodePerformance
+  datamodule_names: [geode]
+  model: 
+  experiment_config:

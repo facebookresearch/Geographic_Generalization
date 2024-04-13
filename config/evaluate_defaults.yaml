@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - base: base
+  - mode: local
+  - dataset_library: all
+  - model: resnet18
+  - measurement_library: all
+  - measurement_group: test
+
+experiment_identifier: test
+dataset_to_use_for_class_prompts: ImageNet
+ds_house_separated_only: 
+ds_house_separated_and_region_balanced: 

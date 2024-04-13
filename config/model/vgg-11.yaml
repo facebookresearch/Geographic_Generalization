@@ -1,0 +1,5 @@
+# @package _global_
+model_name: vgg-11
+
+model: 
+  _target_: models.vgg.vgg.Vgg11ClassifierModule

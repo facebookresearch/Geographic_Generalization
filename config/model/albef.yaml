@@ -1,0 +1,6 @@
+# @package _global_
+model_name: albef
+
+model: 
+  _target_: models.blip.blip.ALBEFClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

@@ -1,0 +1,5 @@
+# @package _global_
+model_name: hrnet18small
+
+model: 
+  _target_: models.hrnet.hrnet.HRNet18SmallClassifierModule

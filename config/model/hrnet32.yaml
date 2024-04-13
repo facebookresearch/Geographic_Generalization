@@ -1,0 +1,5 @@
+# @package _global_
+model_name: hrnet32
+
+model: 
+  _target_: models.hrnet.hrnet.HRNet32ClassifierModule

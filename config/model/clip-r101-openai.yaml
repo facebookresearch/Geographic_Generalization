@@ -1,0 +1,6 @@
+# @package _global_
+model_name: clip-r101-openai
+
+model: 
+  _target_: models.clip.clip.CLIPResnet101OpenAIClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}

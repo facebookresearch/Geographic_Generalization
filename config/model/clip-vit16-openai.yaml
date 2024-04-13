@@ -1,0 +1,6 @@
+# @package _global_
+model_name: clip-vit16-openai
+
+model: 
+  _target_: models.clip.clip.CLIPVit16OpenAIClassifierModule
+  dataset_to_use_for_classes: ${dataset_to_use_for_class_prompts}
