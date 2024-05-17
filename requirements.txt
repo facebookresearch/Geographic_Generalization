@@ -17,9 +17,6 @@ torch == 2.2.2+cu121
 torchvision==0.17.2+cu121
 tqdm==4.66.3
 transformers>=4.38.0
-wandb==0.12.14
 tensorboard==2.6.0
 pytorch-cuda==12.1 
-#torch>=1.13.1+cu113
-#torchvision==0.14.1+cu113
-# Test
+# wandb==0.12.14
