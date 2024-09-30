@@ -45,6 +45,7 @@ Problem: CUDA out-of-memory errors
 Try lowering the batch size in the configuration file (`config/evaluate_defaults.yaml`):
 ```yaml
 batch_size: 16
+```
 
      
 
