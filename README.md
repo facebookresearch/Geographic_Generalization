@@ -2,7 +2,7 @@
 
 ![](/images/Figure1v4.png)
 
-This repository is used to replicate the evaluation performed in the paper: _Does Progress on Object Recognition Benchmarks Improve Real-World Generalization?_ It is also intended to serve as as a resource for evaluating models on both standard ImageNet benchmarks and the DollarStreet and GeoDE benchmarks. We welcome feedback, questions, and additions! 
+This repository supports the research conducted in the paper: Does Progress on Object Recognition Benchmarks Improve Real-World Generalization? The project explores whether improvements in object recognition models on standard benchmarks (e.g., ImageNet) translate to enhanced performance in more diverse, real-world environments. The research aims to address the challenge of geographic generalization, where models are evaluated on datasets that capture various cultural, environmental, and geographical conditions. This repository also provides tools for evaluating models on the DollarStreet and GeoDE benchmarks, which include data from a wider range of geographical locations and real-world scenarios. These benchmarks are designed to test how well models generalize to new and less controlled environments beyond traditional datasets. We welcome feedback, questions, and contributions to improve the tools and resources provided here!
 
 ## In this Repository
 
@@ -15,50 +15,38 @@ This repository is used to replicate the evaluation performed in the paper: _Doe
 This repository is Attribution-NonCommercial 4.0 International licensed, as found in the LICENSE file.
 
 ## Getting Started
-1.  **Clone this repository:**
+1. **Clone this repository:**
 
     ```
     git clone https://github.com/facebookresearch/Geographic_Generalization.git
     ```
 
-3. **In a new conda environment, install the required packages:**
+2. **Install Conda**
+   Follow the Conda installation guide if Conda is not already installed on your system. (https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+
+3. **Create and activate a new conda environment:**
+    ```
+    conda create -n geo_general python=3.8
+    conda activate geo_general
+    ```
+
+4. **Install PyTorch:**
     ```
     pip install -f https://download.pytorch.org/whl/torch_stable.html -e .
-    ``` 
+    ```
 
-4. **Download Benchmarks**. You can specify which benchmarks to download using the -b flag, as shown in the examples below. Currently supported benchamrks are: imagenet_v2, imagenet_o, imagenet_r, imagenet_sketch, imagenet_a, objectnet, dollarstreet, and geode. To download ImageNet's validation set, follow the instructions here: https://www.image-net.org/download.php. 
+5. **Common issues:**
+   If you face issues with CUDA or GPU drivers, please follow the PyTorch troubleshooting guide. (https://pytorch.org/serve/Troubleshooting.html)
 
-     ##### To download all benchmarks (default), run:
-     ```
-     python download_data.py
-     ```
-     
-     ##### To download specific benchmarks, use the -b flag:
-     ```
-     ### Example 1: downloading only dollarstreet
-     python download_data.py -b dollarstreet
+## Troubleshooting
+**Example**
+Problem: CUDA out-of-memory errors
+**Solution:**  
+Try lowering the batch size in the configuration file (`config/evaluate_defaults.yaml`):
+```yaml
+batch_size: 16
+```
 
-     ### Example 2: downloading dollarstreet, geode, and imagenet
-     python download_data.py -b dollarstreet,geode,imagenet
-     ```
-
-      ##### To reference existing benchmarks outsite the data folder, change the file paths in each benchmark's dataloader, which are defined in the datasets folder. An example is shown below:
-
-     ```
-   class ImageNet1kDataModule(ImageDataModule):
-        def __init__(
-            self,
-            data_dir: str = <ALTERNATIVE IMAGENET PATH>,
-            batch_size: int = 32,
-            num_workers=8,
-            image_size=224,
-        ):
-     ```
-   
-5. **Run an evaluation**.
-     ```
-     python evaluate.py
-     ```
      
 
 ## Adding Your Own Model Weights
@@ -268,6 +256,16 @@ To launch a run on a few batches locally: `python train.py -m mode=local_test`
 
 ## Debugging Configs
 To debug what configs are used: `python evaluate.py --cfg job`
+
+## Additional Resources and Documentation
+
+### Further Reading
+- [Hydra Documentation](https://hydra.cc/docs/intro/)
+- [PyTorch Lightning Guide](https://pytorch-lightning.readthedocs.io/en/stable/)
+- [Original Research Paper](https://arxiv.org/abs/2307.13136)
+- Overview of Geographic Generalization Concepts: *(Add relevant article here)*
+
+
 
 ## Citation 
  ``` 
